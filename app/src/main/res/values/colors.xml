@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#E7A90C</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <!-- Logo -->
+    <color name="yellow_logo">@color/teal_200</color>
+    <color name="blue_logo">@color/purple_500</color>
+
+
+    <color name="mtrl_list_item_tint">#3E7E3C</color>
+
+
+    <color name="system_ui_scrim_light">#B3FFFFFF</color> <!-- 70% white -->
+    <color name="system_ui_scrim_dark">#30000000</color> <!-- 19% black -->
+</resources>

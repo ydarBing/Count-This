@@ -1,24 +1,40 @@
-# Compiled class file
-*.class
+# Gradle
+.gradle
+build/
 
-# Log file
-*.log
+captures
 
-# BlueJ files
-*.ctxt
+/local.properties
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# IntelliJ .idea folder
+.idea/workspace.xml
+.idea/misc.xml
+.idea/libraries
+.idea/caches
+.idea/navEditor.xml
+.idea/tasks.xml
+.idea/modules.xml
+.idea/compiler.xml
+.idea/jarRepositories.xml
+.idea/deploymentTargetDropDown.xml
+.idea/androidTestResultsUserPreferences.xml
+gradle.xml
+*.iml
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# General
+.DS_Store
+.externalNativeBuild
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# Do not commit plain-text release keys
+app-release.jks
+play-account.p12
+play-account.json
+
+# Do not commit firebase config
+google-services.json
+
+# VS Code config
+org.eclipse.buildship.core.prefs
+.classpath
+.project
+bin/
