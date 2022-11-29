@@ -1,16 +1,19 @@
 package com.gurpgork.countthis
 
 import androidx.compose.animation.*
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.*
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.navigation
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.gurpgork.countthis.ui_account.AccountUI
 import com.gurpgork.countthis.ui_counter_details.CounterDetails
-import com.gurpgork.countthis.ui_list.CounterList
 import com.gurpgork.countthis.ui_create.CreateCounter
+import com.gurpgork.countthis.ui_edit.EditCounter
+import com.gurpgork.countthis.ui_list.CounterList
 
 internal sealed class Screen(val route: String) {
     object CounterList : Screen("counterlist")
@@ -22,14 +25,24 @@ private sealed class LeafScreen(
     fun createRoute(root: Screen) = "${root.route}/$route"
 
     object CounterList : LeafScreen("counterlist")
-//    object History : LeafScreen("history")
+    //    object History : LeafScreen("history")
     object Account : LeafScreen("account")
     object CounterDetails : LeafScreen("counter/{counterId}") {
         fun createRoute(root: Screen, counterId: Long): String {
             return "${root.route}/counter/$counterId"
         }
     }
+
     object CreateCounter : LeafScreen("create")
+    object EditCounter : LeafScreen("counter/{counterId}/edit?wasTrackingLocation={wasTrackingLocation}") {
+        fun createRoute(
+            root: Screen,
+            counterId: Long,
+            wasTrackingLocation: Boolean
+        ): String {
+            return "${root.route}/counter/$counterId/edit?wasTrackingLocation=$wasTrackingLocation"
+        }
+    }
 }
 
 @ExperimentalAnimationApi
@@ -64,6 +77,7 @@ private fun NavGraphBuilder.addCounterListTopLevel(
         addCounterList(navController, Screen.CounterList)
         addAccount(Screen.CounterList, openSettings)
         addCreateCounter(navController, Screen.CounterList)
+        addEditCounter(navController, Screen.CounterList)
         addCounterDetails(navController, Screen.CounterList)
 //        addSettings(Screen.Discover, openSettings)
     }
@@ -79,7 +93,9 @@ private fun NavGraphBuilder.addCounterList(
         debugLabel = "CounterList()",
     ) {
         CounterList(
-            createNewCounter = {navController.navigate(LeafScreen.CreateCounter.createRoute(root))},
+            createNewCounter = { navController.navigate(LeafScreen.CreateCounter.createRoute(root)) },
+            editCounter = {counterId, wasTrackingLocation ->
+                navController.navigate(LeafScreen.EditCounter.createRoute(root, counterId, wasTrackingLocation))},
             openCounter = { counterId ->
                 navController.navigate(LeafScreen.CounterDetails.createRoute(root, counterId))
             },
@@ -99,7 +115,7 @@ private fun NavGraphBuilder.addCounterDetails(
         route = LeafScreen.CounterDetails.createRoute(root),
         debugLabel = "CounterDetails()",
         arguments = listOf(
-            navArgument("counterId"){ type = NavType.LongType}
+            navArgument("counterId") { type = NavType.LongType }
         )
     ) {
         CounterDetails(
@@ -110,19 +126,65 @@ private fun NavGraphBuilder.addCounterDetails(
         )
     }
 }
-
+@OptIn(
+    ExperimentalMaterialNavigationApi::class,
+    ExperimentalMaterialApi::class)
+@ExperimentalAnimationApi
+private fun NavGraphBuilder.addEditCounter(
+    navController: NavController,
+    root: Screen,
+) {
+//    bottomSheet(
+//        route = LeafScreen.EditCounter.createRoute(root),
+//        debugLabel = "EditCounter()",
+//        arguments = listOf(
+//            navArgument("counterId") { type = NavType.LongType },
+//            navArgument("wasTrackingLocation") {type = NavType.BoolType}
+//        )
+//    ) {
+//        val bottomSheetNavigator = navController.navigatorProvider
+//            .getNavigator(BottomSheetNavigator::class.java)
+//        EditCounter(
+////            expandedValue = bottomSheetNavigator.navigatorSheetState.currentValue,
+//            navigateUp = navController::navigateUp,
+//        )
+//    }
+    composable(
+        route = LeafScreen.EditCounter.createRoute(root),
+        debugLabel = "EditCounter()",
+        arguments = listOf(
+            navArgument("counterId") { type = NavType.LongType },
+            navArgument("wasTrackingLocation") {type = NavType.BoolType}
+        )
+    ) {
+        EditCounter(
+            navigateUp = navController::navigateUp,
+        )
+    }
+}
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialNavigationApi::class)
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addCreateCounter(
     navController: NavController,
     root: Screen,
 ) {
+//    bottomSheet(
+//        route = LeafScreen.CreateCounter.createRoute(root),
+//        debugLabel = "CreateCounter()",
+//    ) {
+//        val bottomSheetNavigator = navController.navigatorProvider
+//            .getNavigator(BottomSheetNavigator::class.java)
+//        CreateCounter(
+//            expandedValue = bottomSheetNavigator.navigatorSheetState.currentValue,
+//            navigateUp = navController::navigateUp
+//        )
+//    }
+
     composable(
         route = LeafScreen.CreateCounter.createRoute(root),
         debugLabel = "CreateCounter()",
     ) {
-        CreateCounter(
-            navigateUp = navController::navigateUp
-        )
+        CreateCounter( navigateUp = navController::navigateUp )
     }
 }
 

@@ -16,7 +16,6 @@
 
 package com.gurpgork.countthis.theme
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -25,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 // TODO create and use custom colors
 /// COLORS TAKEN DIRECTLY FROM NOW IN ANDROID
@@ -149,6 +149,25 @@ val DarkAndroidColorScheme = darkColorScheme(
 )
 
 /**
+ * Light default gradient colors
+ */
+val LightDefaultGradientColors = GradientColors(
+    primary = Purple95,
+    secondary = Orange95,
+    tertiary = Blue95,
+    neutral = DarkPurpleGray95
+)
+/**
+ * Light Android background theme
+ */
+val LightAndroidBackgroundTheme = BackgroundTheme(color = DarkGreenGray95)
+
+/**
+ * Dark Android background theme
+ */
+val DarkAndroidBackgroundTheme = BackgroundTheme(color = Color.Black)
+
+/**
  * Count This theme.
  *
  * The order of precedence for the color scheme is: Dynamic color > Android theme > Default theme.
@@ -159,7 +178,7 @@ val DarkAndroidColorScheme = darkColorScheme(
  * @param dynamicColor Whether the theme should use a dynamic color scheme (Android 12+ only).
  * @param androidTheme Whether the theme should use the Android theme color scheme.
  */
-@SuppressLint("NewApi")
+//@SuppressLint("NewApi")
 @Composable
 fun CountThisTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -180,34 +199,32 @@ fun CountThisTheme(
         else -> if (darkTheme) DarkDefaultColorScheme else LightDefaultColorScheme
     }
 
-    // look at now in android GradientColors if interested in using gradient colors
-//    val defaultGradientColors = GradientColors()
-//    val gradientColors = when {
-//        dynamicColor -> {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                defaultGradientColors
-//            } else {
-//                if (darkTheme) defaultGradientColors else LightDefaultGradientColors
-//            }
-//        }
-//        androidTheme -> defaultGradientColors
-//        else -> if (darkTheme) defaultGradientColors else LightDefaultGradientColors
-//    }
+    val defaultGradientColors = GradientColors()
+    val gradientColors = when {
+        dynamicColor -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                defaultGradientColors
+            } else {
+                if (darkTheme) defaultGradientColors else LightDefaultGradientColors
+            }
+        }
+        androidTheme -> defaultGradientColors
+        else -> if (darkTheme) defaultGradientColors else LightDefaultGradientColors
+    }
 
-    // look at now in android BackgroundTheme if interested
-//    val defaultBackgroundTheme = BackgroundTheme(
-//        color = colorScheme.surface,
-//        tonalElevation = 2.dp
-//    )
-//    val backgroundTheme = when {
-//        dynamicColor -> defaultBackgroundTheme
-//        androidTheme -> if (darkTheme) DarkAndroidBackgroundTheme else LightAndroidBackgroundTheme
-//        else -> defaultBackgroundTheme
-//    }
+    val defaultBackgroundTheme = BackgroundTheme(
+        color = colorScheme.surface,
+        tonalElevation = 2.dp
+    )
+    val backgroundTheme = when {
+        dynamicColor -> defaultBackgroundTheme
+        androidTheme -> if (darkTheme) DarkAndroidBackgroundTheme else LightAndroidBackgroundTheme
+        else -> defaultBackgroundTheme
+    }
 
     CompositionLocalProvider(
-//        LocalGradientColors provides gradientColors,
-//        LocalBackgroundTheme provides backgroundTheme
+        LocalGradientColors provides gradientColors,
+        LocalBackgroundTheme provides backgroundTheme
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

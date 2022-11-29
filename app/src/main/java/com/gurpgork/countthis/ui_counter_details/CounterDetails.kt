@@ -55,6 +55,7 @@ internal fun CounterDetails(
     openCounterDetails: (counterId: Long) -> Unit,
 ) {
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+//    val viewState by viewModel.state.collectAsState()
 
     CounterDetails(
         viewState = viewState,

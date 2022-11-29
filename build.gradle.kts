@@ -4,6 +4,20 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.BasePlugin
 import dagger.hilt.android.plugin.HiltExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.plugin.KaptExtension
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath(libs.android.gradlePlugin)
+        classpath(libs.hilt.gradlePlugin)
+        classpath(libs.kotlin.gradlePlugin)
+        classpath(libs.secrets.gradlePlugin)
+    }
+}
 
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -11,7 +25,7 @@ plugins {
     alias(libs.plugins.android.lint) apply false
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.napt) apply false
+    alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.gms.googleServices) apply false
@@ -20,21 +34,21 @@ plugins {
     alias(libs.plugins.versionCatalogUpdate)
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        // Used for snapshots if needed
-         maven("https://oss.sonatype.org/content/repositories/snapshots/")
-
-//        if (!libs.androidx.compose.material3.snapshot.isEmpty()) {
-//            maven { url Urls.composeMaterial3SnapshotRepo }
-//        }
-//        if (!libs.androidx.compose.snapshot.isEmpty()) {
-//            maven { url Urls.composeSnapshotRepo }
-//        }
-    }
-}
+//allprojects {
+//    repositories {
+//        google()
+//        mavenCentral()
+//        // Used for snapshots if needed
+//         maven("https://oss.sonatype.org/content/repositories/snapshots/")
+//
+////        if (!libs.androidx.compose.material3.snapshot.isEmpty()) {
+////            maven { url Urls.composeMaterial3SnapshotRepo }
+////        }
+////        if (!libs.androidx.compose.snapshot.isEmpty()) {
+////            maven { url Urls.composeSnapshotRepo }
+////        }
+//    }
+//}
 
 subprojects {
     apply(plugin = rootProject.libs.plugins.spotless.get().pluginId)
@@ -82,7 +96,10 @@ subprojects {
 
     plugins.withId(rootProject.libs.plugins.hilt.get().pluginId) {
         // Had to turn this off for napt to work
-        extensions.getByType<HiltExtension>().enableAggregatingTask = false
+        extensions.getByType<HiltExtension>().enableAggregatingTask = true
+    }
+    plugins.withId(rootProject.libs.plugins.kotlin.kapt.get().pluginId) {
+        extensions.getByType<KaptExtension>().correctErrorTypes = true
     }
 
     plugins.withType<BasePlugin>().configureEach {

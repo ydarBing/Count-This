@@ -5,9 +5,10 @@ plugins {
 //    alias(libs.plugins.android.lint)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.napt)
+    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 val appVersionCode = propOrDef("COUNTTHIS_VERSIONCODE", 1).toInt()
@@ -69,17 +70,24 @@ android {
             isIncludeAndroidResources = true
         }
     }
+
+    // I believe *.version is responsible for
+//    packagingOptions {
+//        packagingOptions.resources.excludes += setOf(
+//            // Exclude AndroidX version files
+//            "META-INF/*.version",
+//            // Exclude consumer proguard files
+//            "META-INF/proguard/*",
+//            // Exclude the Firebase/Fabric/other random properties files
+//            "/*.properties",
+//            "fabric/*.properties",
+//            "META-INF/*.properties"
+//        )
+//    }
     packagingOptions {
-        packagingOptions.resources.excludes += setOf(
-            // Exclude AndroidX version files
-            "META-INF/*.version",
-            // Exclude consumer proguard files
-            "META-INF/proguard/*",
-            // Exclude the Firebase/Fabric/other random properties files
-            "/*.properties",
-            "fabric/*.properties",
-            "META-INF/*.properties"
-        )
+        resources {
+            resources.excludes += setOf("META-INF/LICENSE*", "META-INF/NOTICE.txt")
+        }
     }
 
     buildTypes {
@@ -157,30 +165,32 @@ dependencies {
     implementation(libs.hilt.library)
     implementation(libs.hilt.compose)
     implementation(libs.hilt.work)
-    annotationProcessor(libs.hilt.compiler)
+    kapt(libs.hilt.compiler)
 
 
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlin.coroutines.android)
 
-    implementation(libs.compose.foundation)
+    api(platform(libs.compose.bom))
+    implementation(libs.compose.foundation.foundation)
+    implementation(libs.compose.foundation.layout)
     implementation(libs.compose.maps)
     implementation(libs.compose.maps.widgets)
-    implementation(libs.compose.foundation.layout)
     implementation(libs.compose.material.iconsext)
     implementation(libs.compose.material.material)
     implementation(libs.compose.material3)
-    implementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.util)
     implementation(libs.compose.ui.viewbinding)
     implementation(libs.compose.runtime)
     implementation(libs.compose.runtime.livedata)
-    implementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.tooling)
+    implementation(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.testmanifest)
 
     implementation(libs.accompanist.insets)
     implementation(libs.accompanist.insetsui)
     implementation(libs.accompanist.navigation.animation)
+    implementation(libs.accompanist.navigation.material)
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
     implementation(libs.accompanist.permissions)
@@ -206,6 +216,10 @@ android.applicationVariants.forEach { variant ->
             }
         }
     }
+}
+
+secrets {
+    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 if (file("google-services.json").exists()) {

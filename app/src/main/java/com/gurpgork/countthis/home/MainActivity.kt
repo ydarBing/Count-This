@@ -110,7 +110,7 @@ class MainActivity : CountThisActivity() {
     }
 
     private fun startLocationUpdates(){
-        if(preferences.requestingLocationUpdates &&
+        if(preferences.requestingLocationUpdates > 0 &&
             foregroundPermissionApproved())
             foregroundOnlyLocationService?.subscribeToLocationUpdates()
     }
@@ -137,7 +137,7 @@ class MainActivity : CountThisActivity() {
             preferences.observeTrackingLocation().flowWithLifecycle(lifecycle, Lifecycle.State.STARTED )
                 /*.distinctUntilChanged()*/.collect{
                     // tracking location updated!
-                    if(it)
+                    if(it > 0)
                     {
                         foregroundOnlyLocationService?.subscribeToLocationUpdates()
                     }

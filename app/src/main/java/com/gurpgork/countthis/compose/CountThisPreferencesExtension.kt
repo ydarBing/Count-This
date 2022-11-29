@@ -18,8 +18,8 @@ fun CountThisPreferences.shouldUseDarkColors(): Boolean {
 
 
 @Composable
-fun CountThisPreferences.currentlyTrackingLocation(): Boolean {
-    val locationPreference = observeTrackingLocation().collectAsState(initial = false)
+fun CountThisPreferences.currentlyTrackingLocation(): Int {
+    val locationPreference = observeTrackingLocation().collectAsState(initial = 0)
     return locationPreference.value
 }
 

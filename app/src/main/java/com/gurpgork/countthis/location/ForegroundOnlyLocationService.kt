@@ -187,7 +187,7 @@ class ForegroundOnlyLocationService : LifecycleService() {
         // to maintain the 'while-in-use' label.
         // NOTE: If this method is called due to a configuration change in MainActivity,
         // we do nothing.
-        if (!configurationChange && preferences.requestingLocationUpdates){
+        if (!configurationChange && preferences.requestingLocationUpdates > 0){
             Log.d(TAG, "Start foreground service")
             //TODO add push notification permission check then uncomment this
 //            val notification = generateNotification(currentLocation)
@@ -224,7 +224,8 @@ class ForegroundOnlyLocationService : LifecycleService() {
                 fusedLocationProviderClient.requestLocationUpdates(
                     locationRequest, locationCallback, Looper.getMainLooper())
             } catch (unlikely: SecurityException) {
-                preferences.requestingLocationUpdates = false
+                // TODO does requestingLocationUpdates need to be updated here
+                // preferences.requestingLocationUpdates = false
                 Log.e(TAG, "Lost location permissions. Couldn't remove updates. $unlikely")
             }
             requestingUpdates = true
@@ -247,7 +248,8 @@ class ForegroundOnlyLocationService : LifecycleService() {
                 }
 //            preferences.trackingLocation = false
             } catch (unlikely: SecurityException) {
-                preferences.requestingLocationUpdates = true
+                // TODO do we need to check/update requestingLocationUpdates
+//                preferences.requestingLocationUpdates = true
                 Log.e(TAG, "Lost location permissions. Couldn't remove updates. $unlikely")
             }
             requestingUpdates = false

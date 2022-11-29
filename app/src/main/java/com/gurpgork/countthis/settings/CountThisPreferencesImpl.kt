@@ -38,10 +38,10 @@ class CountThisPreferencesImpl @Inject constructor(
             putString(KEY_THEME, value.storageKey)
         }
 
-    override var requestingLocationUpdates: Boolean
-        get() = sharedPreferences.getBoolean(KEY_FOREGROUND_LOCATION_ENABLED, false)
+    override var requestingLocationUpdates: Int
+        get() = sharedPreferences.getInt(KEY_FOREGROUND_LOCATION_ENABLED, 0)
         set(value) = sharedPreferences.edit {
-            putBoolean(KEY_FOREGROUND_LOCATION_ENABLED, value)
+            putInt(KEY_FOREGROUND_LOCATION_ENABLED, value)
         }
     override fun observeTheme(): Flow<Theme> {
         return preferenceKeyChangedFlow
@@ -51,7 +51,7 @@ class CountThisPreferencesImpl @Inject constructor(
             .map { theme }
             .distinctUntilChanged()
     }
-    override fun observeTrackingLocation(): Flow<Boolean> {
+    override fun observeTrackingLocation(): Flow<Int> {
         return preferenceKeyChangedFlow
             // Emit on start so that we always send the initial value
             .onStart { emit(KEY_FOREGROUND_LOCATION_ENABLED) }

@@ -1,14 +1,14 @@
 package com.gurpgork.countthis.ui_create
 
 import android.Manifest
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.widget.Toast
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -40,60 +40,95 @@ import com.gurpgork.countthis.R
 import com.gurpgork.countthis.data.entities.CounterEntity
 import com.gurpgork.countthis.theme.CountThisTheme
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreateCounter(
+//    expandedValue: ModalBottomSheetValue,
     navigateUp: () -> Unit,
 ) {
     CreateCounter(
         viewModel = hiltViewModel(),
+//        expandedValue = expandedValue,
         navigateUp = navigateUp,
     )
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun CreateCounter(
     viewModel: CreateCounterViewModel,
+//    expandedValue: ModalBottomSheetValue,
     navigateUp: () -> Unit,
 ) {
-    //val viewState by rememberStateWithLifecycle(viewModel.state)
+    val context = LocalContext.current
+    val viewState = viewModel.state
+
+    // TODO should effect be created inside OptionOne?
+    LaunchedEffect(key1 = context) {
+        viewModel.validationEvents.collect { event ->
+            when (event) {
+                is ValidationEvent.Success -> {
+                    Toast.makeText(
+                        context,
+                        "Create counter successful",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    navigateUp()
+                }
+            }
+        }
+    }
 
     CreateCounter(
-        viewState = viewModel.state.value,//viewState,
+        viewState = viewState,//viewModel.state.value,
+//        expandedValue = expandedValue,
         navigateUp = navigateUp,
-        confirmCreateCounter = {
-            viewModel.addCounter()
-            navigateUp()
-        }//confirmCreateCounter,
+//        confirmCreateCounter = {
+////            viewModel.onEvent(UIEvent.Submit)
+//            viewModel.addCounter()
+//            navigateUp()
+//        }, //confirmCreateCounter,
+        onEvent = { viewModel.onEvent(it) },
 //        logout = { viewModel.logout() }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(
+    ExperimentalMaterialApi::class
+)
 @Composable
 internal fun CreateCounter(
     viewState: CreateCounterViewState,
+//    expandedValue: ModalBottomSheetValue,
     navigateUp: () -> Unit,
-    confirmCreateCounter: () -> Unit,
+//    confirmCreateCounter: () -> Unit,
+    onEvent: (event: CounterFormEvent) -> Unit,
 ) {
+
     OptionOne(
         viewState = viewState,
+//        expandedValue = expandedValue,
         navigateUp = navigateUp,
-        confirmCreateCounter = confirmCreateCounter
+//        confirmSubmitCounter = confirmCreateCounter
+        counterFormEvent = onEvent,
+
     )
 }
 
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class,
-    ExperimentalPermissionsApi::class
+    ExperimentalMaterialApi::class
 )
 @Composable
 internal fun OptionOne(
     viewState: CreateCounterViewState,
+//    expandedValue: ModalBottomSheetValue,
     navigateUp: () -> Unit,
-    confirmCreateCounter: () -> Unit,
+    counterFormEvent: (CounterFormEvent) -> Unit,
 ) {
+//    val scaffoldState = rememberScaffoldState()
     val keyBoardController = LocalSoftwareKeyboardController.current
 
     val permissions = listOf(
@@ -101,17 +136,38 @@ internal fun OptionOne(
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
 
+//    viewState.message?.let { message ->
+//        LaunchedEffect(message) {
+//            scaffoldState.snackbarHostState.showSnackbar(message.message)
+//            // Notify the view model that the message has been dismissed
+//            onMessageShown(message.id)
+//        }
+//    }
+
 
     Scaffold(
         topBar = {
-            CreateCounterAppBar(
-                backgroundColor = Color.Transparent,
-                navigateUp = navigateUp,
-                elevation = 0.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-            )
+            Surface {
+                Column {
+//                    AnimatedVisibility(visible = expandedValue == ModalBottomSheetValue.Expanded) {
+//                        Spacer(
+//                            Modifier
+//                                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.4f))
+//                                .windowInsetsTopHeight(WindowInsets.statusBars)
+//                                .fillMaxWidth()
+//                        )
+//                    }
+                    CreateCounterAppBar(
+                        backgroundColor = Color.Transparent,
+                        navigateUp = navigateUp,
+                        elevation = 0.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                    )
+                }
+            }
+
         }
     ) { contentPadding ->
         Surface(
@@ -126,20 +182,14 @@ internal fun OptionOne(
                 // First, get a reference to two focus requesters
                 val (first, second) = FocusRequester.createRefs() // using this to "skip" track location from focusing
 
-                val focusManager = LocalFocusManager.current
-                var nameText by remember { mutableStateOf(viewState.name) }
-                var goal by remember(viewState.goal) { mutableStateOf(viewState.goal.toString()) }
-                var increment by remember(viewState.incrementBy) { mutableStateOf(viewState.incrementBy.toString()) }
-                var startCount by remember(viewState.startCount) { mutableStateOf(viewState.startCount.toString()) }
-
-                AppTextField(
-                    text = nameText,
-                    label = stringResource(R.string.create_counter_name),
-                    placeholder = stringResource(R.string.create_counter_name),
-                    onChange = {
-                        nameText = it
-                        viewState.name = it
+                CounterInputField(
+                    text = viewState.name,
+                    onTextChanged = {
+                        counterFormEvent(CounterFormEvent.NameChanged(it))
                     },
+                    placeholder = stringResource(R.string.create_counter_name),
+                    label = stringResource(R.string.create_counter_name),
+                    isError = viewState.hasNameError,
                     modifier = Modifier.focusOrder(first) {
                         next = second
                         down = second
@@ -154,42 +204,36 @@ internal fun OptionOne(
                 )
 
                 AppNumberField(
-                    text = startCount,
+                    text = viewState.startCount.toString(),
                     label = stringResource(R.string.create_counter_start_count),
                     placeholder = CounterEntity.EMPTY_COUNTER.count.toString(),
                     modifier = Modifier.focusOrder(second),
                     onChange = { raw ->
-                        startCount = raw
                         val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.count
-                        viewState.startCount = parsed
-                        //onChanged(parsed)
+                        counterFormEvent(CounterFormEvent.CountChanged(parsed))
                     })
                 AppNumberField(
-                    text = goal,
+                    text = viewState.goal.toString(),
                     label = stringResource(R.string.create_counter_goal),
                     placeholder = CounterEntity.EMPTY_COUNTER.goal.toString(),
                     onChange = { raw ->
-                        goal = raw
                         val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.goal
-                        viewState.goal = parsed
-                        //onGoalChanged(parsed)
+                        counterFormEvent(CounterFormEvent.GoalChanged(parsed))
                     })
                 AppNumberField(
-                    text = increment,
+                    text = viewState.incrementBy.toString(),
                     label = stringResource(R.string.create_counter_increment),
                     placeholder = CounterEntity.EMPTY_COUNTER.increment.toString(),
                     imeAction = ImeAction.Done,
                     keyBoardActions = KeyboardActions(onDone = { keyBoardController?.hide() }),
                     onChange = { raw ->
-                        increment = raw
                         val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.increment
-                        viewState.incrementBy = parsed
-                        //onChanged(parsed)
+                        counterFormEvent(CounterFormEvent.IncrementChanged(parsed))
                     })
                 TextButton(
                     // TODO should empty counters be allowed?
-                    enabled = nameText.isNotEmpty(),
-                    onClick = confirmCreateCounter,
+                    enabled = viewState.name.isNotEmpty(),
+                    onClick = { counterFormEvent(CounterFormEvent.Submit) },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.secondary,
                     ),
@@ -245,22 +289,24 @@ fun AppNumberField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTextField(
+fun CounterInputField(
     modifier: Modifier = Modifier,
     text: String,
     placeholder: String,
     label: String = "",
     leadingIcon: @Composable (() -> Unit)? = null,
-    onChange: (String) -> Unit = {},
+    onTextChanged: (String) -> Unit = {},
     imeAction: ImeAction = ImeAction.Next,
     keyboardType: KeyboardType = KeyboardType.Text,
     keyBoardActions: KeyboardActions = KeyboardActions(),
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    isError: Boolean = false
 ) {
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         value = text,
-        onValueChange = onChange,
+        onValueChange = onTextChanged,
+        label = { Text(label) },
         leadingIcon = leadingIcon,
         textStyle = TextStyle(fontSize = 18.sp),
         keyboardOptions = KeyboardOptions(imeAction = imeAction, keyboardType = keyboardType),
@@ -275,7 +321,7 @@ fun AppTextField(
         placeholder = {
             Text(text = placeholder, style = TextStyle(fontSize = 18.sp, color = Color.LightGray))
         },
-        label = { Text(label) },
+        isError = isError,
     )
 }
 
@@ -367,10 +413,12 @@ private fun LocationPermissionSwitchContent(
     var askedPermission by remember { mutableStateOf(false) }
 
     if (askedPermission && !permissionGranted) {
-        Row(modifier = Modifier
-            .focusable(false)
-            .padding(20.dp)
-            .fillMaxWidth())
+        Row(
+            modifier = Modifier
+                .focusable(false)
+                .padding(20.dp)
+                .fillMaxWidth()
+        )
         {
             Text(
                 text = userDeniedPermission,
@@ -453,11 +501,13 @@ private fun LocationPermissionDeniedContent(
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Preview
 @Composable
 fun AddCounterPreview() {
     CountThisTheme {
         CreateCounter(
+//            expandedValue = ModalBottomSheetValue.Expanded,
             navigateUp = { },
         )
     }

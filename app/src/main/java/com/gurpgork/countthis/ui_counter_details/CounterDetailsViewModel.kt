@@ -21,7 +21,6 @@ internal class CounterDetailsViewModel @Inject constructor(
     private val counterId: Long = savedStateHandle["counterId"]!!
     private val uiMessageManager = UiMessageManager()
 
-
     private val _state = MutableStateFlow(CounterDetailsViewState())
     val state: StateFlow<CounterDetailsViewState>
         get() =  _state

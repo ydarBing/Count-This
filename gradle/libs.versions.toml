@@ -1,24 +1,24 @@
 [versions]
 agp = "7.3.1"
-accompanist = "0.26.5-rc"
-activitycompose = "1.6.0"
-androidx-navigation = "2.5.2"
+accompanist = "0.27.0"
+activitycompose = "1.6.1"
+androidx-navigation = "2.5.3"
 androidxhilt = "1.0.0"
-androidxlifecycle = "2.6.0-alpha02"
+androidxlifecycle = "2.6.0-alpha03"
 androidxtest = "1.4.0"
-compose = "1.3.0-rc01"
+compose-bom = "2022.10.00"
 composecompiler = "1.3.2"
 composemaps = "2.7.2"
 coroutines = "1.6.4"
-dagger = "2.44"
 hilt = "2.44"
 kotlin = "1.7.20"
 ktlint = "0.47.1"
-material3 = "1.0.0-rc01"
+material3 = "1.0.0"
 paging = "3.1.1"
 room = "2.4.3"
 spotless = "6.11.0"
 versionCatalogUpdate = "0.6.1"
+secrets = "2.0.1"
 compileSdk = "33"
 minSdk = "26"
 targetSdk = "33"
@@ -29,9 +29,9 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 android-test = { id = "com.android.test", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-napt = "com.sergei-lapin.napt:1.17"
-ksp = "com.google.devtools.ksp:1.7.20-1.0.7"
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = "com.google.devtools.ksp:1.7.20-1.0.8"
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 gms-googleServices = "com.google.gms.google-services:4.3.14"
 firebase-crashlytics = "com.google.firebase.crashlytics:2.9.2"
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
@@ -42,11 +42,12 @@ accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayo
 accompanist-insets = { module = "com.google.accompanist:accompanist-insets", version.ref = "accompanist" }
 accompanist-insetsui = { module = "com.google.accompanist:accompanist-insets-ui", version.ref = "accompanist" }
 accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
+accompanist-navigation-material = { module = "com.google.accompanist:accompanist-navigation-material", version.ref = "accompanist" }
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanist" }
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
-android-gradle-plugin = {module = "com.android.tools.build:gradle", version.ref = "agp"}
+android-gradlePlugin = {module = "com.android.tools.build:gradle", version.ref = "agp"}
 
 androidx-activity-compose = {module = "androidx.activity:activity-compose", version.ref = "activitycompose"}
 androidx-appcompat = "androidx.appcompat:appcompat:1.5.1"
@@ -66,7 +67,7 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 androidx-localbroadcastmanager = "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
 androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidx-navigation" }
-androidx-paging-compose = "androidx.paging:paging-compose:1.0.0-alpha16"
+androidx-paging-compose = "androidx.paging:paging-compose:1.0.0-alpha17"
 androidx-preferences = "androidx.preference:preference:1.2.0"
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
@@ -82,28 +83,32 @@ androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxt
 androidx-work-runtime = "androidx.work:work-runtime-ktx:2.7.1"
 
 #2.7.2-alpha03
-compose-foundation = {module = "androidx.compose.foundation:foundation", version.ref = "compose"}
-compose-foundation-layout = { module = "androidx.compose.foundation:foundation-layout", version.ref = "compose" }
-
 compose-maps = { module = "com.google.maps.android:maps-compose", version.ref = "composemaps" }
 compose-maps-widgets = {module = "com.google.maps.android:maps-compose-widgets", version.ref = "composemaps"}
 
-compose-material-iconsext = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose" }
-compose-material-material = { module = "androidx.compose.material:material", version.ref = "compose" }
-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
-compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "compose" }
-compose-ui-test = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
-compose-ui-testmanifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-compose-ui-util = { module = "androidx.compose.ui:ui-util", version.ref = "compose" }
-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", version.ref = "compose" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-animation-animation = { module = "androidx.compose.animation:animation" }
+compose-foundation-foundation = { module = "androidx.compose.foundation:foundation" }
+compose-foundation-layout = { module = "androidx.compose.foundation:foundation-layout" }
+compose-material-iconsext = { module = "androidx.compose.material:material-icons-extended" }
+compose-material-material = { module = "androidx.compose.material:material" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-runtime = { module = "androidx.compose.runtime:runtime" }
+compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
+compose-ui-test = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-testmanifest = { module = "androidx.compose.ui:ui-test-manifest" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-ui-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-uitextfonts = { module = "androidx.compose.ui:ui-text-google-fonts" }
+compose-ui-util = { module = "androidx.compose.ui:ui-util" }
+compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
 
 hilt-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxhilt" }
 hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "androidxhilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 hilt-library = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
-hilt-pluginGradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 hilt-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 
 junit = "junit:junit:4.13.2"
@@ -112,10 +117,12 @@ kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines
 kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlin-extensions = { module = "org.jetbrains.kotlin:kotlin-android-extensions", version.ref = "kotlin" }
-kotlin-pluginGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 
 playservices-location = "com.google.android.gms:play-services-location:21.0.0"
 playservices-maps = "com.google.android.gms:play-services-maps:18.1.0"
 playservices-maps-utils = "com.google.maps.android:android-maps-utils:2.4.0"
 playservices-places = "com.google.android.libraries.places:places:2.6.0"
+
+secrets-gradlePlugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secrets" }

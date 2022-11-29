@@ -18,8 +18,10 @@ data class CounterListViewState(
     val isEmpty: Boolean = false,
     val isLoading: Boolean = false,
     val message: UiMessage? = null,
-    val trackUserLocation: Boolean = false,
+    val trackUserLocation: Int = 0,
     val mostRecentLocation: Location? = null,
+    val locationPickerAddressQuery: String = "",
+
 ) {
     companion object {
         val Empty = CounterListViewState()
