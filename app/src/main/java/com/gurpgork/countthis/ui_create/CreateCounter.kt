@@ -1,7 +1,6 @@
 package com.gurpgork.countthis.ui_create
 
 import android.Manifest
-import android.widget.Toast
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -37,6 +37,8 @@ import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.gurpgork.countthis.R
+import com.gurpgork.countthis.compose.Layout
+import com.gurpgork.countthis.compose.SwipeDismissSnackbarHost
 import com.gurpgork.countthis.data.entities.CounterEntity
 import com.gurpgork.countthis.theme.CountThisTheme
 
@@ -62,40 +64,35 @@ internal fun CreateCounter(
     navigateUp: () -> Unit,
 ) {
     val context = LocalContext.current
-    val viewState = viewModel.state
+    val viewState by viewModel.state.collectAsState()
 
     // TODO should effect be created inside OptionOne?
     LaunchedEffect(key1 = context) {
         viewModel.validationEvents.collect { event ->
             when (event) {
                 is ValidationEvent.Success -> {
-                    Toast.makeText(
-                        context,
-                        "Create counter successful",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    navigateUp()
+//                    Toast.makeText(
+//                        context,
+//                        "Create counter successful",
+//                        Toast.LENGTH_LONG
+//                    ).show()
+                    navigateUp.invoke()
                 }
             }
         }
     }
 
     CreateCounter(
-        viewState = viewState,//viewModel.state.value,
+        viewState = viewState,
 //        expandedValue = expandedValue,
         navigateUp = navigateUp,
-//        confirmCreateCounter = {
-////            viewModel.onEvent(UIEvent.Submit)
-//            viewModel.addCounter()
-//            navigateUp()
-//        }, //confirmCreateCounter,
-        onEvent = { viewModel.onEvent(it) },
-//        logout = { viewModel.logout() }
+        onEvent = viewModel::onEvent,
+        onMessageShown = viewModel::clearMessage
     )
 }
 
 @OptIn(
-    ExperimentalMaterialApi::class
+    ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class
 )
 @Composable
 internal fun CreateCounter(
@@ -103,46 +100,21 @@ internal fun CreateCounter(
 //    expandedValue: ModalBottomSheetValue,
     navigateUp: () -> Unit,
 //    confirmCreateCounter: () -> Unit,
-    onEvent: (event: CounterFormEvent) -> Unit,
+    onEvent: (CounterFormEvent) -> Unit,
+    onMessageShown: (id: Long) -> Unit,
 ) {
 
-    OptionOne(
-        viewState = viewState,
-//        expandedValue = expandedValue,
-        navigateUp = navigateUp,
-//        confirmSubmitCounter = confirmCreateCounter
-        counterFormEvent = onEvent,
+    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    )
-}
+    viewState.message?.let { message ->
+        LaunchedEffect(message) {
+            scaffoldState.snackbarHostState.showSnackbar(message.message)
+            // Notify the view model that the message has been dismissed
+            onMessageShown(message.id)
+        }
+    }
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalMaterialApi::class
-)
-@Composable
-internal fun OptionOne(
-    viewState: CreateCounterViewState,
-//    expandedValue: ModalBottomSheetValue,
-    navigateUp: () -> Unit,
-    counterFormEvent: (CounterFormEvent) -> Unit,
-) {
-//    val scaffoldState = rememberScaffoldState()
-    val keyBoardController = LocalSoftwareKeyboardController.current
-
-    val permissions = listOf(
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-    )
-
-//    viewState.message?.let { message ->
-//        LaunchedEffect(message) {
-//            scaffoldState.snackbarHostState.showSnackbar(message.message)
-//            // Notify the view model that the message has been dismissed
-//            onMessageShown(message.id)
-//        }
-//    }
 
 
     Scaffold(
@@ -168,87 +140,126 @@ internal fun OptionOne(
                 }
             }
 
+        },
+        snackbarHost = {
+            SwipeDismissSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .padding(horizontal = Layout.bodyMargin)
+                    .fillMaxWidth(),
+            )
+
         }
     ) { contentPadding ->
-        Surface(
-            tonalElevation = 2.dp,
-            modifier = Modifier.fillMaxSize(),
+        OptionOne(
+            viewState = viewState.form,
+//        expandedValue = expandedValue,
+            navigateUp = navigateUp,
+//        confirmSubmitCounter = confirmCreateCounter
+            counterFormEvent = onEvent,
+            paddingValues = contentPadding,
+        )
+    }
+
+
+}
+
+@OptIn(
+    ExperimentalComposeUiApi::class,
+)
+@Composable
+internal fun OptionOne(
+    viewState: CounterFormViewState,
+//    expandedValue: ModalBottomSheetValue,
+    navigateUp: () -> Unit,
+    counterFormEvent: (CounterFormEvent) -> Unit,
+    paddingValues: PaddingValues,
+) {
+    val keyBoardController = LocalSoftwareKeyboardController.current
+
+    val permissions = listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+    )
+    Surface(
+        tonalElevation = 2.dp,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+//                    .navigationBarsWithImePadding() // TODO migrate to non deprecated version of this
         ) {
-            Column(
-                Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(contentPadding)
+            // First, get a reference to two focus requesters
+            val (first, second) = FocusRequester.createRefs() // using this to "skip" track location from focusing
+
+            CounterInputField(
+                text = viewState.name,
+                onTextChanged = {
+                    counterFormEvent(CounterFormEvent.NameChanged(it))
+                },
+                placeholder = stringResource(R.string.create_counter_name),
+                label = stringResource(R.string.create_counter_name),
+                isError = viewState.hasNameError,
+                modifier = Modifier.focusOrder(first) {
+                    next = second
+                    down = second
+                })
+
+
+            SwitchWithLocationPermission(
+                permissions,
+                viewState,
+                rationaleMessage = stringResource(R.string.location_permission_rationale_message),
+                deniedMessage = stringResource(R.string.location_permission_denied_message)
+            )
+
+            AppNumberField(
+                text = viewState.startCount.toString(),
+                label = stringResource(R.string.create_counter_start_count),
+                placeholder = CounterEntity.EMPTY_COUNTER.count.toString(),
+                modifier = Modifier.focusOrder(second),
+                onChange = { raw ->
+                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.count
+                    counterFormEvent(CounterFormEvent.CountChanged(parsed))
+                })
+            AppNumberField(
+                text = viewState.goal.toString(),
+                label = stringResource(R.string.create_counter_goal),
+                placeholder = CounterEntity.EMPTY_COUNTER.goal.toString(),
+                onChange = { raw ->
+                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.goal
+                    counterFormEvent(CounterFormEvent.GoalChanged(parsed))
+                })
+            AppNumberField(
+                text = viewState.incrementBy.toString(),
+                label = stringResource(R.string.create_counter_increment),
+                placeholder = CounterEntity.EMPTY_COUNTER.increment.toString(),
+                imeAction = ImeAction.Done,
+                keyBoardActions = KeyboardActions(onDone = { keyBoardController?.hide() }),
+                onChange = { raw ->
+                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.increment
+                    counterFormEvent(CounterFormEvent.IncrementChanged(parsed))
+                })
+            TextButton(
+                // TODO should empty counters be allowed?
+                enabled = viewState.name.isNotEmpty(),
+                onClick = { counterFormEvent(CounterFormEvent.Submit) },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.secondary,
+                ),
+                modifier = Modifier.align(CenterHorizontally)
             ) {
-                // First, get a reference to two focus requesters
-                val (first, second) = FocusRequester.createRefs() // using this to "skip" track location from focusing
-
-                CounterInputField(
-                    text = viewState.name,
-                    onTextChanged = {
-                        counterFormEvent(CounterFormEvent.NameChanged(it))
-                    },
-                    placeholder = stringResource(R.string.create_counter_name),
-                    label = stringResource(R.string.create_counter_name),
-                    isError = viewState.hasNameError,
-                    modifier = Modifier.focusOrder(first) {
-                        next = second
-                        down = second
-                    })
-
-
-                SwitchWithLocationPermission(
-                    permissions,
-                    viewState,
-                    rationaleMessage = stringResource(R.string.location_permission_rationale_message),
-                    deniedMessage = stringResource(R.string.location_permission_denied_message)
+                Text(
+                    text = stringResource(R.string.create_counter_confirm_create),
+                    style = TextStyle(fontSize = 20.sp)
                 )
-
-                AppNumberField(
-                    text = viewState.startCount.toString(),
-                    label = stringResource(R.string.create_counter_start_count),
-                    placeholder = CounterEntity.EMPTY_COUNTER.count.toString(),
-                    modifier = Modifier.focusOrder(second),
-                    onChange = { raw ->
-                        val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.count
-                        counterFormEvent(CounterFormEvent.CountChanged(parsed))
-                    })
-                AppNumberField(
-                    text = viewState.goal.toString(),
-                    label = stringResource(R.string.create_counter_goal),
-                    placeholder = CounterEntity.EMPTY_COUNTER.goal.toString(),
-                    onChange = { raw ->
-                        val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.goal
-                        counterFormEvent(CounterFormEvent.GoalChanged(parsed))
-                    })
-                AppNumberField(
-                    text = viewState.incrementBy.toString(),
-                    label = stringResource(R.string.create_counter_increment),
-                    placeholder = CounterEntity.EMPTY_COUNTER.increment.toString(),
-                    imeAction = ImeAction.Done,
-                    keyBoardActions = KeyboardActions(onDone = { keyBoardController?.hide() }),
-                    onChange = { raw ->
-                        val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.increment
-                        counterFormEvent(CounterFormEvent.IncrementChanged(parsed))
-                    })
-                TextButton(
-                    // TODO should empty counters be allowed?
-                    enabled = viewState.name.isNotEmpty(),
-                    onClick = { counterFormEvent(CounterFormEvent.Submit) },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.secondary,
-                    ),
-                    modifier = Modifier.align(CenterHorizontally)
-                ) {
-                    Text(
-                        text = stringResource(R.string.create_counter_confirm_create),
-                        style = TextStyle(fontSize = 20.sp)
-                    )
-                }
             }
-
         }
 
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -353,7 +364,7 @@ private fun CreateCounterAppBar(
 @OptIn(ExperimentalPermissionsApi::class)
 private fun SwitchWithLocationPermission(
     permissions: List<String>,
-    viewState: CreateCounterViewState,
+    viewState: CounterFormViewState,
     deniedMessage: String,
     rationaleMessage: String,
 ) {
@@ -404,7 +415,7 @@ private fun HandleRequests(
 
 @Composable
 private fun LocationPermissionSwitchContent(
-    viewState: CreateCounterViewState,
+    viewState: CounterFormViewState,
     permissionGranted: Boolean,
     switchClickCallback: () -> Unit,
     userDeniedPermission: String
@@ -462,7 +473,7 @@ private fun LocationPermissionSwitchContent(
 @ExperimentalPermissionsApi
 @Composable
 private fun LocationPermissionDeniedContent(
-    viewState: CreateCounterViewState,
+    viewState: CounterFormViewState,
     deniedMessage: String,
     rationaleMessage: String,
     shouldShowRationale: Boolean,

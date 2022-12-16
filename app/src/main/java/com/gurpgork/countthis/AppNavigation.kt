@@ -158,7 +158,7 @@ private fun NavGraphBuilder.addEditCounter(
         )
     ) {
         EditCounter(
-            navigateUp = navController::navigateUp,
+            navigateUp = navController::navigateUp, // causes back button to go back to edit counter { navController.navigate(Screen.CounterList.route)}
         )
     }
 }

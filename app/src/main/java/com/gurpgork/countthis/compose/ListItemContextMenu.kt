@@ -28,15 +28,15 @@ fun ListContextMenu(
             //TODO this offset it not working as intended, scaling needed?
 //            offset = DpOffset(offset.x.dp, (-10).dp),
             expanded = true,//showMenu,
-            onDismissRequest = { onDismiss() }
+            onDismissRequest = onDismiss,//{ onDismiss() }
         ) {
             val array: List<String> = stringArrayResource(id = R.array.context_menu_list_options).asList()
 
             for(option in contextMenuOptions){
                 DropdownMenuItem(
                     onClick = {
-                        onDismiss()
-                        onOptionSelected(option)
+                        onOptionSelected.invoke(option)
+                        onDismiss.invoke()
                     },
                     text = {
                         Text(

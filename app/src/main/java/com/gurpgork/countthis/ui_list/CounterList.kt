@@ -1,5 +1,6 @@
 package com.gurpgork.countthis.ui_list
 
+//import com.google.accompanist.insets.ui.Scaffold
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -18,14 +19,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material3.*
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +54,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
-import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
@@ -152,14 +153,15 @@ internal fun CounterList(
     onMessageShown: (id: Long) -> Unit,
     pickerLocation: LatLng
 ) {
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
+//    val scaffoldState = rememberScaffoldState()
 //    val scaffoldState = rememberBottomSheetScaffoldState()
 
     var searchQuery by remember { mutableStateOf(TextFieldValue(viewState.locationPickerAddressQuery)) }
 
     viewState.message?.let { message ->
         LaunchedEffect(message) {
-            scaffoldState.snackbarHostState.showSnackbar(message.message)
+            snackbarHostState.showSnackbar(message.message)
             // Notify the view model that the message has been dismissed
             onMessageShown(message.id)
         }
@@ -177,7 +179,7 @@ internal fun CounterList(
     Scaffold(
 //        scaffoldState = scaffoldState,
         //sheetShape = BottomSheetShape,
-        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
             CounterListAppBar(modifier = Modifier.fillMaxWidth())
         },
@@ -192,7 +194,7 @@ internal fun CounterList(
                 onClick = createNewCounter,
             )
         },
-        snackbarHost = { snackbarHostState ->
+        snackbarHost = {
             SwipeDismissSnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier
@@ -283,7 +285,7 @@ fun ListError() {
 
 const val CounterListTestTag = "CounterListTestTag"
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun SwipeToDismissCounterRow(
     mostRecentLocation: Location?,
@@ -398,17 +400,21 @@ fun SwipeToDismissCounterRow(
             if (showContextMenu) {
                 LongPressContextMenu(
                     availableContextMenuOptions = availableContextMenuOptions,
-                    onContextMenuOptionSelected = { option -> menuOptionSelected = option },
                     offset = contextMenuOffset,
+                    onContextMenuOptionSelected = { option -> menuOptionSelected = option },
                     onDismiss = { showContextMenu = false }
                 )
             }
 
             when (menuOptionSelected) {
-                ListItemContextMenuOption.NONE -> Unit // don't do nothing
-                ListItemContextMenuOption.EDIT ->
+                ListItemContextMenuOption.NONE -> Unit // don't do anything
+                ListItemContextMenuOption.EDIT -> {
                     editCounter(counter.counter.id, counter.counter.track_location ?: false)
-                ListItemContextMenuOption.MOVE -> TODO()
+                    menuOptionSelected = ListItemContextMenuOption.NONE
+                }
+                ListItemContextMenuOption.MOVE -> {
+                    TODO()
+                }
                 ListItemContextMenuOption.ADD_TIME ->
                     OpenAddTimeDialog(
                         counterName = counter.counter.name,
@@ -469,8 +475,8 @@ private fun LongPressContextMenu(
         contextMenuOptions = availableContextMenuOptions,
 //        showMenu = true,//showMenu,
         offset = offset,
-        onDismiss = { onDismiss() },
-        onOptionSelected = { onContextMenuOptionSelected(it) },
+        onDismiss = onDismiss,
+        onOptionSelected = onContextMenuOptionSelected,
     )
 }
 
@@ -650,6 +656,7 @@ fun AddLocationDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Title(
     addressQuery: String,

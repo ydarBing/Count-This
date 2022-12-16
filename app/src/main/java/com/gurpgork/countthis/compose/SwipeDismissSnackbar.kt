@@ -1,6 +1,10 @@
 package com.gurpgork.countthis.compose
 
 import androidx.compose.material.*
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -8,7 +12,7 @@ import androidx.compose.ui.Modifier
  * Wrapper around [Snackbar] to make it swipe-dismissable,
  * using [SwipeToDismiss].
  */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun SwipeDismissSnackbar(
     data: SnackbarData,
