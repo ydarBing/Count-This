@@ -3,7 +3,7 @@ package com.gurpgork.countthis.data.repositories
 import com.gurpgork.countthis.counter.IncrementEntity
 import com.gurpgork.countthis.data.daos.CounterDao
 import com.gurpgork.countthis.data.daos.IncrementDao
-import com.gurpgork.countthis.location.Location
+import com.gurpgork.countthis.location.CTLocation
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -15,11 +15,12 @@ class IncrementRepository @Inject constructor(
     private val counterDao: CounterDao,
     private val incrementDao: IncrementDao
 ) {
-    suspend fun addIncrement(counterId: Long, location: Location?, timestamp: OffsetDateTime, instantTime: Instant, isDecrement: Boolean = false){
+    suspend fun addIncrement(counterId: Long, ctLocation: CTLocation?, timestamp: OffsetDateTime, instantTime: Instant, isDecrement: Boolean = false){
         val counter = counterDao.getCounter(counterId)
 
         if(counter != null)
         {
+            val trackLocation = counter.track_location != null && counter.track_location == true
             val entry = IncrementEntity(
                 counterId = counterId,
                 date = timestamp,
@@ -29,8 +30,10 @@ class IncrementRepository @Inject constructor(
                 zoneOffset = timestamp.offset,
                 zoneId = ZoneId.systemDefault(),
                 increment = if(isDecrement) -counter.increment else counter.increment,
-                //TODO add in location information
-
+                accuracy = if(trackLocation) ctLocation?.accuracy else null,
+                latitude = if(trackLocation) ctLocation?.latitude else null,
+                longitude = if(trackLocation) ctLocation?.longitude else null,
+                altitude = if(trackLocation) ctLocation?.altitude else null,
             )
             // this doesn't add default values
             incrementDao.insertOrUpdate(entry)

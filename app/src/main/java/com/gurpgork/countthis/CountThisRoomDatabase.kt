@@ -7,14 +7,14 @@ import com.gurpgork.countthis.counter.HistoryEntity
 import com.gurpgork.countthis.counter.IncrementEntity
 import com.gurpgork.countthis.data.CountThisDatabase
 import com.gurpgork.countthis.data.entities.CounterEntity
-import com.gurpgork.countthis.location.Location
+import com.gurpgork.countthis.location.CTLocation
 
 @Database(
     entities = [
         CounterEntity::class,
         HistoryEntity::class,
         IncrementEntity::class,
-        Location::class,
+        CTLocation::class,
     ],
     version = 1,
 //    exportSchema = false

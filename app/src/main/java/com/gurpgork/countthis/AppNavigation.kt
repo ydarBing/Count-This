@@ -1,14 +1,24 @@
 package com.gurpgork.countthis
 
-import androidx.compose.animation.*
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.*
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.navigation
-import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.gurpgork.countthis.ui_account.AccountUI
 import com.gurpgork.countthis.ui_counter_details.CounterDetails
 import com.gurpgork.countthis.ui_create.CreateCounter
@@ -74,12 +84,12 @@ private fun NavGraphBuilder.addCounterListTopLevel(
         route = Screen.CounterList.route,
         startDestination = LeafScreen.CounterList.createRoute(Screen.CounterList),
     ) {
-        addCounterList(navController, Screen.CounterList)
+        addCounterList(navController, Screen.CounterList, openSettings)
         addAccount(Screen.CounterList, openSettings)
         addCreateCounter(navController, Screen.CounterList)
         addEditCounter(navController, Screen.CounterList)
         addCounterDetails(navController, Screen.CounterList)
-//        addSettings(Screen.Discover, openSettings)
+//        addSettings(Screen.CounterList, openSettings)
     }
 }
 
@@ -87,6 +97,7 @@ private fun NavGraphBuilder.addCounterListTopLevel(
 private fun NavGraphBuilder.addCounterList(
     navController: NavController,
     root: Screen,
+    openSettings: () -> Unit
 ) {
     composable(
         route = LeafScreen.CounterList.createRoute(root),
@@ -102,6 +113,7 @@ private fun NavGraphBuilder.addCounterList(
             openUser = {
                 navController.navigate(LeafScreen.Account.createRoute(root))
             },
+            openSettings = openSettings
         )
     }
 }
@@ -120,15 +132,15 @@ private fun NavGraphBuilder.addCounterDetails(
     ) {
         CounterDetails(
             navigateUp = navController::navigateUp,
+            openEditCounter = {counterId , wasTrackingLocation ->
+                navController.navigate(LeafScreen.EditCounter.createRoute(root, counterId, wasTrackingLocation))
+            },
             openCounterDetails = { counterId ->
                 navController.navigate(LeafScreen.CounterDetails.createRoute(root, counterId))
             },
         )
     }
 }
-@OptIn(
-    ExperimentalMaterialNavigationApi::class,
-    ExperimentalMaterialApi::class)
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addEditCounter(
     navController: NavController,
@@ -162,7 +174,6 @@ private fun NavGraphBuilder.addEditCounter(
         )
     }
 }
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialNavigationApi::class)
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addCreateCounter(
     navController: NavController,

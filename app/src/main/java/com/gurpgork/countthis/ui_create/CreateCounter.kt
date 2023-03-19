@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberScaffoldState
@@ -39,10 +38,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.gurpgork.countthis.R
 import com.gurpgork.countthis.compose.Layout
 import com.gurpgork.countthis.compose.SwipeDismissSnackbarHost
-import com.gurpgork.countthis.data.entities.CounterEntity
 import com.gurpgork.countthis.theme.CountThisTheme
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreateCounter(
 //    expandedValue: ModalBottomSheetValue,
@@ -56,7 +53,6 @@ fun CreateCounter(
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun CreateCounter(
     viewModel: CreateCounterViewModel,
@@ -92,7 +88,7 @@ internal fun CreateCounter(
 }
 
 @OptIn(
-    ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class
 )
 @Composable
 internal fun CreateCounter(
@@ -195,12 +191,12 @@ internal fun OptionOne(
             val (first, second) = FocusRequester.createRefs() // using this to "skip" track location from focusing
 
             CounterInputField(
+                label = stringResource(R.string.create_counter_name),
+                placeholder = stringResource(R.string.create_counter_name),
                 text = viewState.name,
                 onTextChanged = {
                     counterFormEvent(CounterFormEvent.NameChanged(it))
                 },
-                placeholder = stringResource(R.string.create_counter_name),
-                label = stringResource(R.string.create_counter_name),
                 isError = viewState.hasNameError,
                 modifier = Modifier.focusOrder(first) {
                     next = second
@@ -216,31 +212,30 @@ internal fun OptionOne(
             )
 
             AppNumberField(
-                text = viewState.startCount.toString(),
                 label = stringResource(R.string.create_counter_start_count),
-                placeholder = CounterEntity.EMPTY_COUNTER.count.toString(),
+                text = viewState.startCount,
+                placeholder = viewState.startCountPlaceholder,
                 modifier = Modifier.focusOrder(second),
                 onChange = { raw ->
-                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.count
-                    counterFormEvent(CounterFormEvent.CountChanged(parsed))
+                    counterFormEvent(CounterFormEvent.CountChanged(raw))
                 })
             AppNumberField(
-                text = viewState.goal.toString(),
                 label = stringResource(R.string.create_counter_goal),
-                placeholder = CounterEntity.EMPTY_COUNTER.goal.toString(),
+                text = viewState.goal,
+                placeholder = viewState.goalPlaceholder,
                 onChange = { raw ->
-                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.goal
-                    counterFormEvent(CounterFormEvent.GoalChanged(parsed))
+//                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.goal
+                    counterFormEvent(CounterFormEvent.GoalChanged(raw))
                 })
             AppNumberField(
-                text = viewState.incrementBy.toString(),
                 label = stringResource(R.string.create_counter_increment),
-                placeholder = CounterEntity.EMPTY_COUNTER.increment.toString(),
+                text = viewState.incrementBy,
+                placeholder = viewState.incrementByPlaceholder,
                 imeAction = ImeAction.Done,
                 keyBoardActions = KeyboardActions(onDone = { keyBoardController?.hide() }),
                 onChange = { raw ->
-                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.increment
-                    counterFormEvent(CounterFormEvent.IncrementChanged(parsed))
+//                    val parsed = raw.toIntOrNull() ?: CounterEntity.EMPTY_COUNTER.increment
+                    counterFormEvent(CounterFormEvent.IncrementChanged(raw))
                 })
             TextButton(
                 // TODO should empty counters be allowed?
@@ -512,7 +507,6 @@ private fun LocationPermissionDeniedContent(
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Preview
 @Composable
 fun AddCounterPreview() {

@@ -10,21 +10,22 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+//import androidx.compose.material.MaterialTheme
+//import androidx.compose.material.Surface
+//import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gurpgork.countthis.R
-import com.gurpgork.countthis.theme.foregroundColor
 
 @Composable
 fun AccountUI(
@@ -68,7 +69,7 @@ internal fun AccountUi(
 ) {
     Surface(
         shape = MaterialTheme.shapes.medium,
-        elevation = 2.dp,
+        tonalElevation = 2.dp,
         // FIXME: Force the dialog to wrap the content. Need to work out why
         // this doesn't work automatically
         modifier = Modifier.heightIn(min = 200.dp),
@@ -105,14 +106,14 @@ private fun AppAction(
         Image(
             imageVector = icon,
             contentDescription = contentDescription,
-            colorFilter = ColorFilter.tint(foregroundColor())
+//            colorFilter = ColorFilter.tint(foregroundColor())
         )
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
             text = label,
-            style = MaterialTheme.typography.body2
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }

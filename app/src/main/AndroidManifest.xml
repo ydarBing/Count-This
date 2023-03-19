@@ -30,6 +30,10 @@
             </intent-filter>
         </activity>
 
+
+        <activity android:name=".settings.SettingsActivity"
+            android:label="@string/settings_title" />
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

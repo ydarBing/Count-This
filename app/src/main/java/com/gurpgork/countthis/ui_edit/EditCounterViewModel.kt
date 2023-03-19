@@ -1,5 +1,6 @@
 package com.gurpgork.countthis.ui_edit
 
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +15,12 @@ import com.gurpgork.countthis.ui_create.ValidationEvent
 import com.gurpgork.countthis.ui_create.Validator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -55,10 +61,15 @@ class EditCounterViewModel @Inject constructor(
             editingCounter = dao.getCounter(counterId)!!
             formStuff.value = formStuff.value.copy(
                 name = editingCounter.name,
-                incrementBy = editingCounter.increment,
-                goal = editingCounter.goal,
-                startCount = editingCounter.count,
-                trackLocation = editingCounter.track_location == true
+                incrementBy = editingCounter.increment.toString(),
+                goal = editingCounter.goal.toString(),
+                startCount = editingCounter.count.toString(),
+                trackLocation = editingCounter.track_location == true,
+
+                namePlaceholder = editingCounter.name,
+                incrementByPlaceholder = editingCounter.increment.toString(),
+                goalPlaceholder = editingCounter.goal.toString(),
+                startCountPlaceholder = editingCounter.count.toString(),
             )
         }
     }
@@ -67,15 +78,18 @@ class EditCounterViewModel @Inject constructor(
         when (event) {
             is CounterFormEvent.NameChanged -> {
                 formStuff.value = formStuff.value.copy(name = event.name)
-            }//{ bad does not work...formStuff.value.name = event.name }
+            }
             is CounterFormEvent.CountChanged -> {
-                formStuff.value = formStuff.value.copy(startCount = event.count)
+                if(event.count.isEmpty() || event.count.isDigitsOnly())
+                    formStuff.value = formStuff.value.copy(startCount = event.count)
             }
             is CounterFormEvent.GoalChanged -> {
-                formStuff.value = formStuff.value.copy(goal = event.goal)
+                if(event.goal.isEmpty() || event.goal.isDigitsOnly())
+                    formStuff.value = formStuff.value.copy(goal = event.goal)
             }
             is CounterFormEvent.IncrementChanged -> {
-                formStuff.value = formStuff.value.copy(incrementBy = event.increment)
+                if(event.increment.isEmpty() || event.increment.isDigitsOnly())
+                    formStuff.value = formStuff.value.copy(incrementBy = event.increment)
             }
             is CounterFormEvent.TrackLocationChanged -> {
                 formStuff.value = formStuff.value.copy(trackLocation = event.isTracking)
@@ -100,10 +114,10 @@ class EditCounterViewModel @Inject constructor(
 
             editingCounter = editingCounter.copy(
                 name = formStuff.value.name,
-                count = formStuff.value.startCount,
-                goal = formStuff.value.goal,
-                increment = formStuff.value.incrementBy,
                 track_location = formStuff.value.trackLocation,
+                count = if(formStuff.value.startCount.isEmpty()) editingCounter.count else formStuff.value.startCount.toInt(),
+                goal = if(formStuff.value.startCount.isEmpty()) editingCounter.goal else formStuff.value.goal.toInt(),
+                increment = if(formStuff.value.startCount.isEmpty()) editingCounter.increment else formStuff.value.incrementBy.toInt(),
             )
 
             updateCounter.executeSync(UpdateCounter.Params(editingCounter))

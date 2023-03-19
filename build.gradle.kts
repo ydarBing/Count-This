@@ -31,7 +31,6 @@ plugins {
     alias(libs.plugins.gms.googleServices) apply false
     alias(libs.plugins.firebase.crashlytics) apply false
     alias(libs.plugins.spotless)
-    alias(libs.plugins.versionCatalogUpdate)
 }
 
 //allprojects {
@@ -73,8 +72,7 @@ subprojects {
             freeCompilerArgs += listOf(
                 "-opt-in=kotlin.RequiresOptIn",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-opt-in=kotlinx.coroutines.FlowPreview",
-                "-opt-in=kotlin.Experimental"
+                "-opt-in=kotlinx.coroutines.FlowPreview"
             )
 
 //            if (project.hasProperty("countthis.enableComposeCompilerReports")) {

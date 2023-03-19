@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -47,12 +48,12 @@ internal fun StatsTab(
             .verticalScroll(scrollState),
 //        verticalArrangement = Arrangement.Top
     ) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Name(counterInfo)
-        }
+//        Row(
+//            horizontalArrangement = Arrangement.Center,
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//            Name(counterInfo)
+//        }
         CounterInfoFields(counterInfo, increments.lastOrNull())
         // counter has locations (increment with longitude value)
         if (hasLocations) {
@@ -112,14 +113,14 @@ private fun CounterProperty(label: String, value: String) {
     ) {
         Text(
             text = label,
-//            modifier = Modifier.baselineHeight(18.dp), // causes problems
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
         )
 
         Text(
             text = value,
-//            modifier = Modifier.baselineHeight(18.dp), // causes problems
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
+//            fontWeight = FontWeight.Bold
         )
     }
 }

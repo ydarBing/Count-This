@@ -30,7 +30,12 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.gurpgork.countthis.R
 import com.gurpgork.countthis.compose.toLocation
 import com.gurpgork.countthis.compose.toText
@@ -98,6 +103,8 @@ class ForegroundOnlyLocationService : LifecycleService() {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
+            //TODO
+//        LocationRequest.Builder(locationRequest.)
         locationRequest = LocationRequest.create().apply {
             // Sets the desired interval for active location updates. This interval is inexact. You
             // may not receive updates at all if no location sources are available, or you may

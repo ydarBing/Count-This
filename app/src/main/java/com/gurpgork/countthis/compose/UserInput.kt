@@ -17,7 +17,6 @@
 package com.gurpgork.countthis.conversation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -215,7 +214,6 @@ private fun SelectorExpanded(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun FunctionalityNotAvailablePanel() {
     AnimatedVisibility(

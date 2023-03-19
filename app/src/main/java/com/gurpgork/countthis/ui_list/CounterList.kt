@@ -1,6 +1,5 @@
 package com.gurpgork.countthis.ui_list
 
-//import com.google.accompanist.insets.ui.Scaffold
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -13,21 +12,12 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,18 +28,17 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -72,7 +61,7 @@ import com.gurpgork.countthis.compose.dialog.AddTimeDialog
 import com.gurpgork.countthis.compose.dialog.AddTimeInformation
 import com.gurpgork.countthis.data.ListItemContextMenuOption
 import com.gurpgork.countthis.data.resultentities.CounterWithIncrementInfo
-import com.gurpgork.countthis.location.Location
+import com.gurpgork.countthis.location.CTLocation
 import com.gurpgork.countthis.util.SortOption
 import java.time.Instant
 
@@ -82,6 +71,7 @@ fun CounterList(
     editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
+    openSettings: () -> Unit
 ) {
     CounterList(
         viewModel = hiltViewModel(),
@@ -89,10 +79,10 @@ fun CounterList(
         editCounter = editCounter,
         openCounter = openCounter,
         openUser = openUser,
+        openSettings = openSettings
     )
 }
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun CounterList(
     viewModel: CounterListViewModel,
@@ -100,18 +90,20 @@ internal fun CounterList(
     editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
+    openSettings: () -> Unit
 ) {
+    val context = LocalContext.current
     //TODO what's better, collecting with or without lifecycle
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 //    val viewState by viewModel.state.collectAsState()
-
     val pagingItems = viewModel.pagedList.collectAsLazyPagingItems()
-    val pickerLocationState by viewModel.pickerLocation.collectAsState()
+//    val pickerLocationState by viewModel.pickerLocation.collectAsState()
 
     CounterList(
         viewState = viewState,
         list = pagingItems,
         openUser = openUser,
+        openSettings = openSettings,
         openCounter = openCounter,
         editCounter = editCounter,
         onMessageShown = { viewModel.clearMessage(it) },
@@ -126,10 +118,15 @@ internal fun CounterList(
         onIncrementCounter = { id, location -> viewModel.incrementCounter(id, location) },
         onDecrementCounter = { id, location -> viewModel.decrementCounter(id, location) },
         onSortSelected = { viewModel.setSort(it) },
-        pickerLocation = LatLng(
-            pickerLocationState.latitude,
-            pickerLocationState.longitude
-        )//LatLng(viewModel.pickerLocation.value.latitude, viewModel.pickerLocation.value.longitude)
+        pickerInitialLocation = viewState.mostRecentLocation ?: viewModel.getDefaultLocation().toLocation()!!,
+        pickerLocationAddress = viewState.locationPickerAddressQuery,
+//        pickerLocation = LatLng(
+//            pickerLocationState.latitude,
+//            pickerLocationState.longitude
+//        ),
+        locationQueryChanged = { newAddr -> viewModel.onTextChanged(context, newAddr) },
+        onLocationPickerMoved = { latLng -> viewModel.updatePickerLocation(context, latLng) },
+        useButtonIncrements = viewModel.useButtonIncrements
     )
 }
 
@@ -146,19 +143,36 @@ internal fun CounterList(
     editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     onContextMenuOptionSelected: (counterId: Long, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
-    onIncrementCounter: (Long, Location?) -> Unit,
-    onDecrementCounter: (Long, Location?) -> Unit,
+    onIncrementCounter: (Long, CTLocation?) -> Unit,
+    onDecrementCounter: (Long, CTLocation?) -> Unit,
     onSortSelected: (SortOption) -> Unit,
     openUser: () -> Unit,
+    openSettings: () -> Unit,
+    useButtonIncrements: Boolean,
+    pickerInitialLocation: CTLocation,
     onMessageShown: (id: Long) -> Unit,
-    pickerLocation: LatLng
+    pickerLocationAddress: String,
+//    pickerLocation: LatLng,
+    locationQueryChanged: (String) -> Unit,
+    onLocationPickerMoved: (LatLng) -> Unit,
 ) {
+    var menuOptionSelected by remember { mutableStateOf(ListItemContextMenuOption.NONE) }
+    var counterContextMenuId by remember { mutableStateOf(0L) }
+    var counterContextMenuName by remember { mutableStateOf("") }
+    var counterContextMenuTrackingLocation by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
-//    val scaffoldState = rememberScaffoldState()
-//    val scaffoldState = rememberBottomSheetScaffoldState()
 
-    var searchQuery by remember { mutableStateOf(TextFieldValue(viewState.locationPickerAddressQuery)) }
-
+    val dismissSnackbarState = rememberDismissState(
+        confirmValueChange = { value ->
+            if (value != DismissValue.Default) {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                true
+            } else {
+                false
+            }
+        },
+    )
     viewState.message?.let { message ->
         LaunchedEffect(message) {
             snackbarHostState.showSnackbar(message.message)
@@ -177,11 +191,13 @@ internal fun CounterList(
     val listState = rememberLazyListState()
 
     Scaffold(
-//        scaffoldState = scaffoldState,
         //sheetShape = BottomSheetShape,
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
-            CounterListAppBar(modifier = Modifier.fillMaxWidth())
+            CounterListAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                onClickSettingsIcon = openSettings
+            )
         },
         floatingActionButton = {
             val extended by remember {
@@ -195,6 +211,16 @@ internal fun CounterList(
             )
         },
         snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                SwipeToDismiss(
+                    state = dismissSnackbarState,
+                    background = {},
+                    dismissContent = { Snackbar(snackbarData = data) },
+                    modifier = Modifier
+                        .padding(horizontal = Layout.bodyMargin)
+                        .fillMaxWidth()
+                )
+            }
             SwipeDismissSnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier
@@ -217,19 +243,23 @@ internal fun CounterList(
             ) {
                 items(items = list, key = { it.counter.id }) { counter ->
                     if (counter != null) {
-                        SwipeToDismissCounterRow(
-                            mostRecentLocation = viewState.mostRecentLocation,
-                            availableContextMenuOptions = viewState.availableContextMenuOptions,
+                        CounterRow(
                             modifier = Modifier.animateItemPlacement(),
-                            onCounterClick = openCounter,
-                            editCounter = editCounter,
-                            onIncrementCounter = onIncrementCounter,
-                            onDecrementCounter = onDecrementCounter,
-                            onContextMenuOptionSelected = onContextMenuOptionSelected,
+//                            mostRecentCTLocation = viewState.mostRecentLocation,
+                            useButtonIncrements = useButtonIncrements,
+                            onCounterClick = { openCounter(counter.counter.id) },
+                            onIncrementCounter = { onIncrementCounter(counter.counter.id, viewState.mostRecentLocation) },
+                            onDecrementCounter = { onDecrementCounter(counter.counter.id, viewState.mostRecentLocation) } ,
                             counter = counter,
                             locationPermissionsState = locationPermissionsState,
-                            pickerLocation = pickerLocation,
-//                            onShowContextMenu = { }
+                            contextMenuOptions = viewState.availableContextMenuOptions,
+                            onContextMenuOptionSelected = { option ->
+                                menuOptionSelected = option
+                                counterContextMenuId = counter.counter.id
+                                counterContextMenuName = counter.counter.name
+                                counterContextMenuTrackingLocation =
+                                    counter.counter.track_location ?: false
+                            }
                         )
                     }
                 }
@@ -237,6 +267,76 @@ internal fun CounterList(
         }
     }
 
+    // TODO Context menu probably has to move back inside the counter row to properly attach to parent
+    // TODO or maybe we dont do that, we use the top bar like gmail... this is probably better choice
+//    if (showContextMenu) {
+//        LongPressContextMenu(
+//            availableContextMenuOptions = viewState.availableContextMenuOptions,
+//            offset = contextMenuOffset,
+//            onContextMenuOptionSelected = { option -> menuOptionSelected = option },
+//            onDismiss = { showContextMenu = false }
+//        )
+//    }
+
+    when (menuOptionSelected) {
+        ListItemContextMenuOption.NONE -> Unit // don't do anything
+        ListItemContextMenuOption.EDIT -> {
+            editCounter(counterContextMenuId, counterContextMenuTrackingLocation)
+            menuOptionSelected = ListItemContextMenuOption.NONE
+        }
+
+        ListItemContextMenuOption.MOVE -> {
+            TODO()
+        }
+
+        ListItemContextMenuOption.ADD_TIME ->
+            OpenAddTimeDialog(
+                counterName = counterContextMenuName,
+                trackingLocation = counterContextMenuTrackingLocation,
+                pickerInitialCTLocation = pickerInitialLocation,
+//                pickerCurrentLocation = pickerLocation,
+                pickerLocationAddress = pickerLocationAddress,
+                locationQueryChanged = locationQueryChanged,
+                onLocationChanged = onLocationPickerMoved,
+                onConfirm = { addTimeInfo ->
+                    onContextMenuOptionSelected(
+                        counterContextMenuId,
+                        menuOptionSelected,
+                        addTimeInfo
+                    )
+                    menuOptionSelected = ListItemContextMenuOption.NONE
+                },
+                onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
+            )
+
+        ListItemContextMenuOption.RESET ->
+            OpenResetAlertDialog(
+                counterName = counterContextMenuName,
+                onConfirm = {
+                    onContextMenuOptionSelected(
+                        counterContextMenuId,
+                        menuOptionSelected,
+                        null
+                    )
+                    menuOptionSelected = ListItemContextMenuOption.NONE
+                },
+                onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
+            )
+
+        ListItemContextMenuOption.DELETE ->
+            OpenDeleteAlertDialog(
+                counterName = counterContextMenuName,
+                onConfirm = {
+                    onContextMenuOptionSelected(
+                        counterContextMenuId,
+                        menuOptionSelected,
+                        null
+                    )
+                    menuOptionSelected = ListItemContextMenuOption.NONE
+                },
+                onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
+            )
+    }
 //    list.apply {
 //        when{
 //            loadState.refresh is LoadState.Loading -> {
@@ -285,31 +385,94 @@ fun ListError() {
 
 const val CounterListTestTag = "CounterListTestTag"
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun SwipeToDismissCounterRow(
-    mostRecentLocation: Location?,
-    availableContextMenuOptions: List<ListItemContextMenuOption>,
+fun CounterRow(
+//    mostRecentCTLocation: CTLocation?,
     modifier: Modifier,
-    onCounterClick: (Long) -> Unit,
-    editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
-    onIncrementCounter: (Long, Location?) -> Unit,
-    onDecrementCounter: (Long, Location?) -> Unit,
-    onContextMenuOptionSelected: (counterId: Long, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
+    onCounterClick: () -> Unit, //(Long) -> Unit,
+    onIncrementCounter: () -> Unit,
+    onDecrementCounter: () -> Unit,
+    counter: CounterWithIncrementInfo,
+    useButtonIncrements: Boolean,
+    locationPermissionsState: MultiplePermissionsState,
+    contextMenuOptions: List<ListItemContextMenuOption>,
+    // TODO  create sealed class for these variables...
+    onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
+) {
+    val showContextMenu by remember { mutableStateOf(false) }
+///////////////////////////////////////////////////  TEST AREA  //////////////////////////////////
+    val contextMenuOffset by remember { mutableStateOf(Offset(0F, 0F)) }
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if (useButtonIncrements) {
+        Row(horizontalArrangement = Arrangement.SpaceAround){
+            CounterRowCard(
+                showContextMenu = showContextMenu,
+                contextMenuOptions = contextMenuOptions,
+                contextMenuOffset = contextMenuOffset,
+                onCounterClick = onCounterClick,
+                counter = counter,
+                onContextMenuOptionSelected = onContextMenuOptionSelected)
+
+            IncrementButtons(
+                onIncrementCounter = onIncrementCounter,
+                onDecrementCounter = onDecrementCounter,
+                locationPermissionsState)
+        }
+
+    } else {
+        SwipeToDismissCounterRow(
+            counter = counter,
+            locationPermissionsState = locationPermissionsState,
+//            mostRecentCTLocation = mostRecentCTLocation,
+            onDecrementCounter = onDecrementCounter,
+            onIncrementCounter = onIncrementCounter,
+            modifier = modifier,
+            showContextMenu = showContextMenu,
+            contextMenuOffset = contextMenuOffset,
+            onCounterClick = onCounterClick,
+            contextMenuOptions = contextMenuOptions,
+            onContextMenuOptionSelected = onContextMenuOptionSelected
+        )
+    }
+
+
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun IncrementButtons(
+    onIncrementCounter: () -> Unit,
+    onDecrementCounter: () -> Unit,
+    locationPermissionsState: MultiplePermissionsState
+) {
+    // TODO if trying to click without permissions do stuff
+    Button(onClick = onDecrementCounter) {
+        Text(text = "-", fontWeight = FontWeight.Bold)
+    }
+    Button(onClick = onIncrementCounter) {
+        Text(text = "+", fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+private fun SwipeToDismissCounterRow(
     counter: CounterWithIncrementInfo,
     locationPermissionsState: MultiplePermissionsState,
-    pickerLocation: LatLng,
-//    onShowContextMenu: (Offset) -> Unit // TODO should this be propagated up?
+    onDecrementCounter: () -> Unit,
+//    mostRecentCTLocation: CTLocation?,
+    onIncrementCounter: () -> Unit,
+    modifier: Modifier,
+    showContextMenu: Boolean,
+    contextMenuOffset: Offset,
+    onCounterClick: () -> Unit, //(Long) -> Unit,
+    contextMenuOptions: List<ListItemContextMenuOption>,
+    onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
 ) {
-    //val dismissState = rememberDismissState(initialValue = DismissValue.Default)
-    var showContextMenu by remember { mutableStateOf(false) }
-//    var showDialog by remember { mutableStateOf(false) }
-    var menuOptionSelected by remember { mutableStateOf(ListItemContextMenuOption.NONE) }
-
-    var contextMenuOffset by remember { mutableStateOf(Offset(0F, 0F)) }
-
     val dismissState = rememberDismissState(
-        confirmStateChange = {
+        confirmValueChange = {
             if (counter.counter.track_location == true &&
                 !locationPermissionsState.permissions.first().status.isGranted &&
                 !locationPermissionsState.permissions.last().status.isGranted
@@ -320,11 +483,15 @@ fun SwipeToDismissCounterRow(
             }
             when (it) {
                 DismissValue.DismissedToStart -> {
-                    onDecrementCounter(counter.counter.id, mostRecentLocation)
+                    onDecrementCounter()
+//                    onDecrementCounter(counter.counter.id, mostRecentCTLocation)
                 }
+
                 DismissValue.DismissedToEnd -> {
-                    onIncrementCounter(counter.counter.id, mostRecentLocation)
+                    onIncrementCounter()
+//                    onIncrementCounter(counter.counter.id, mostRecentCTLocation)
                 }
+
                 DismissValue.Default -> {
 
                 }
@@ -333,6 +500,7 @@ fun SwipeToDismissCounterRow(
             false
         }
     )
+
     SwipeToDismiss(
         modifier = modifier,
         state = dismissState,
@@ -374,90 +542,68 @@ fun SwipeToDismissCounterRow(
             {
                 Icon(icon, contentDescription = "Icon", modifier = Modifier.scale(scale))
             }
+        },
+        dismissContent = {
+            CounterRowCard(
+                showContextMenu = showContextMenu,
+                contextMenuOffset = contextMenuOffset,
+                onCounterClick = onCounterClick,
+                counter = counter,
+                dismissState = dismissState,
+                contextMenuOptions = contextMenuOptions,
+                onContextMenuOptionSelected = onContextMenuOptionSelected
+            )
         }
-    ) {
-        Card(
-            backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.primary,
-            //onClick = { onCounterClick(counter.id) },
-            modifier = Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-//                            onShowContextMenu(it)
-                            contextMenuOffset = it
-                            showContextMenu = true
-                        },
-                        onTap = { onCounterClick(counter.counter.id) }
-                    )
-                }
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
-            elevation = animateDpAsState(targetValue = if (dismissState.dismissDirection != null) 4.dp else 1.dp).value
-        ) {
-            CounterRow(counter)
+    )
+}
 
-            if (showContextMenu) {
-                LongPressContextMenu(
-                    availableContextMenuOptions = availableContextMenuOptions,
-                    offset = contextMenuOffset,
-                    onContextMenuOptionSelected = { option -> menuOptionSelected = option },
-                    onDismiss = { showContextMenu = false }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CounterRowCard(
+    showContextMenu: Boolean,
+    contextMenuOffset: Offset,
+    onCounterClick: () -> Unit, //(Long) -> Unit,
+    counter: CounterWithIncrementInfo,
+    contextMenuOptions: List<ListItemContextMenuOption>,
+    onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit,
+    dismissState: DismissState? = null,
+) {
+    var showContextMenu1 = showContextMenu
+    var contextMenuOffset1 = contextMenuOffset
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+//                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
+//                    else
+//                        MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { offset ->
+                        showContextMenu1 = true
+                        contextMenuOffset1 = offset
+                    },
+                    onTap = { onCounterClick.invoke() }//{ onCounterClick(counter.counter.id) }
                 )
             }
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = animateDpAsState(
+                targetValue = if (dismissState?.dismissDirection != null) 4.dp else 1.dp
+            ).value
+        )
+    ) {
+        CounterRow(counter)
 
-            when (menuOptionSelected) {
-                ListItemContextMenuOption.NONE -> Unit // don't do anything
-                ListItemContextMenuOption.EDIT -> {
-                    editCounter(counter.counter.id, counter.counter.track_location ?: false)
-                    menuOptionSelected = ListItemContextMenuOption.NONE
-                }
-                ListItemContextMenuOption.MOVE -> {
-                    TODO()
-                }
-                ListItemContextMenuOption.ADD_TIME ->
-                    OpenAddTimeDialog(
-                        counterName = counter.counter.name,
-                        trackingLocation = counter.counter.track_location ?: false,
-                        initialLocation = pickerLocation,
-                        onConfirm = { addTimeInfo ->
-                            onContextMenuOptionSelected(
-                                counter.counter.id,
-                                menuOptionSelected,
-                                addTimeInfo
-                            )
-                            menuOptionSelected = ListItemContextMenuOption.NONE
-                        },
-                        onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
-                    )
-                ListItemContextMenuOption.RESET ->
-                    OpenResetAlertDialog(
-                        counterName = counter.counter.name,
-                        onConfirm = {
-                            onContextMenuOptionSelected(
-                                counter.counter.id,
-                                menuOptionSelected,
-                                null
-                            )
-                            menuOptionSelected = ListItemContextMenuOption.NONE
-                        },
-                        onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
-                    )
-                ListItemContextMenuOption.DELETE ->
-                    OpenDeleteAlertDialog(
-                        counterName = counter.counter.name,
-                        onConfirm = {
-                            onContextMenuOptionSelected(
-                                counter.counter.id,
-                                menuOptionSelected,
-                                null
-                            )
-                            menuOptionSelected = ListItemContextMenuOption.NONE
-                        },
-                        onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
-                    )
-            }
-        }
+        if (showContextMenu1)
+            LongPressContextMenu(
+                availableContextMenuOptions = contextMenuOptions,
+                offset = contextMenuOffset1,
+                onContextMenuOptionSelected = onContextMenuOptionSelected,
+                onDismiss = { showContextMenu1 = false }
+            )
     }
 }
 
@@ -472,6 +618,7 @@ private fun LongPressContextMenu(
     onDismiss: () -> Unit,
 ) {
     ListContextMenu(
+//        modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart),
         contextMenuOptions = availableContextMenuOptions,
 //        showMenu = true,//showMenu,
         offset = offset,
@@ -515,18 +662,23 @@ private fun OpenDeleteAlertDialog(
 
 @Composable
 private fun OpenAddTimeDialog(
-    counterName: String,
+    counterName: String?,
     trackingLocation: Boolean,
-    initialLocation: LatLng,
+    pickerInitialCTLocation: CTLocation,
+//    pickerCurrentLocation: LatLng,
+    locationQueryChanged: (String) -> Unit,
+    pickerLocationAddress: String,
+    onLocationChanged: (LatLng) -> Unit,
     onConfirm: (AddTimeInformation) -> Unit,
     onDismiss: () -> Unit
 ) {
     var openLocationDialog by remember { mutableStateOf(false) }
-    val addressQuery by remember { mutableStateOf("") }
+//    var locationQuery by remember { mutableStateOf("") }
+    var isMapEditable by remember { mutableStateOf(true) }
 
     AddTimeDialog(
-        onDismissRequest = { onDismiss() },
-        onConfirmNewIncrement = { newTimeInformation -> onConfirm(newTimeInformation) },
+        onDismissRequest = onDismiss,
+        onConfirmNewIncrement = onConfirm,//{ newTimeInformation -> onConfirm(newTimeInformation) },
         trackingLocation = trackingLocation,
         onLocationButtonClick = {
             openLocationDialog = true
@@ -535,10 +687,17 @@ private fun OpenAddTimeDialog(
 
     if (openLocationDialog) {
         AddLocationDialog(
-            initialLocation = initialLocation,
-            onSearchQueryChanged = { },
             onDismissRequest = { openLocationDialog = false },
-            addressQuery = addressQuery
+            pickerInitialCTLocation = pickerInitialCTLocation,
+//            pickerCurrentLocation = pickerCurrentLocation,
+            onLocationQueryChanged = {
+                if (!isMapEditable)
+                    locationQueryChanged(it)
+            },
+            onCameraMoved = onLocationChanged,
+            mapEditOptionButton = { isMapEditable = !isMapEditable },
+            isMapEditable = isMapEditable,
+            locationQuery = pickerLocationAddress
         )
     }
 }
@@ -633,60 +792,83 @@ private fun CounterRow(counter: CounterWithIncrementInfo) {
 
 @Composable
 fun AddLocationDialog(
-//    modifier: Modifier,
-    initialLocation: LatLng,
-    onSearchQueryChanged: (query: String) -> Unit,
+    pickerInitialCTLocation: CTLocation,
+//    pickerCurrentLocation: LatLng,
+    onLocationQueryChanged: (query: String) -> Unit,
+    onCameraMoved: (LatLng) -> Unit,
     onDismissRequest: () -> Unit,
-    addressQuery: String
-) {
-    //var searchQuery by remember { mutableStateOf(TextFieldValue(addressQuery)) }
-//    var text by remember { viewModel.addressText }
+    locationQuery: String,
+    mapEditOptionButton: () -> Unit,
+    isMapEditable: Boolean,
+
+    ) {
     Dialog(
         onDismissRequest = onDismissRequest,
-        content = {
-            Column(
-                modifier = Modifier.fillMaxSize(0.9f),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Title(addressQuery, onSearchQueryChanged)
-                //TODO figure out isEnabled
-                Body(initialLocation, true)
-            }
-        },
-    )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(0.9f),
+            verticalArrangement = Arrangement.Center
+        ) {
+//            Title(
+//                isMapEditable = isMapEditable,
+//                onButtonClicked = mapEditOptionButton,
+//                locationQuery = locationQuery,
+//                onLocationQueryChanged = onLocationQueryChanged
+//            )
+            Body(pickerInitialCTLocation, /*pickerCurrentLocation,*/ isMapEditable, onCameraMoved)
+            LocationConfirmationButton(
+                // TODO actual save location as opposed to always saving it when camera moves
+                onConfirmClicked = onDismissRequest
+            )
+        }
+    }
+}
+
+@Composable
+private fun LocationConfirmationButton(
+    onConfirmClicked: () -> Unit,
+) {
+    Button(
+        onClick = onConfirmClicked,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(text = stringResource(R.string.dialog_add_location_confirm_button_text))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Title(
-    addressQuery: String,
-    onSearchQueryChanged: (query: String) -> Unit,
+    locationQuery: String,
+    isMapEditable: Boolean,
+    onLocationQueryChanged: (query: String) -> Unit,
+    onButtonClicked: () -> Unit,
 ) {
-    var searchQuery by remember { mutableStateOf(TextFieldValue(addressQuery)) }
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Layout.bodyMargin),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .fillMaxWidth(),
+//            .padding(horizontal = Layout.bodyMargin),
+//        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         TextField(
-            value = searchQuery,
-            onValueChange = { value ->
-                searchQuery = value
-                onSearchQueryChanged(value.text)
-            },
-//            modifier = Modifier.fillMaxWidth()
-        )
-        Column(
             modifier = Modifier
+                .weight(1f),
+//                .padding(end = 80.dp),
+            value = locationQuery,
+            onValueChange = onLocationQueryChanged,
+            enabled = !isMapEditable,
+            maxLines = 1,
+        )
+//        Column(
+//            modifier = Modifier
 //                .fillMaxWidth()
-                .padding(10.dp),
-        ) {
-            Button(onClick = { /*TODO*/ }) {
-                Text(text = "Save")
-            }
-
+//                .padding(10.dp),
+//            horizontalAlignment = Alignment.End,
+//        ) {
+        Button(onClick = onButtonClicked) {
+            Text(text = if (isMapEditable) "Edit" else "Save")
         }
+//        }
     }
 
 
@@ -695,43 +877,69 @@ private fun Title(
 
 @Composable
 private fun Body(
-    initialLocation: LatLng,
+    pickerInitialCTLocation: CTLocation,
+//    pickerCurrentLocation: LatLng,
     isEnabled: Boolean,
-//    mapView: MapView,
+    cameraPositionUpdated: (LatLng) -> Unit,
 ) {
-//    val userLocation = viewModel.getUserLocation()
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(initialLocation, 10f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(
+                pickerInitialCTLocation.latitude,
+                pickerInitialCTLocation.longitude
+            ), 6f
+        )
     }
+//    cameraPositionState.move(CameraUpdateFactory.newLatLng(pickerCurrentLocation))
 
     LaunchedEffect(cameraPositionState.isMoving) {
         if (cameraPositionState.isMoving) {
+
             Log.d(
                 "Camera movement",
                 "Map camera started moving due to ${cameraPositionState.cameraMoveStartedReason.name}"
             )
+        } else {
+            // this is where we want to update location query text
+            Log.d(
+                "Camera stopped moving",
+                "Map camera stopped moving due to ${cameraPositionState.cameraMoveStartedReason.name}"
+            )
+            cameraPositionUpdated(cameraPositionState.position.target)
         }
     }
     val mapProperties by remember {
         mutableStateOf(
             MapProperties(
                 isMyLocationEnabled = true,
-                maxZoomPreference = 10f,
-                minZoomPreference = 5f
+                maxZoomPreference = 20f,
+                minZoomPreference = 2f
             )
         )
     }
-    val mapUiSettings by remember {
+    var mapUiSettings by remember {
         mutableStateOf(
             MapUiSettings(
                 mapToolbarEnabled = false,
                 zoomControlsEnabled = true,
-                zoomGesturesEnabled = true
+                zoomGesturesEnabled = true,
+                rotationGesturesEnabled = true,
+                tiltGesturesEnabled = true,
             )
         )
     }
 
-    Box(modifier = Modifier.height(500.dp)) {
+    mapUiSettings = mapUiSettings.copy(
+        scrollGesturesEnabled = isEnabled,
+        scrollGesturesEnabledDuringRotateOrZoom = isEnabled,
+    )
+
+
+    Box(
+        modifier = Modifier
+            .height(500.dp)
+//            .clip(RoundedCornerShape(10.dp))
+    ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
@@ -803,7 +1011,8 @@ private fun CounterListFab(
 
 @Composable
 private fun CounterListAppBar(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClickSettingsIcon: () -> Unit
 ) {
     TopAppBar(
         backgroundColor =
@@ -817,7 +1026,7 @@ private fun CounterListAppBar(
         title = { Text(text = stringResource(R.string.counter_list_title)) },
         actions = {
             IconButton(
-                onClick = { /* TODO: navigate to settings */ }
+                onClick = onClickSettingsIcon
             ) {
                 Icon(
                     imageVector = Icons.Filled.Settings,

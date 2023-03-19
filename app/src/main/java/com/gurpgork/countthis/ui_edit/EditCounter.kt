@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberScaffoldState
@@ -24,7 +23,6 @@ import com.gurpgork.countthis.ui_create.CounterFormEvent
 import com.gurpgork.countthis.ui_create.OptionOne
 import com.gurpgork.countthis.ui_create.ValidationEvent
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun EditCounter(
 //    expandedValue: ModalBottomSheetValue,
@@ -74,7 +72,7 @@ fun EditCounter(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EditCounter(
     viewState: EditCounterViewState,

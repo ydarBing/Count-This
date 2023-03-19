@@ -1,7 +1,6 @@
 package com.gurpgork.countthis.ui_edit
 
 import com.gurpgork.countthis.compose.UiMessage
-import com.gurpgork.countthis.data.entities.CounterEntity
 import com.gurpgork.countthis.ui_create.CounterFormViewState
 
 data class EditCounterViewState(
@@ -18,13 +17,13 @@ data class EditCounterViewState(
     }
 }
 
-fun EditCounterViewState.toCounterEntity(id: Long) =
-    CounterEntity(
-        id = id,
-        name = form.name,
-        increment = form.incrementBy,
-        count = form.startCount,
-        goal = form.goal,
-        list_index = 0,
-        track_location = form.trackLocation,
-    )
+//fun EditCounterViewState.toCounterEntity(id: Long) =
+//    CounterEntity(
+//        id = id,
+//        name = form.name,
+//        increment = form.incrementBy,
+//        count = form.startCount,
+//        goal = form.goal,
+//        list_index = 0,
+//        track_location = form.trackLocation,
+//    )

@@ -24,6 +24,7 @@ import com.gurpgork.countthis.CountThisActivity
 import com.gurpgork.countthis.compose.ContentViewSetter
 import com.gurpgork.countthis.compose.LocalCountThisDateFormatter
 import com.gurpgork.countthis.compose.shouldUseDarkColors
+import com.gurpgork.countthis.compose.shouldUseDynamicColors
 import com.gurpgork.countthis.location.ForegroundOnlyLocationService
 import com.gurpgork.countthis.settings.CountThisPreferences
 import com.gurpgork.countthis.settings.SettingsActivity
@@ -176,9 +177,9 @@ class MainActivity : CountThisActivity() {
             LocalCountThisDateFormatter provides countThisDateFormatter
         ) {
             CountThisTheme(
-                darkTheme = preferences.shouldUseDarkColors()
+                darkTheme = preferences.shouldUseDarkColors(),
+                dynamicColor = preferences.shouldUseDynamicColors()
             ) {
-//TODO                    isDynamicColor = preferences.dy) {
                 Home(
                     analytics = analytics,
                     onOpenSettings = {
@@ -194,11 +195,11 @@ class MainActivity : CountThisActivity() {
 
 private fun ComponentActivity.setOwners() {
     val decorView = window.decorView
-    if (ViewTreeLifecycleOwner.get(decorView) == null) {
-        ViewTreeLifecycleOwner.set(decorView, this)
+    if (decorView.findViewTreeLifecycleOwner() == null) {
+        decorView.setViewTreeLifecycleOwner(this)
     }
-    if (ViewTreeViewModelStoreOwner.get(decorView) == null) {
-        ViewTreeViewModelStoreOwner.set(decorView, this)
+    if(decorView.findViewTreeViewModelStoreOwner() == null){
+        decorView.setViewTreeViewModelStoreOwner(this)
     }
     if (decorView.findViewTreeSavedStateRegistryOwner() == null) {
         decorView.setViewTreeSavedStateRegistryOwner(this)

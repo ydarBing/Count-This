@@ -1,5 +1,6 @@
 package com.gurpgork.countthis.ui_create
 
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gurpgork.countthis.compose.UiMessage
@@ -9,7 +10,13 @@ import com.gurpgork.countthis.domain.interactors.AddCounter
 import com.gurpgork.countthis.settings.CountThisPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -47,11 +54,11 @@ internal class CreateCounterViewModel @Inject constructor(
         viewModelScope.launch {
             val now = OffsetDateTime.now()
             val newCounter = CounterEntity(
-                track_location = state.value.form.trackLocation,
-                count = formStuff.value.startCount,
-                increment = formStuff.value.incrementBy,
                 name = formStuff.value.name,
-                goal = formStuff.value.goal,
+                track_location = formStuff.value.trackLocation,//state.value.form.trackLocation,
+                count = if(formStuff.value.startCount.isEmpty()) CounterEntity.EMPTY_COUNTER.count else formStuff.value.startCount.toInt(),
+                increment = if(formStuff.value.incrementBy.isEmpty()) CounterEntity.EMPTY_COUNTER.increment else formStuff.value.incrementBy.toInt(),
+                goal = if(formStuff.value.goal.isEmpty()) CounterEntity.EMPTY_COUNTER.goal else formStuff.value.goal.toInt(),
                 creation_date_time = now,
             )
             if (formStuff.value.trackLocation) {
@@ -70,19 +77,23 @@ internal class CreateCounterViewModel @Inject constructor(
 //        }
 //    }
 
+    // makes sure integer text fields only have digits in them
     fun onEvent(event: CounterFormEvent) {
         when (event) {
             is CounterFormEvent.NameChanged -> {
                 formStuff.value = formStuff.value.copy(name = event.name)
             }
             is CounterFormEvent.CountChanged -> {
-                formStuff.value = formStuff.value.copy(startCount = event.count)
+                if(event.count.isEmpty() || event.count.isDigitsOnly())
+                    formStuff.value = formStuff.value.copy(startCount = event.count)
             }
             is CounterFormEvent.GoalChanged -> {
-                formStuff.value = formStuff.value.copy(goal = event.goal)
+                if(event.goal.isEmpty() || event.goal.isDigitsOnly())
+                    formStuff.value = formStuff.value.copy(goal = event.goal)
             }
             is CounterFormEvent.IncrementChanged -> {
-                formStuff.value = formStuff.value.copy(incrementBy = event.increment)
+                if(event.increment.isEmpty() || event.increment.isDigitsOnly())
+                    formStuff.value = formStuff.value.copy(incrementBy = event.increment)
             }
             is CounterFormEvent.TrackLocationChanged -> {
                 formStuff.value = formStuff.value.copy(trackLocation = event.isTracking)

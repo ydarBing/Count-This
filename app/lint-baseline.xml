@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="5" by="lint Electric Eel | 2022.1.1">
+
+    <issue
+        id="RemoveWorkManagerInitializer"
+        message="Remove androidx.work.WorkManagerInitializer from your AndroidManifest.xml when using on-demand initialization.">
+        <location
+            file="app"/>
+    </issue>
+
+    <issue
+        id="GradleDynamicVersion"
+        message="Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (androidx.core:core-ktx:+)">
+        <location
+            file="build.gradle.kts"
+            line="155"/>
+    </issue>
+
+    <issue
+        id="GradleDynamicVersion"
+        message="Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (androidx.core:core-ktx:+)">
+        <location
+            file="build.gradle.kts"
+            line="156"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;members&quot;): This should probably be a plural rather than a string">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="55"/>
+    </issue>
+
+    <issue
+        id="UnspecifiedImmutableFlag"
+        message="Missing `PendingIntent` mutability flag">
+        <location
+            file="src\main\java\com\gurpgork\countthis\location\ForegroundOnlyLocationService.kt"
+            line="305"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 26">
+        <location
+            file="build\generated\ksp\debug\java\com\gurpgork\countthis\CountThisRoomDatabase_Impl.java"
+            line="205"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 33">
+        <location
+            file="src\main\java\com\gurpgork\countthis\home\MainActivity.kt"
+            line="166"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v24`) is unnecessary; `minSdkVersion` is 26. Merge all the resources in this folder into `drawable`.">
+        <location
+            file="src\main\res\drawable-v24"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 26. Merge all the resources in this folder into `mipmap-anydpi`.">
+        <location
+            file="src\main\res\mipmap-anydpi-v26"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 27">
+        <location
+            file="src\main\res\values\themes.xml"
+            line="21"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.white` appears to be unused">
+        <location
+            file="src\main\res\values\colors.xml"
+            line="9"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.mtrl_list_item_tint` appears to be unused">
+        <location
+            file="src\main\res\values\colors.xml"
+            line="15"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.system_ui_scrim_light` appears to be unused">
+        <location
+            file="src\main\res\values\colors.xml"
+            line="18"/>
+        <location
+            file="src\main\res\values-night\colors.xml"
+            line="24"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.fab_margin` appears to be unused">
+        <location
+            file="src\main\res\values\dimens.xml"
+            line="2"/>
+        <location
+            file="src\main\res\values-land\dimens.xml"
+            line="2"/>
+        <location
+            file="src\main\res\values-w1240dp\dimens.xml"
+            line="2"/>
+        <location
+            file="src\main\res\values-w600dp\dimens.xml"
+            line="2"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.bool.is_dark_theme` appears to be unused">
+        <location
+            file="src\main\res\values\environment.xml"
+            line="19"/>
+        <location
+            file="src\main\res\values-night\environment.xml"
+            line="19"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.bool.is_light_theme` appears to be unused">
+        <location
+            file="src\main\res\values\environment.xml"
+            line="20"/>
+        <location
+            file="src\main\res\values-night\environment.xml"
+            line="20"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_cancel` appears to be unused">
+        <location
+            file="src\main\res\drawable-anydpi\ic_cancel.xml"
+            line="1"/>
+        <location
+            file="src\main\res\drawable-hdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-mdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-xhdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-xxhdpi\ic_cancel.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_countthis` appears to be unused">
+        <location
+            file="src\main\res\drawable-v24\ic_countthis.xml"
+            line="17"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.mipmap.ic_launcher` appears to be unused">
+        <location
+            file="src\main\res\mipmap-anydpi-v26\ic_launcher.xml"
+            line="2"/>
+        <location
+            file="src\main\res\mipmap-hdpi\ic_launcher.webp"/>
+        <location
+            file="src\main\res\mipmap-mdpi\ic_launcher.webp"/>
+        <location
+            file="src\main\res\mipmap-xhdpi\ic_launcher.webp"/>
+        <location
+            file="src\main\res\mipmap-xxhdpi\ic_launcher.webp"/>
+        <location
+            file="src\main\res\mipmap-xxxhdpi\ic_launcher.webp"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_launcher_background` appears to be unused">
+        <location
+            file="src\main\res\drawable\ic_launcher_background.xml"
+            line="2"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_launcher_foreground` appears to be unused">
+        <location
+            file="src\main\res\drawable-v24\ic_launcher_foreground.xml"
+            line="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.mipmap.ic_launcher_round` appears to be unused">
+        <location
+            file="src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml"
+            line="2"/>
+        <location
+            file="src\main\res\mipmap-hdpi\ic_launcher_round.webp"/>
+        <location
+            file="src\main\res\mipmap-mdpi\ic_launcher_round.webp"/>
+        <location
+            file="src\main\res\mipmap-xhdpi\ic_launcher_round.webp"/>
+        <location
+            file="src\main\res\mipmap-xxhdpi\ic_launcher_round.webp"/>
+        <location
+            file="src\main\res\mipmap-xxxhdpi\ic_launcher_round.webp"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.menu.menu_main` appears to be unused">
+        <location
+            file="src\main\res\menu\menu_main.xml"
+            line="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.next` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="4"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.previous` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="5"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.dialog_add_time_title` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="31"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.dialog_add_time_add_location_button_text` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="34"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.navigation_drawer_close` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="40"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_header_title` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="41"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_header_subtitle` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="42"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_header_desc` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="43"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.action_settings` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="44"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.menu_home` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="46"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.menu_gallery` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="47"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.menu_slideshow` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="48"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.conversations` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="49"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.profile` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="50"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.author_me` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="53"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.now` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="54"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.members` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="55"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.message` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="60"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.edit_profile` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="61"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.profile_error` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="62"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.bio` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="63"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.timezone` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="64"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.twitter` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="65"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.common_channels` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="66"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.lorem` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="67"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.status` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="68"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.stats_display_name` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="71"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.attached_image` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="97"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.search` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="98"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.info` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="99"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_open_source` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="121"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_open_source_summary` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="122"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.permission_rationale` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="139"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.permission_denied_explanation` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="140"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.preference_file_key` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="142"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.start_location_updates_button_text` appears to be unused">
+        <location
+            file="src\main\res\values\strings.xml"
+            line="144"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.status_bar_scrim` appears to be unused">
+        <location
+            file="src\main\res\values\sys_ui.xml"
+            line="20"/>
+        <location
+            file="src\main\res\values-night\sys_ui.xml"
+            line="20"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.transparent_image` appears to be unused">
+        <location
+            file="src\main\res\drawable\transparent_image.xml"
+            line="2"/>
+    </issue>
+
+    <issue
+        id="IconXmlAndPng"
+        message="The following images appear both as density independent `.xml` files and as bitmap files: src\main\res\drawable-anydpi\ic_cancel.xml, src\main\res\drawable-hdpi\ic_cancel.png">
+        <location
+            file="src\main\res\drawable-xxhdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-xhdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-mdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-hdpi\ic_cancel.png"/>
+        <location
+            file="src\main\res\drawable-anydpi\ic_cancel.xml"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/pin.png` in densityless folder">
+        <location
+            file="src\main\res\drawable\pin.png"/>
+    </issue>
+
+</issues>

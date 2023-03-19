@@ -3,17 +3,32 @@ package com.gurpgork.countthis.compose
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import com.gurpgork.countthis.location.Location
+import androidx.compose.runtime.remember
+import com.gurpgork.countthis.location.CTLocation
 import com.gurpgork.countthis.settings.CountThisPreferences
 
 @Composable
 fun CountThisPreferences.shouldUseDarkColors(): Boolean {
-    val themePreference = observeTheme().collectAsState(initial = CountThisPreferences.Theme.SYSTEM)
+    val themePreference = remember { observeTheme() }.collectAsState(initial = theme)
     return when (themePreference.value) {
         CountThisPreferences.Theme.LIGHT -> false
         CountThisPreferences.Theme.DARK -> true
         else -> isSystemInDarkTheme()
     }
+}
+
+@Composable
+fun CountThisPreferences.shouldUseDynamicColors(): Boolean {
+    return remember { observeDynamicColors() }
+        .collectAsState(initial = dynamicColors)
+        .value
+}
+
+@Composable
+fun CountThisPreferences.useButtonIncrements(): Boolean {
+    return remember { observeButtonIncrements() }
+        .collectAsState(initial = buttonIncrements)
+        .value
 }
 
 
@@ -26,7 +41,7 @@ fun CountThisPreferences.currentlyTrackingLocation(): Int {
 /**
  * Returns the `location` object as a human readable string.
  */
-fun Location?.toText(): String {
+fun CTLocation?.toText(): String {
     return if (this != null) {
         toString(latitude, longitude)
     } else {
@@ -37,9 +52,9 @@ fun Location?.toText(): String {
 /**
  * Returns the project model `location` object from an Android location object
  */
-fun android.location.Location?.toLocation(): Location? {
+fun android.location.Location?.toLocation(): CTLocation? {
     return if (this != null) {
-        Location(
+        CTLocation(
             time = time,
             latitude = latitude,
             longitude = longitude,

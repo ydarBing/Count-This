@@ -20,8 +20,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AppBarDefaults
+//import androidx.compose.material.AppBarDefaults
 import androidx.compose.material3.*
+import androidx.compose.material3.SearchBarDefaults.Elevation
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,11 +41,11 @@ fun TopAppBarWithBottomContent(
     navigationIcon: @Composable () -> Unit,
     bottomContent: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
-    topAppBarColors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(),
+    topAppBarColors: TopAppBarColors = topAppBarColors(),
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
     contentColor: Color = contentColorFor(backgroundColor),
-    tonalElevation: Dp = AppBarDefaults.TopAppBarElevation,
-    shadowElevation: Dp = AppBarDefaults.TopAppBarElevation,
+    tonalElevation: Dp = Elevation, //TODO change this default value to something better
+    shadowElevation: Dp = Elevation, //TODO change this default value to something better
     contentPadding: PaddingValues? = null
 ) {
     Surface(

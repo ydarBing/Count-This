@@ -2,7 +2,7 @@ package com.gurpgork.countthis.data.repositories
 
 import androidx.annotation.WorkerThread
 import com.gurpgork.countthis.data.daos.LocationDao
-import com.gurpgork.countthis.location.Location
+import com.gurpgork.countthis.location.CTLocation
 import javax.inject.Inject
 
 class LocationRepository @Inject constructor(
@@ -18,7 +18,7 @@ class LocationRepository @Inject constructor(
     // off the main thread.
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
-    suspend fun updateLocation(location: Location) {
-        locationDao.updateLocation(location)
+    suspend fun updateLocation(CTLocation: CTLocation) {
+        locationDao.updateLocation(CTLocation)
     }
 }

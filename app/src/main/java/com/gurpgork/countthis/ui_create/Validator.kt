@@ -1,21 +1,23 @@
 package com.gurpgork.countthis.ui_create
 
+import androidx.core.text.isDigitsOnly
+
 object Validator {
 
     fun validateName(name: String): ValidationResult {
         return ValidationResult(name.isNotEmpty() /*&& name.isNotBlank()&& name.length > 5*/)
     }
 
-    fun validateCount(count: Int): ValidationResult {
-        return ValidationResult(true)
+    fun validateCount(count: String): ValidationResult {
+        return ValidationResult(count.isEmpty() || count.isDigitsOnly())
     }
 
-    fun validateIncrement(increment: Int): ValidationResult {
-        return ValidationResult(true)
+    fun validateIncrement(increment: String): ValidationResult {
+        return ValidationResult(increment.isEmpty() || increment.isDigitsOnly())
     }
 
-    fun validateGoal(goal: Int): ValidationResult {
-        return ValidationResult(true)
+    fun validateGoal(goal: String): ValidationResult {
+        return ValidationResult(goal.isEmpty() || goal.isDigitsOnly())
     }
 
     fun validateTrackLocation(track: Boolean): ValidationResult {

@@ -11,14 +11,12 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -37,21 +35,23 @@ import kotlinx.coroutines.launch
 @Composable
 fun CounterDetails(
     navigateUp: () -> Unit,
+    openEditCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
     openCounterDetails: (counterId: Long) -> Unit,
 ) {
     CounterDetails(
         viewModel = hiltViewModel(),
         navigateUp = navigateUp,
+        openEditCounter = openEditCounter,
         openCounterDetails = openCounterDetails,
     )
 }
 
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun CounterDetails(
     viewModel: CounterDetailsViewModel,
     navigateUp: () -> Unit,
+    openEditCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
     openCounterDetails: (counterId: Long) -> Unit,
 ) {
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -60,19 +60,20 @@ internal fun CounterDetails(
     CounterDetails(
         viewState = viewState,
         navigateUp = navigateUp,
+        openEditCounter = openEditCounter,
         openCounterDetails = openCounterDetails
     )
 }
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalComposeUiApi::class,
     ExperimentalPagerApi::class
 )
 @Composable
 internal fun CounterDetails(
     viewState: CounterDetailsViewState,
     navigateUp: () -> Unit,
+    openEditCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
     openCounterDetails: (counterId: Long) -> Unit, // used to open another counter
 ) {
     var functionalityNotAvailablePopupShown by remember { mutableStateOf(false) }
@@ -85,6 +86,7 @@ internal fun CounterDetails(
 
 
     Scaffold(
+
         topBar = {
             TopAppBarWithBottomContent(
                 title = { viewState.counterInfo?.counter?.name?.let { Text(text = it) } },
@@ -128,7 +130,10 @@ internal fun CounterDetails(
         floatingActionButton = {
             CounterFab(
                 extended = true, // scrollstate.value == 0
-                onFabClicked = { functionalityNotAvailablePopupShown = true }
+                onFabClicked = {
+                    viewState.counterInfo?.let {
+                        openEditCounter(it.counter.id, it.counter.track_location ?: false) }
+                }
             )
         },
         floatingActionButtonPosition = FabPosition.End

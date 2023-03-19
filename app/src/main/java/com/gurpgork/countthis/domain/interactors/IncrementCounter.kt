@@ -3,7 +3,7 @@ package com.gurpgork.countthis.domain.interactors
 import com.gurpgork.countthis.counter.CounterRepository
 import com.gurpgork.countthis.data.repositories.IncrementRepository
 import com.gurpgork.countthis.domain.Interactor
-import com.gurpgork.countthis.location.Location
+import com.gurpgork.countthis.location.CTLocation
 import com.gurpgork.countthis.util.AppCoroutineDispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -21,12 +21,12 @@ class IncrementCounter @Inject constructor(
         withContext(dispatchers.io){
             incrementRepository.addIncrement(
                 params.counterId,
-                params.location,
+                params.CTLocation,
                 params.timestamp,
                 params.instantTime)
             ensureActive()
         }
     }
 
-    data class Params(val counterId: Long, val location: Location?, val timestamp: OffsetDateTime, val instantTime: Instant)
+    data class Params(val counterId: Long, val CTLocation: CTLocation?, val timestamp: OffsetDateTime, val instantTime: Instant)
 }
