@@ -37,14 +37,11 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.gurpgork.countthis.R
-import com.gurpgork.countthis.compose.toLocation
-import com.gurpgork.countthis.compose.toText
-import com.gurpgork.countthis.data.repositories.LocationRepository
+import com.gurpgork.countthis.core.data.repository.LocationRepository
+import com.gurpgork.countthis.core.model.data.CtLocation
 import com.gurpgork.countthis.home.MainActivity
-import com.gurpgork.countthis.settings.CountThisPreferences
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
@@ -59,9 +56,16 @@ import javax.inject.Inject
  * Uses LifecycleService to be able to launch coroutines within the scope of this service
  */
 @AndroidEntryPoint
-class ForegroundOnlyLocationService : LifecycleService() {
+class ForegroundOnlyLocationService @Inject constructor(
+//    userDataRepository: UserDataRepository,
+) : LifecycleService() {
 
-    @Inject internal lateinit var preferences: CountThisPreferences
+    //    @Inject internal lateinit var preferences: CountThisPreferences
+//    @Inject internal lateinit var userDataRepository: UserDataRepository
+
+//    private val trackingLocations: Flow<Int> =
+//        userDataRepository.userData.map { it.countersTrackingLocation }
+
     /*
      * Checks whether the bound activity has really gone away (foreground service with notification
      * created) or simply orientation change (no-op).
@@ -103,26 +107,11 @@ class ForegroundOnlyLocationService : LifecycleService() {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-            //TODO
-//        LocationRequest.Builder(locationRequest.)
-        locationRequest = LocationRequest.create().apply {
-            // Sets the desired interval for active location updates. This interval is inexact. You
-            // may not receive updates at all if no location sources are available, or you may
-            // receive them less frequently than requested. You may also receive updates more
-            // frequently than requested if other applications are requesting location at a more
-            // frequent interval.
-            interval = TimeUnit.SECONDS.toMillis(30)
-
-            // Sets the fastest rate for active location updates. This interval is exact, and your
-            // application will never receive updates more frequently than this value.
-            fastestInterval = TimeUnit.SECONDS.toMillis(15)
-
-            // Sets the maximum time when batched location updates are delivered. Updates may be
-            // delivered sooner than this interval.
-            maxWaitTime = TimeUnit.SECONDS.toMillis(5)
-
-            priority =  Priority.PRIORITY_HIGH_ACCURACY //LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
+        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+            .setWaitForAccurateLocation(true)
+            .setMinUpdateIntervalMillis(500)
+            .setMaxUpdateDelayMillis(1000)
+            .build()
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
@@ -194,13 +183,14 @@ class ForegroundOnlyLocationService : LifecycleService() {
         // to maintain the 'while-in-use' label.
         // NOTE: If this method is called due to a configuration change in MainActivity,
         // we do nothing.
-        if (!configurationChange && preferences.requestingLocationUpdates > 0){
-            Log.d(TAG, "Start foreground service")
-            //TODO add push notification permission check then uncomment this
-//            val notification = generateNotification(currentLocation)
-//            startForeground(NOTIFICATION_ID, notification)
-//            serviceRunningInForeground = true
-        }
+        //TODO check if we are trying to get locationupdates
+//        if (!configurationChange &&  ) {//preferences.requestingLocationUpdates > 0) {
+//            Log.d(TAG, "Start foreground service")
+//            //TODO add push notification permission check then uncomment this
+////            val notification = generateNotification(currentLocation)
+////            startForeground(NOTIFICATION_ID, notification)
+////            serviceRunningInForeground = true
+//        }
 
         // Ensures onRebind() is called if MainActivity (client) rebinds.
         return true
@@ -223,13 +213,14 @@ class ForegroundOnlyLocationService : LifecycleService() {
         // Binding to this service doesn't actually trigger onStartCommand(). That is needed to
         // ensure this Service can be promoted to a foreground service, i.e., the service needs to
         // be officially started (which we do here).
-        if(applicationContext != null) {
+        if (applicationContext != null) {
             startService(Intent(applicationContext, ForegroundOnlyLocationService::class.java))
 
             try {
                 // Subscribe to location changes.
                 fusedLocationProviderClient.requestLocationUpdates(
-                    locationRequest, locationCallback, Looper.getMainLooper())
+                    locationRequest, locationCallback, Looper.getMainLooper()
+                )
             } catch (unlikely: SecurityException) {
                 // TODO does requestingLocationUpdates need to be updated here
                 // preferences.requestingLocationUpdates = false
@@ -242,7 +233,7 @@ class ForegroundOnlyLocationService : LifecycleService() {
     fun unsubscribeToLocationUpdates() {
         Log.d(TAG, "unsubscribeToLocationUpdates()")
 
-        if(requestingUpdates){
+        if (requestingUpdates) {
             try {
                 val removeTask = fusedLocationProviderClient.removeLocationUpdates(locationCallback)
                 removeTask.addOnCompleteListener { task ->
@@ -285,7 +276,8 @@ class ForegroundOnlyLocationService : LifecycleService() {
 
         // 1. Create Notification Channel for O+(26+).
         val notificationChannel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_DEFAULT)
+            NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_DEFAULT
+        )
 
         // Adds NotificationChannel to system. Attempting to create an
         // existing notification channel with its original values performs
@@ -304,10 +296,15 @@ class ForegroundOnlyLocationService : LifecycleService() {
         cancelIntent.putExtra(EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION, true)
 
         val servicePendingIntent = PendingIntent.getService(
-            this, 0, cancelIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            this, 0, cancelIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val activityPendingIntent = PendingIntent.getActivity(
-            this, 0, launchActivityIntent, 0)
+            this,
+            0,
+            launchActivityIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         // 4. Build and issue the notification.
         // Notification Channel Id is ignored for Android pre O (26).
@@ -318,7 +315,7 @@ class ForegroundOnlyLocationService : LifecycleService() {
             .setStyle(bigTextStyle)
             .setContentTitle(titleText)
             .setContentText(mainNotificationText)
-            .setSmallIcon(R.drawable.countthis_logo)
+            .setSmallIcon(com.gurpgork.countthis.core.common.R.drawable.ic_ct_notification)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -367,4 +364,37 @@ class ForegroundOnlyLocationService : LifecycleService() {
 //            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 //        }
     }
+}
+
+/**
+ * Returns the project model `CtLocation` object from an Android location object
+ */
+fun Location?.toLocation(): CtLocation? {
+    return if (this != null) {
+        CtLocation(
+            time = time,
+            latitude = latitude,
+            longitude = longitude,
+            altitude = altitude,
+            accuracy = accuracy,
+            id = 0,
+        )
+    } else {
+        return null
+    }
+}
+
+/**
+ * Returns the `location` object as a human readable string.
+ */
+fun android.location.Location?.toText(): String {
+    return if (this != null) {
+        toString(latitude, longitude)
+    } else {
+        "Unknown location"
+    }
+}
+
+fun toString(lat: Double, lon: Double): String {
+    return "($lat, $lon)"
 }

@@ -6,36 +6,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.*
 import androidx.navigation.compose.dialog
-import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.bottomSheet
 
 /**
  * Copy of Navigation Animation `composable()`, but with a [debugLabel] parameter.
  */
-@ExperimentalAnimationApi
-internal fun NavGraphBuilder.composable(
-    route: String,
-    debugLabel: String? = null,
-    arguments: List<NamedNavArgument> = emptyList(),
-    deepLinks: List<NavDeepLink> = emptyList(),
-    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-    popEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = enterTransition,
-    popExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = exitTransition,
-    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit,
-) {
-    composable(
-        route = route,
-        arguments = arguments.appendWithDebugLabel(debugLabel),
-        deepLinks = deepLinks,
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-        popEnterTransition = popEnterTransition,
-        popExitTransition = popExitTransition,
-        content = content,
-    )
-}
+//@ExperimentalAnimationApi
+//internal fun NavGraphBuilder.composable(
+//    route: String,
+//    debugLabel: String? = null,
+//    arguments: List<NamedNavArgument> = emptyList(),
+//    deepLinks: List<NavDeepLink> = emptyList(),
+//    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+//    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+//    popEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = enterTransition,
+//    popExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = exitTransition,
+//    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit,
+//) {
+//    composable(
+//        route = route,
+//        arguments = arguments.appendWithDebugLabel(debugLabel),
+//        deepLinks = deepLinks,
+//        enterTransition = enterTransition,
+//        exitTransition = exitTransition,
+//        popEnterTransition = popEnterTransition,
+//        popExitTransition = popExitTransition,
+//        content = content,
+//    )
+//}
 
 /**
  * Copy of Navigation-Compose `dialog()`, but with a [debugLabel] parameter.

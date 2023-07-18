@@ -2,9 +2,14 @@ package com.gurpgork.countthis.inject
 
 import android.app.Application
 import android.content.Context
-import com.gurpgork.countthis.extensions.*
+import com.gurpgork.countthis.core.network.AppCoroutineDispatchers
+import com.gurpgork.countthis.core.ui.ApplicationId
+import com.gurpgork.countthis.core.ui.MediumDate
+import com.gurpgork.countthis.core.ui.MediumDateTime
+import com.gurpgork.countthis.core.ui.ShortDate
+import com.gurpgork.countthis.core.ui.ShortTime
+import com.gurpgork.countthis.core.ui.withLocale
 import com.gurpgork.countthis.location.ForegroundOnlyLocationService
-import com.gurpgork.countthis.util.AppCoroutineDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

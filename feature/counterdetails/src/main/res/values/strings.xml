@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="counter_error">There was an error loading the counter</string>
+    <string name="edit_counter">Edit Counter</string>
+
+
+    <string name="stats_display_name">Display name:</string>
+    <string name="stats_date_created">Date Created:</string>
+    <string name="stats_most_recent">Most Recent:</string>
+    <string name="stats_last_location">Last Location:</string>
+    <string name="stats_current_count">Current Count:</string>
+
+    <string name="more_options">More options</string>
+    <string name="cd_navigate_up">Navigate up</string>
+    <string name="cd_close">Close</string>
+</resources>

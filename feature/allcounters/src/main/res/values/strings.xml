@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="counter_list_title">Counters</string>
+    <string name="settings_title">Settings</string>
+    <string name="list_empty">You have no counters. \n Go on, add a counter</string>
+    <string name="list_error">No Counters Found or Error Loading Counters</string>
+
+    <string name="add">Add</string>
+    <string name="textfield_hint">Counter Name</string>
+    <string name="textfield_desc">Text input</string>
+    <string name="jumpBottom">Jump to bottom</string>
+
+
+    <string name="dialog_title_delete_counter">Delete Counter</string>
+    <string name="dialog_message_delete_counter">Are you sure that you want to delete %1$s?</string>
+    <string name="dialog_title_confirm_delete_counter">Delete</string>
+
+    <string name="dialog_title_reset_counter">Reset Counter</string>
+    <string name="dialog_message_reset_counter">Are you sure that you want to reset %1$s?</string>
+    <string name="dialog_title_confirm_reset_counter">Reset</string>
+
+
+    <string name="dialog_add_time_title">Add Time</string>
+    <string name="dialog_add_time_dismiss_button_text">Cancel</string>
+    <string name="dialog_add_time_confirm_button_text">Add</string>
+    <string name="dialog_add_time_add_location_button_text">Location</string>
+
+    <string name="dialog_add_location_confirm_button_text">Confirm</string>
+    <string name="dialog_dismiss">Dismiss</string>
+</resources>

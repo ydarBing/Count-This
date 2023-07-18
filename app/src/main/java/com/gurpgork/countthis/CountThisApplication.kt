@@ -16,9 +16,8 @@ class CountThisApplication : Application(), Configuration.Provider {
         super.onCreate()
         initializers.init(this)
     }
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .build()
-    }
 }

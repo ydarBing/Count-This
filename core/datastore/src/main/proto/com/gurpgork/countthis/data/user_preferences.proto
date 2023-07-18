@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "com/gurpgork/countthis/data/dark_theme_config.proto";
+
+option java_package = "com.gurpgork.countthis.core.datastore";
+option  java_multiple_files = true;
+
+message UserPreferences {
+
+  // Each map is used to store a set of string IDs. The bool has no meaning, but proto3 doesn't
+  // have a Set type so this is the closest we can get to a Set.
+//  map<Long, bool> counters_tracking_location = 1;
+
+  int32 counters_tracking_location = 1;
+  bool should_use_buttons_for_increments = 2;
+  DarkThemeConfigProto dark_theme_config = 3;
+  bool use_dynamic_color = 4;
+  bool should_hide_onboarding = 5;
+}

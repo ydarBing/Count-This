@@ -1,6 +1,6 @@
 package com.gurpgork.countthis.inject
 
-import com.gurpgork.countthis.compose.ContentViewSetter
+import com.gurpgork.countthis.core.designsystem.component.ContentViewSetter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
