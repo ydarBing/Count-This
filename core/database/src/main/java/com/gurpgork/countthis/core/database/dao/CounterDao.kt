@@ -6,16 +6,20 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.gurpgork.countthis.core.database.model.CounterEntity
+import com.gurpgork.countthis.core.database.model.IncrementEntity
 import com.gurpgork.countthis.core.database.resultentities.CounterWithIncrementInfoEntity
 import com.gurpgork.countthis.core.database.resultentities.CounterWithIncrementsAndHistoryEntity
 import com.gurpgork.countthis.core.model.data.SortOption
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface CounterDao {//: EntityDao<CounterEntity>() {
+interface CounterDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: CounterEntity): Long
@@ -29,69 +33,47 @@ interface CounterDao {//: EntityDao<CounterEntity>() {
     @Query("SELECT * FROM counters LIMIT :count")
     fun countersObservable(count: Int): Flow<List<CounterEntity>>
 
-    //TODO add back in different sort options
-    fun observePagedList(sort: SortOption): PagingSource<Int, CounterWithIncrementInfoEntity>{
-      return pagedListAlphabetical()
-//        when(sort){
-//          SortOption.ALPHABETICAL -> {
-//              pagedListAlphabetical()
-//          }
-//          SortOption.DATE_ADDED -> {
-//              pagedListDateAdded()
-//          }
-//          SortOption.LAST_UPDATED -> {
-//              pagedListLastUpdated()
-//          }
-//          SortOption.USER_SORTED -> {
-//              pagedListUserSorted()
-//          }
-          //else -> throw IllegalArgumentException("$sort option is not supported")
-//      }
+    fun observeSqlSortedCountersWithInfo(sort: SortOption): Flow<List<CounterWithIncrementInfoEntity>>{
+        // adding a string to orderBy essentially just makes it a string: "sort.sqlValue" when we
+        // want actual column: sort.sqlValue
+        //return countersSorted(sort.sqlValue)
+
+        val ascOrDesc: String = when(sort){
+            SortOption.USER_SORTED,
+            SortOption.ALPHABETICAL -> " ASC"
+
+            SortOption.LAST_UPDATED,
+            SortOption.DATE_ADDED -> " DESC"
+        }
+        val sqlValue = sort.sqlValue
+        val finalQuery = StringBuilder(ENTRY_QUERY_ALL_COUNTERS)
+        finalQuery.append(" ORDER BY $sqlValue $ascOrDesc")
+        val simpleSQLiteQuery = SimpleSQLiteQuery(finalQuery.toString())
+        return countersSortedRawQuery(simpleSQLiteQuery)
     }
-//    @Transaction
-//    @Query("SELECT * FROM counters ORDER BY name ASC")
-//    internal abstract fun pagedListAlphabetical(): PagingSource<Int, CounterEntity>
-
-//    Only gets counters increments that happened today
-//    @Transaction
-//    @Query("SELECT counters.*, incs.*" +
-//            " FROM counters" +
-//            " INNER JOIN increments as incs ON counters.id = incs.counter_id" +
-////            this doesn't involve wrapping date column in a function,
-////            which means that SQLite may still use an index which might exist on date
-//            " WHERE date >= DATE('now') AND date < DATE('now', '+1 day') " +
-//            " ORDER BY name ASC, date ASC")
-//    internal abstract fun pagedListAlphabeticals(): PagingSource<Int, CounterWithIncrements>
-
 
     @Transaction
-    @Query(ENTRY_QUERY_ORDER_ALPHABETICAL)
-    fun pagedListAlphabetical(): PagingSource<Int, CounterWithIncrementInfoEntity>
-//    @Transaction
-//    @Query(ENTRY_QUERY_ORDER_DATE_ADDED)
-//    internal abstract fun pagedListDateAdded(): PagingSource<Int, CounterWithIncrementInfo>
-//    @Transaction
-//    @Query(ENTRY_QUERY_ORDER_LAST_UPDATED)
-//    internal abstract fun pagedListLastUpdated(): PagingSource<Int, CounterWithIncrementInfo>
-//    @Transaction
-//    @Query(ENTRY_QUERY_ORDER_USER_SORTED)
-//    internal abstract fun pagedListUserSorted(): PagingSource<Int, CounterWithIncrementInfo>
+    @RawQuery(observedEntities = [CounterEntity::class, IncrementEntity::class] )
+    fun countersSortedRawQuery(query: SupportSQLiteQuery) : Flow<List<CounterWithIncrementInfoEntity>>
+
+    @Transaction
+    @Query(ENTRY_QUERY_ALL_COUNTERS)
+    fun observeCountersWithInfo(): Flow<List<CounterWithIncrementInfoEntity>>
 
 
+    fun observePagedList(): PagingSource<Int, CounterWithIncrementInfoEntity>{
+      return pagedListSorted()
+    }
 
+    @Transaction
+    @Query(ENTRY_QUERY_ALL_COUNTERS)
+    fun pagedListSorted(): PagingSource<Int, CounterWithIncrementInfoEntity>
 
-
-//    @Query("SELECT * FROM counters ORDER BY name ASC")
-//    fun observeAlphabetizedCounters(): Flow<List<CounterEntity>>
-//
     @Query("SELECT * FROM counters WHERE id = :counterId")
     fun observeCounter(counterId: Long): Flow<CounterEntity>
 
     @Query("SELECT * FROM counters WHERE id = :counterId")
-    fun getCounter(counterId: Long): CounterEntity
-
-//    @Query("SELECT * FROM counters WHERE name LIKE :name LIMIT 1")
-//    suspend fun getByName(name: String): CounterEntity?
+    suspend fun getCounterById(counterId: Long): CounterEntity?
 
     @Transaction
     @Query("SELECT * FROM counters WHERE id IN (:counterId)")
@@ -113,70 +95,27 @@ interface CounterDao {//: EntityDao<CounterEntity>() {
     @Query("UPDATE counters SET count = 0 WHERE id = :counterId")
     suspend fun resetCounter(counterId: Long): Int
 
-//    @Transaction
-//    @Query("SELECT * FROM counters where id = :counterId")
-//    fun observeCounterWithIncrements(counterId: Long): Flow<CounterWithIncrements>
-
 
 
     companion object {
-        private const val ENTRY_QUERY_ORDER_ALPHABETICAL = """
+        private const val ENTRY_QUERY_ALL_COUNTERS = """
             SELECT c.*, 
 	   coalesce(todays_increments.sit, 0) as increments_today_sum,
 	   coalesce(todays_increments.cit, 0) as increments_today_count,
-	   coalesce(todays_increments.mri, c.created) as most_recent_increment,
-	   todays_increments.mrii as most_recent_increment_instant,
-       todays_increments.zoneOffset as most_recent_increment_instant_offset
+	   coalesce(todays_increments.mri, c.creation_date) as most_recent_increment_date
 FROM counters AS c
 LEFT JOIN
 	(
 	SELECT 
 		i.counter_id,
-		SUM(i.increment) AS sit, 
-		COUNT(i.increment) AS cit,
-		MAX(i.date) AS mri,
-		MAX(i.date_epoch) AS mrii,
-        i.time_zone_offset as zoneOffset
+		COUNT(CASE WHEN DATE(i.increment_date/1000,'unixepoch','localtime') = DATE('now','localtime') THEN i.increment END) AS cit,
+        SUM(CASE WHEN DATE(i.increment_date/1000,'unixepoch','localtime') = DATE('now','localtime') THEN i.increment END) AS sit,
+		MAX(i.increment_date) AS mri
 	FROM increments as i 
-	WHERE DATE(i.date_epoch / 1000, 'unixepoch', 'localtime') = DATE('now', 'localtime')
 	GROUP BY i.counter_id
-    ORDER BY i.date_epoch DESC
-	) AS todays_increments ON c.id = todays_increments.counter_id
-ORDER BY c.name
+	) AS todays_increments ON c.id = todays_increments.counter_id 
         """
-
-        private const val ENTRY_QUERY_ORDER_DATE_ADDED =
-            """
-            SELECT c.*, 
-	   coalesce(todays_increments.sit, 0) as increments_today_sum,
-	   coalesce(todays_increments.cit, 0) as increments_today_count,
-	   coalesce(todays_increments.mri, c.created) as most_recent_increment
-FROM counters AS c
-LEFT JOIN
-	(
-	SELECT 
-		i.counter_id,
-		SUM(i.increment) AS sit, 
-		COUNT(i.increment) AS cit,
-		MAX(i.date) AS mri
-	FROM increments as i 
-	WHERE DATE(i.date) = DATE('now')
-	WHERE DATE(i.date) = DATE('now')
-	GROUP BY i.counter_id
-	ORDER BY datetime(i.date) ASC
-	) AS todays_increments ON c.id = todays_increments.counter_id
-ORDER BY c.creation_date
-        """
-//        private const val ENTRY_QUERY_ORDER_LAST_UPDATED =
-//            """
-//            SELECT * FROM counters as c
-//            INNER JOIN increments as i ON c.id = i.counter_id
-//            ORDER BY datetime(i.date) ASC
-//        """
-//        private const val ENTRY_QUERY_ORDER_USER_SORTED =
-//            """
-//            SELECT * FROM counters
-//            ORDER BY list_index ASC
-//        """
     }
+    // TODO when minsdk is increased to 31+ we can use FILTER
+    // SUM(i.increment) FILTER( WHERE DATE(i.increment_date/1000,'unixepoch','localtime') = DATE('now','localtime')) as sit
 }

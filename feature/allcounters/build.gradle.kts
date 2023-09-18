@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.compose.maps)
     implementation(libs.compose.maps.utils)
     implementation(libs.compose.maps.widgets)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.playservices.location)
     implementation(libs.playservices.places)
     implementation(libs.playservices.maps)

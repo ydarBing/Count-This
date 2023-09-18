@@ -1,21 +1,30 @@
 package com.gurpgork.countthis.feature.allcounters
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,8 +32,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +43,7 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DismissDirection
@@ -49,9 +61,11 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,26 +77,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.isGranted
@@ -95,6 +108,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.gurpgork.countthis.core.data.model.CounterWithIncrementInfo
 import com.gurpgork.countthis.core.designsystem.component.AnimatingFabContent
+import com.gurpgork.countthis.core.designsystem.component.CtAppBarState
 import com.gurpgork.countthis.core.designsystem.component.Layout
 import com.gurpgork.countthis.core.designsystem.component.ListContextMenu
 import com.gurpgork.countthis.core.designsystem.component.ListItemContextMenuOption
@@ -102,74 +116,71 @@ import com.gurpgork.countthis.core.designsystem.component.SwipeDismissSnackbarHo
 import com.gurpgork.countthis.core.designsystem.component.dialog.AddTimeDialog
 import com.gurpgork.countthis.core.designsystem.component.dialog.AddTimeInformation
 import com.gurpgork.countthis.core.designsystem.component.dialog.CountThisAlertDialog
+import com.gurpgork.countthis.core.designsystem.icon.CtIcons
+import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
 import com.gurpgork.countthis.core.model.data.CtLocation
 import com.gurpgork.countthis.core.model.data.SortOption
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
-import java.time.Instant
 
 @Composable
 internal fun AllCountersRoute(
-    createNewCounter: () -> Unit,
-    editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
+    addEditCounter: (counterId: Long) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
-){
+    onSettingsClicked: () -> Unit,
+    onComposing: (CtAppBarState) -> Unit,
+) {
     AllCounters(
         viewModel = hiltViewModel(),
-        createNewCounter = createNewCounter,
-        editCounter = editCounter,
+        addEditCounter = addEditCounter,
         openCounter = openCounter,
         openUser = openUser,
-//        openSettings = openSettings
+        onComposing = onComposing,
+        onSettingsClicked = onSettingsClicked,
     )
+
 }
 
 @Composable
 internal fun AllCounters(
     viewModel: CounterListViewModel,
-    createNewCounter: () -> Unit,
-    editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
+    addEditCounter: (counterId: Long) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
-//    openSettings: () -> Unit
+    onSettingsClicked: () -> Unit,
+    onComposing: (CtAppBarState) -> Unit,
 ) {
     val context = LocalContext.current
-    //TODO what's better, collecting with or without lifecycle
+
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-//    val viewState by viewModel.state.collectAsState()
-    val pagingItems = viewModel.pagedList.collectAsLazyPagingItems()
+//    val pagingItems = viewModel.pagedList.collectAsLazyPagingItems()
+
 //    val pickerLocationState by viewModel.pickerLocation.collectAsState()
-    val initialLatLng =
-        if (viewState.mostRecentLocation != null)
-            LatLng(
-                viewState.mostRecentLocation!!.latitude,
-                viewState.mostRecentLocation!!.longitude
-            )
-        else
-            LatLng(
-                viewModel.getDefaultLocation().latitude,
-                viewModel.getDefaultLocation().longitude
-            )
+    val initialLatLng = if (viewState.mostRecentLocation != null) LatLng(
+        viewState.mostRecentLocation!!.latitude, viewState.mostRecentLocation!!.longitude
+    )
+    else LatLng(
+        viewModel.getDefaultLocation().latitude, viewModel.getDefaultLocation().longitude
+    )
 
     AllCountersScreen(
         viewState = viewState,
-        list = pagingItems,
+//        list = pagingItems,
         openUser = openUser,
 //        openSettings = openSettings,
         openCounter = openCounter,
-        editCounter = editCounter,
+        addEditCounter = addEditCounter,
         onMessageShown = { viewModel.clearMessage(it) },
         onContextMenuOptionSelected = { id, option, addTimeInfo ->
             viewModel.handleContextMenuOptionSelected(
-                id,
-                option,
-                addTimeInfo
+                id, option, addTimeInfo
             )
         },
-        createNewCounter = createNewCounter,
         onIncrementCounter = { id, location -> viewModel.incrementCounter(id, location) },
         onDecrementCounter = { id, location -> viewModel.decrementCounter(id, location) },
         onSortSelected = { viewModel.setSort(it) },
+        onSortOrderClicked = { viewModel.toggleSortAsc() },
         pickerInitialLatLng = initialLatLng,
         pickerLocationAddress = viewState.locationPickerAddressQuery,
 //        pickerLocation = LatLng(
@@ -178,33 +189,36 @@ internal fun AllCounters(
 //        ),
         locationQueryChanged = { newAddr -> viewModel.onTextChanged(context, newAddr) },
         onLocationPickerMoved = { latLng -> viewModel.updatePickerLocation(context, latLng) },
+        onSettingsClicked = onSettingsClicked,
+        onComposing = onComposing,
     )
 }
 
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalPermissionsApi::class,
-    ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
 )
 @Composable
 internal fun AllCountersScreen(
     viewState: AllCountersViewState,
-    list: LazyPagingItems<CounterWithIncrementInfo>,
-    createNewCounter: () -> Unit,
-    editCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
+//    list: LazyPagingItems<CounterWithIncrementInfo>,
+    addEditCounter: (counterId: Long) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     onContextMenuOptionSelected: (counterId: Long, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
     onIncrementCounter: (Long, CtLocation?) -> Unit,
     onDecrementCounter: (Long, CtLocation?) -> Unit,
     onSortSelected: (SortOption) -> Unit,
+    onSortOrderClicked: () -> Unit,
     openUser: () -> Unit,
-//    openSettings: () -> Unit,
     pickerInitialLatLng: LatLng,
     onMessageShown: (id: Long) -> Unit,
     pickerLocationAddress: String,
 //    pickerLocation: LatLng,
     locationQueryChanged: (String) -> Unit,
     onLocationPickerMoved: (LatLng) -> Unit,
+    onSettingsClicked: () -> Unit,
+    onComposing: (CtAppBarState) -> Unit,
 ) {
     var menuOptionSelected by remember { mutableStateOf(ListItemContextMenuOption.NONE) }
     var counterContextMenuId by remember { mutableStateOf(0L) }
@@ -212,8 +226,9 @@ internal fun AllCountersScreen(
     var counterContextMenuTrackingLocation by remember { mutableStateOf(false) }
 
     var selectedCounters by remember { mutableStateOf(listOf<Long>()) }
-
     val snackbarHostState = remember { SnackbarHostState() }
+    var showSorts by remember { mutableStateOf(false) }
+
 
     val dismissSnackbarState = rememberDismissState(
         confirmValueChange = { value ->
@@ -233,6 +248,25 @@ internal fun AllCountersScreen(
         }
     }
 
+    LaunchedEffect(key1 = true) {
+        onComposing(
+            CtAppBarState(title = "Count This", navigationIcon = {}, actions = {
+                IconButton(onClick = { showSorts = !showSorts }) {
+                    Icon(
+                        imageVector = CtIcons.Sort, contentDescription = "Sort Counters Icon"
+                    )
+                }
+                IconButton(onClick = { onSettingsClicked() }) {
+                    Icon(
+                        imageVector = CtIcons.Settings,
+                        contentDescription = "Settings Icon",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            })
+        )
+    }
+
     val locationPermissionsState = rememberMultiplePermissionsState(
         listOf(
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -242,183 +276,142 @@ internal fun AllCountersScreen(
 
     val listState = rememberLazyListState()
 
-    Scaffold(
-        //sheetShape = BottomSheetShape,
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-        floatingActionButton = {
-            val extended by remember {
-                derivedStateOf {
-                    listState.firstVisibleItemIndex > 0
-                }
+    Scaffold(floatingActionButton = {
+        val extended by remember {
+            derivedStateOf {
+                listState.firstVisibleItemIndex > 0
             }
-            CounterListFab(
-                extended = { extended },
-                onClick = createNewCounter,
-            )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                SwipeToDismiss(
-                    state = dismissSnackbarState,
-                    background = {},
-                    dismissContent = { Snackbar(snackbarData = data) },
-                    modifier = Modifier
-                        .padding(horizontal = Layout.bodyMargin)
-                        .fillMaxWidth()
-                )
-            }
-            SwipeDismissSnackbarHost(
-                hostState = snackbarHostState,
+        }
+        CounterListFab(
+            extended = { extended },
+            onClick = { addEditCounter(CREATE_COUNTER_ID) },
+        )
+    }, snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState) { data ->
+            SwipeToDismiss(
+                state = dismissSnackbarState,
+                background = {},
+                dismissContent = { Snackbar(snackbarData = data) },
                 modifier = Modifier
                     .padding(horizontal = Layout.bodyMargin)
                     .fillMaxWidth()
             )
         }
-    ) { contentPadding ->
-        if (list.itemCount == 0) {
-            ZeroCounters()
-        } else {
+        SwipeDismissSnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .padding(horizontal = Layout.bodyMargin)
+                .fillMaxWidth()
+        )
+    }) { contentPadding ->
+        Column(modifier = Modifier.consumeWindowInsets(contentPadding)) {
+            AnimatedVisibility(visible = showSorts) {
+                SortOptions(
+                    currentSort = viewState.sort,
+                    sortAsc = viewState.sortAsc,
+                    onSortOrderClicked = onSortOrderClicked,
+                    onSortSelected = { sort, pressedAgain ->
+                        if (pressedAgain) onSortOrderClicked()
+                        else onSortSelected(sort)
+                    },
+                )
+            }
+
+
             LazyColumn(
                 modifier = Modifier
-                    .padding(contentPadding)
                     .fillMaxSize()
+//                    .padding(contentPadding)
                     .testTag(CounterListTestTag),
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(0.dp),
-                reverseLayout = false,
+                reverseLayout = viewState.sortAsc,
             ) {
-                items(items = list, key = { it.counter.id }) { counter ->
-                    if (counter != null) {
-                        CounterRow(
-                            modifier = Modifier.animateItemPlacement(),
-//                            mostRecentCTLocation = viewState.mostRecentLocation,
-                            useButtonIncrements = viewState.useButtonIncrements,
-                            onCounterClick = { openCounter(counter.counter.id) },
-                            onIncrementCounter = {
-                                onIncrementCounter(
-                                    counter.counter.id,
-                                    viewState.mostRecentLocation
-                                )
-                            },
-                            onDecrementCounter = {
-                                onDecrementCounter(
-                                    counter.counter.id,
-                                    viewState.mostRecentLocation
-                                )
-                            },
-                            counter = counter,
-                            locationPermissionsState = locationPermissionsState,
-                            contextMenuOptions = viewState.availableContextMenuOptions,
-                            onContextMenuOptionSelected = { option ->
-                                menuOptionSelected = option
-                                counterContextMenuId = counter.counter.id
-                                counterContextMenuName = counter.counter.name
-                                counterContextMenuTrackingLocation =
-                                    counter.counter.trackLocation
-                            }
-                        )
-                    }
+                items(
+                    items = viewState.countersWithInfo,
+                    key = { it.counter.id },
+                    contentType = { "counterListItem" },
+                ) { counter ->
+                    CounterRow(modifier = Modifier.animateItemPlacement(),
+                        useButtonIncrements = viewState.useButtonIncrements,
+                        onCounterClick = { openCounter(counter.counter.id) },
+                        onIncrementCounter = {
+                            onIncrementCounter(
+                                counter.counter.id, viewState.mostRecentLocation
+                            )
+                        },
+                        onDecrementCounter = {
+                            onDecrementCounter(
+                                counter.counter.id, viewState.mostRecentLocation
+                            )
+                        },
+                        counter = counter,
+                        locationPermissionsState = locationPermissionsState,
+                        contextMenuOptions = viewState.availableContextMenuOptions,
+                        onContextMenuOptionSelected = { option ->
+                            menuOptionSelected = option
+                            counterContextMenuId = counter.counter.id
+                            counterContextMenuName = counter.counter.name
+                            counterContextMenuTrackingLocation = counter.counter.trackLocation
+                        })
+
                 }
+//
             }
+
         }
     }
-
-    // TODO Context menu probably has to move back inside the counter row to properly attach to parent
-    // TODO or maybe we dont do that, we use the top bar like gmail... this is probably better choice
-//    if (showContextMenu) {
-//        LongPressContextMenu(
-//            availableContextMenuOptions = viewState.availableContextMenuOptions,
-//            offset = contextMenuOffset,
-//            onContextMenuOptionSelected = { option -> menuOptionSelected = option },
-//            onDismiss = { showContextMenu = false }
-//        )
-//    }
 
     when (menuOptionSelected) {
         ListItemContextMenuOption.NONE -> Unit // don't do anything
         ListItemContextMenuOption.EDIT -> {
-            editCounter(counterContextMenuId, counterContextMenuTrackingLocation)
+            addEditCounter(counterContextMenuId)
             menuOptionSelected = ListItemContextMenuOption.NONE
         }
 
         ListItemContextMenuOption.MOVE -> {
+            // immediately show how user custom sorted them so they can adjust to their liking
+            onSortSelected(SortOption.USER_SORTED)
             TODO()
         }
 
-        ListItemContextMenuOption.ADD_TIME ->
-            OpenAddTimeDialog(
-                counterName = counterContextMenuName,
-                trackingLocation = counterContextMenuTrackingLocation,
-                pickerInitialLatLng = pickerInitialLatLng,
+        ListItemContextMenuOption.ADD_TIME -> OpenAddTimeDialog(counterName = counterContextMenuName,
+            trackingLocation = counterContextMenuTrackingLocation,
+            pickerInitialLatLng = pickerInitialLatLng,
 //                pickerCurrentLocation = pickerLocation,
-                pickerLocationAddress = pickerLocationAddress,
-                locationQueryChanged = locationQueryChanged,
-                onLocationChanged = onLocationPickerMoved,
-                onConfirm = { addTimeInfo ->
-                    onContextMenuOptionSelected(
-                        counterContextMenuId,
-                        menuOptionSelected,
-                        addTimeInfo
-                    )
-                    menuOptionSelected = ListItemContextMenuOption.NONE
-                },
-                onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
-            )
+            pickerLocationAddress = pickerLocationAddress,
+            locationQueryChanged = locationQueryChanged,
+            onLocationChanged = onLocationPickerMoved,
+            onConfirm = { addTimeInfo ->
+                onContextMenuOptionSelected(
+                    counterContextMenuId, menuOptionSelected, addTimeInfo
+                )
+                menuOptionSelected = ListItemContextMenuOption.NONE
+            },
+            onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE })
 
-        ListItemContextMenuOption.RESET ->
-            OpenResetAlertDialog(
-                counterName = counterContextMenuName,
-                onConfirm = {
-                    onContextMenuOptionSelected(
-                        counterContextMenuId,
-                        menuOptionSelected,
-                        null
-                    )
-                    menuOptionSelected = ListItemContextMenuOption.NONE
-                },
-                onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
-            )
+        ListItemContextMenuOption.RESET -> OpenResetAlertDialog(counterName = counterContextMenuName,
+            onConfirm = {
+                onContextMenuOptionSelected(
+                    counterContextMenuId, menuOptionSelected, null
+                )
+                menuOptionSelected = ListItemContextMenuOption.NONE
+            },
+            onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE })
 
-        ListItemContextMenuOption.DELETE ->
-            OpenDeleteAlertDialog(
-                counterName = counterContextMenuName,
-                onConfirm = {
-                    onContextMenuOptionSelected(
-                        counterContextMenuId,
-                        menuOptionSelected,
-                        null
-                    )
-                    menuOptionSelected = ListItemContextMenuOption.NONE
-                },
-                onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE }
-            )
+        ListItemContextMenuOption.DELETE -> OpenDeleteAlertDialog(counterName = counterContextMenuName,
+            onConfirm = {
+                onContextMenuOptionSelected(
+                    counterContextMenuId, menuOptionSelected, null
+                )
+                menuOptionSelected = ListItemContextMenuOption.NONE
+            },
+            onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE })
     }
-//    list.apply {
-//        when{
-//            loadState.refresh is LoadState.Loading -> {
-//
-//            }
-//            loadState.append is LoadState.Loading -> {
-//
-//            }
-//            loadState.refresh is LoadState.Error -> {
-//
-//            }
-//            loadState.append is LoadState.Error -> {
-//                val e = list.loadState.append as LoadState.Error
-//                item{
-//                    ErrorItem(
-//                        message = e.error.localizedMessage!!,
-//                        onClickRetry = { retry()}
-//                    )
-//                }
-//            }
-//        }
-//    }
 }
 
 @Composable
-fun ZeroCounters() {
+fun ZeroCounters(contentPadding: PaddingValues) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -434,48 +427,159 @@ fun ZeroCounters() {
     }
 }
 
-@Composable
-fun ListError() {
-    Text(stringResource(R.string.list_error))
-}
-
 const val CounterListTestTag = "CounterListTestTag"
+
+
+@Composable
+fun SortOptions(
+    currentSort: SortOption,
+    sortAsc: Boolean,
+    onSortSelected: (SortOption, Boolean) -> Unit,
+    onSortOrderClicked: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .height(IntrinsicSize.Max)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        TextButton(
+            onClick = {
+                onSortSelected(SortOption.ALPHABETICAL, currentSort == SortOption.ALPHABETICAL)
+            }, colors = ButtonColors(
+                containerColor = if (currentSort == SortOption.ALPHABETICAL) MaterialTheme.colorScheme.surfaceVariant
+                else MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = Color.DarkGray,
+                disabledContentColor = Color.Gray,
+            )
+        ) {
+            Text(
+                "Name" + if (currentSort == SortOption.ALPHABETICAL) {
+                    ""
+//                    if (sortAsc) {
+//                        " (A - Z)"
+//                    } else {
+//                        " (Z - A)"
+//                    }
+                } else {
+                    ""
+                },
+                Modifier
+                    .fillMaxHeight()
+                    .padding(4.dp)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                textAlign = TextAlign.Center
+            )
+        }
+        TextButton(
+            onClick = {
+                onSortSelected(SortOption.DATE_ADDED, currentSort == SortOption.DATE_ADDED)
+            }, colors = ButtonColors(
+                containerColor = if (currentSort == SortOption.DATE_ADDED) MaterialTheme.colorScheme.surfaceVariant
+                else MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = Color.DarkGray,
+                disabledContentColor = Color.Gray,
+            )
+        ) {
+            Text(
+                "Created" + if (currentSort == SortOption.DATE_ADDED) {
+                    ""
+//                    if (!sortAsc) {
+//                        " (Newest)"
+//                    } else {
+//                        " (Oldest)"
+//                    }
+                } else {
+                    ""
+                },
+                Modifier
+                    .fillMaxHeight()
+                    .padding(4.dp)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                textAlign = TextAlign.Center
+            )
+        }
+        TextButton(
+            onClick = {
+                onSortSelected(SortOption.LAST_UPDATED, currentSort == SortOption.LAST_UPDATED)
+            }, colors = ButtonColors(
+                containerColor = if (currentSort == SortOption.LAST_UPDATED) MaterialTheme.colorScheme.surfaceVariant
+                else MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = Color.DarkGray,
+                disabledContentColor = Color.Gray,
+            )
+        ) {
+            Text(
+                "Incremented" + if (currentSort == SortOption.LAST_UPDATED) {
+                    ""
+//                    if (!sortAsc) {
+//                        " (Newest)"
+//                    } else {
+//                        " (Oldest)"
+//                    }
+                } else {
+                    ""
+                },
+                Modifier
+                    .fillMaxHeight()
+                    .padding(4.dp)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        VerticalDivider()
+
+        IconButton(
+            onClick = { onSortOrderClicked() },
+        ) {
+            val imageVector = if (currentSort == SortOption.ALPHABETICAL) {
+                CtIcons.SortAplha
+            } else {
+                if (!sortAsc) CtIcons.ArrowUp else CtIcons.ArrowDown
+            }
+            Icon(
+                imageVector = imageVector, contentDescription = "Sort Asc or Desc"
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CounterRow(
-//    mostRecentCTLocation: CTLocation?,
     modifier: Modifier,
-    onCounterClick: () -> Unit, //(Long) -> Unit,
+    onCounterClick: () -> Unit,
     onIncrementCounter: () -> Unit,
     onDecrementCounter: () -> Unit,
     counter: CounterWithIncrementInfo,
     useButtonIncrements: Boolean,
     locationPermissionsState: MultiplePermissionsState,
     contextMenuOptions: List<ListItemContextMenuOption>,
-    // TODO  create sealed class for these variables...
+    // TODO  create sealed class for these variables...?
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
 ) {
-    val showContextMenu by remember { mutableStateOf(false) }
-///////////////////////////////////////////////////  TEST AREA  //////////////////////////////////
-    val contextMenuOffset by remember { mutableStateOf(Offset(0F, 0F)) }
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
     if (useButtonIncrements) {
-        Row(horizontalArrangement = Arrangement.SpaceAround) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.height(IntrinsicSize.Min)
+        ) {
             CounterRowCard(
-                showContextMenu = showContextMenu,
+                modifier = Modifier.weight(1f),
                 contextMenuOptions = contextMenuOptions,
-                contextMenuOffset = contextMenuOffset,
                 onCounterClick = onCounterClick,
                 counter = counter,
                 onContextMenuOptionSelected = onContextMenuOptionSelected
             )
-
             IncrementButtons(
+                modifier = modifier.fillMaxHeight(),
                 onIncrementCounter = onIncrementCounter,
                 onDecrementCounter = onDecrementCounter,
-                locationPermissionsState
+                locationPermissionsState = locationPermissionsState,
             )
         }
 
@@ -483,12 +587,9 @@ fun CounterRow(
         SwipeToDismissCounterRow(
             counter = counter,
             locationPermissionsState = locationPermissionsState,
-//            mostRecentCTLocation = mostRecentCTLocation,
             onDecrementCounter = onDecrementCounter,
             onIncrementCounter = onIncrementCounter,
             modifier = modifier,
-            showContextMenu = showContextMenu,
-            contextMenuOffset = contextMenuOffset,
             onCounterClick = onCounterClick,
             contextMenuOptions = contextMenuOptions,
             onContextMenuOptionSelected = onContextMenuOptionSelected
@@ -501,17 +602,39 @@ fun CounterRow(
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun IncrementButtons(
+    modifier: Modifier = Modifier,
     onIncrementCounter: () -> Unit,
     onDecrementCounter: () -> Unit,
     locationPermissionsState: MultiplePermissionsState
 ) {
-    // TODO if trying to click without permissions do stuff
-    Button(onClick = onDecrementCounter) {
-        Text(text = "-", fontWeight = FontWeight.Bold)
+    Row(
+        modifier = modifier,
+//        verticalAlignment = Alignment.CenterVertically,
+//        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        // TODO if trying to click without permissions do stuff
+        IconButton(
+            modifier = modifier.fillMaxHeight(),
+            onClick = onDecrementCounter,
+//            colors = IconButtonColors(containerColor = MaterialTheme.colorScheme.onPrimaryContainer,)
+        ) {
+            Icon(
+                imageVector = CtIcons.Remove,
+                contentDescription = "Decrement Icon",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
+        IconButton(
+            modifier = modifier.fillMaxHeight(), onClick = onIncrementCounter
+        ) {
+            Icon(
+                imageVector = CtIcons.Add,
+                contentDescription = "Increment Icon",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
     }
-    Button(onClick = onIncrementCounter) {
-        Text(text = "+", fontWeight = FontWeight.Bold)
-    }
+
 }
 
 @Composable
@@ -520,21 +643,15 @@ private fun SwipeToDismissCounterRow(
     counter: CounterWithIncrementInfo,
     locationPermissionsState: MultiplePermissionsState,
     onDecrementCounter: () -> Unit,
-//    mostRecentCTLocation: CTLocation?,
     onIncrementCounter: () -> Unit,
     modifier: Modifier,
-    showContextMenu: Boolean,
-    contextMenuOffset: Offset,
-    onCounterClick: () -> Unit, //(Long) -> Unit,
+    onCounterClick: () -> Unit,
     contextMenuOptions: List<ListItemContextMenuOption>,
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
 ) {
-    val dismissState = rememberDismissState(
-        confirmValueChange = {
-            if (counter.counter.trackLocation == true &&
-                !locationPermissionsState.permissions.first().status.isGranted &&
-                !locationPermissionsState.permissions.last().status.isGranted
-            ) { //&& !viewState.locationPermissionGranted){
+    val dismissState =
+        rememberDismissState(initialValue = DismissValue.Default, confirmValueChange = {
+            if (counter.counter.trackLocation && !locationPermissionsState.permissions.first().status.isGranted && !locationPermissionsState.permissions.last().status.isGranted) { //&& !viewState.locationPermissionGranted){
                 // location permission was deactivated when away from the app
                 // as permission needs to be granted when adding a counter that tracks location
                 locationPermissionsState.launchMultiplePermissionRequest()
@@ -542,12 +659,10 @@ private fun SwipeToDismissCounterRow(
             when (it) {
                 DismissValue.DismissedToStart -> {
                     onDecrementCounter()
-//                    onDecrementCounter(counter.counter.id, mostRecentCTLocation)
                 }
 
                 DismissValue.DismissedToEnd -> {
                     onIncrementCounter()
-//                    onIncrementCounter(counter.counter.id, mostRecentCTLocation)
                 }
 
                 DismissValue.Default -> {
@@ -556,11 +671,10 @@ private fun SwipeToDismissCounterRow(
             }
             // return false because we don't actually want to remove any of these swipes
             false
-        }
-    )
+        })
 
     SwipeToDismiss(
-        modifier = modifier,
+//        modifier = modifier,
         state = dismissState,
         directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
         //dismissThresholds = { FractionalThreshold(.2f) },
@@ -569,20 +683,24 @@ private fun SwipeToDismissCounterRow(
 
             val color by animateColorAsState(
                 targetValue = when (dismissState.targetValue) {
-                    DismissValue.Default -> Color.LightGray
-                    DismissValue.DismissedToEnd -> Color.Green
-                    DismissValue.DismissedToStart -> MaterialTheme.colorScheme.error
-                }
+                    DismissValue.Default -> MaterialTheme.colorScheme.secondaryContainer
+                    DismissValue.DismissedToEnd -> MaterialTheme.colorScheme.tertiaryContainer
+                    DismissValue.DismissedToStart -> MaterialTheme.colorScheme.errorContainer
+                }, label = "Swipe to Increment Color"
             )
+            val iconColor = when (direction) {
+                DismissDirection.StartToEnd -> MaterialTheme.colorScheme.onTertiaryContainer
+                DismissDirection.EndToStart -> MaterialTheme.colorScheme.onErrorContainer
+            }
 
             val icon = when (direction) {
                 DismissDirection.StartToEnd -> Icons.Default.Add
                 DismissDirection.EndToStart -> Icons.Default.Remove
             }
+
             val scale by animateFloatAsState(
-                targetValue = if (dismissState.targetValue ==
-                    DismissValue.Default
-                ) 0.8f else 1.2f
+                targetValue = if (dismissState.targetValue == DismissValue.Default) 0.8f else 1.2f,
+                label = "Increment Icon Scale"
             )
 
             val alignment = when (direction) {
@@ -594,108 +712,114 @@ private fun SwipeToDismissCounterRow(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color)
-                    .padding(start = 12.dp, end = 12.dp),
-                contentAlignment = alignment
-            )
-            {
-                Icon(icon, contentDescription = "Icon", modifier = Modifier.scale(scale))
+                    .padding(start = 12.dp, end = 12.dp), contentAlignment = alignment
+            ) {
+                Icon(icon, contentDescription = "Icon", modifier = Modifier.scale(scale), iconColor)
             }
         },
         dismissContent = {
             CounterRowCard(
-                showContextMenu = showContextMenu,
-                contextMenuOffset = contextMenuOffset,
                 onCounterClick = onCounterClick,
                 counter = counter,
                 dismissState = dismissState,
                 contextMenuOptions = contextMenuOptions,
                 onContextMenuOptionSelected = onContextMenuOptionSelected
             )
-        }
-    )
+        })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CounterRowCard(
-    showContextMenu: Boolean,
-    contextMenuOffset: Offset,
-    onCounterClick: () -> Unit, //(Long) -> Unit,
+    modifier: Modifier = Modifier,
+    onCounterClick: () -> Unit,
     counter: CounterWithIncrementInfo,
     contextMenuOptions: List<ListItemContextMenuOption>,
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit,
     dismissState: DismissState? = null,
 ) {
     var showContextMenuInRow by remember { mutableStateOf(false) }
-//    var showContextMenu1 = showContextMenu
-    var contextMenuOffset1 = contextMenuOffset
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
+    var pressOffset by remember {
+        mutableStateOf(DpOffset.Zero)
+    }
+    var itemHeight by remember {
+        mutableStateOf(0.dp)
+    }
+    val density = LocalDensity.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Card(colors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.primaryContainer
+    ),
 //                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
 //                    else
 //                        MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { offset ->
-//                        showContextMenu1 = true
-                        showContextMenuInRow = true
-                        contextMenuOffset1 = offset
-                    },
-                    onTap = { onCounterClick.invoke() }//{ onCounterClick(counter.counter.id) }
-                )
+        modifier = modifier
+            .onSizeChanged {
+                itemHeight = with(density) { it.height.toDp() }
             }
-            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { offset ->
+                    showContextMenuInRow = true
+                    pressOffset = DpOffset(offset.x.toDp(), offset.y.toDp())
+                },
+                    // show ripple effect
+                    onPress = {
+                        val press = PressInteraction.Press(it)
+                        interactionSource.emit(press)
+                        tryAwaitRelease()
+                        interactionSource.emit(PressInteraction.Release(press))
+                    }, onTap = { onCounterClick.invoke() })
+            }
+            .indication(interactionSource, LocalIndication.current)
             .height(IntrinsicSize.Min),
         elevation = CardDefaults.cardElevation(
             defaultElevation = animateDpAsState(
-                targetValue = if (dismissState?.dismissDirection != null) 4.dp else 1.dp
+                targetValue = if (dismissState?.dismissDirection != null) 4.dp else 1.dp,
+                label = "Card Swipe Animation"
             ).value
-        )
-    ) {
+        )) {
         CounterRow(counter)
 
-        if (showContextMenuInRow)//showContextMenu1)
-            LongPressContextMenu(
-                availableContextMenuOptions = contextMenuOptions,
-                offset = contextMenuOffset1,
-                onContextMenuOptionSelected = onContextMenuOptionSelected,
-                onDismiss = {
-//                    showContextMenu1 = false
-                    showContextMenuInRow = false
-                }
-            )
+        LongPressContextMenu(
+            showMenu = showContextMenuInRow,
+            availableContextMenuOptions = contextMenuOptions,
+            dpOffset = pressOffset.copy(
+                y = pressOffset.y - itemHeight // menu is anchored to bottom but press offset is measured from top
+                //TODO if menu displays above tap, this offset is wrong
+            ),
+            onContextMenuOptionSelected = onContextMenuOptionSelected,
+            onDismiss = {
+                showContextMenuInRow = false
+            },
+        )
     }
 }
 
 @Composable
 private fun LongPressContextMenu(
     availableContextMenuOptions: List<ListItemContextMenuOption>,
-//    showMenu: Boolean,
-    offset: Offset,
+    showMenu: Boolean,
+    dpOffset: DpOffset,
+//    offset: Offset,
 //    counter: CounterEntity,
 //    counterName: String,
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
     ListContextMenu(
-//        modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart),
         contextMenuOptions = availableContextMenuOptions,
-//        showMenu = true,//showMenu,
-        offset = offset,
+        dpOffset = dpOffset,
         onDismiss = onDismiss,
         onOptionSelected = onContextMenuOptionSelected,
+        showMenu = showMenu,
     )
 }
 
 
 @Composable
 private fun OpenResetAlertDialog(
-    counterName: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    counterName: String, onConfirm: () -> Unit, onDismiss: () -> Unit
 ) {
     CountThisAlertDialog(
         title = stringResource(R.string.dialog_title_reset_counter),
@@ -709,9 +833,7 @@ private fun OpenResetAlertDialog(
 
 @Composable
 private fun OpenDeleteAlertDialog(
-    counterName: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    counterName: String, onConfirm: () -> Unit, onDismiss: () -> Unit
 ) {
     CountThisAlertDialog(
         title = stringResource(R.string.dialog_title_delete_counter),
@@ -756,8 +878,7 @@ private fun OpenAddTimeDialog(
             pickerInitialLatLng = pickerInitialLatLng,
 //            pickerCurrentLocation = pickerCurrentLocation,
             onLocationQueryChanged = {
-                if (!isMapEditable)
-                    locationQueryChanged(it)
+                if (!isMapEditable) locationQueryChanged(it)
             },
             onCameraMoved = onLocationChanged,
             mapEditOptionButton = { isMapEditable = !isMapEditable },
@@ -803,7 +924,7 @@ private fun CounterRow(counter: CounterWithIncrementInfo) {
         if (counter.counter.goal > 0) {
             LinearProgressIndicator(
                 progress = (counter.counter.count.toFloat() / counter.counter.goal),
-                color = Color.Blue,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,//Color.Blue,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(4.dp)
@@ -840,15 +961,10 @@ private fun CounterRow(counter: CounterWithIncrementInfo) {
                     .padding(end = 10.dp)
                     .wrapContentWidth(Alignment.End),
                 maxLines = 1,
-                text = if (counter.mostRecentIncrementInstant != null)
-                    LocalCountThisDateFormatter.current
-                        .formatShortRelativeTime(
-                            Instant.ofEpochMilli(counter.mostRecentIncrementInstant!!),
-                            counter.mostRecentIncrementInstantOffset!!
-                        )
-                else
-                    LocalCountThisDateFormatter.current
-                        .formatShortRelativeTime(counter.counter.creationDateTime)
+                text = if (counter.mostRecentIncrementDate != null) {
+                    LocalCountThisDateFormatter.current.formatShortRelativeTime(counter.mostRecentIncrementDate!!)
+
+                } else LocalCountThisDateFormatter.current.formatShortRelativeTime(counter.counter.creationDate)
 
             )
         }
@@ -872,8 +988,7 @@ fun AddLocationDialog(
         onDismissRequest = onDismissRequest,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(0.9f),
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxSize(0.9f), verticalArrangement = Arrangement.Center
         ) {
 //            Title(
 //                isMapEditable = isMapEditable,
@@ -895,8 +1010,7 @@ private fun LocationConfirmationButton(
     onConfirmClicked: () -> Unit,
 ) {
     Button(
-        onClick = onConfirmClicked,
-        modifier = Modifier.fillMaxWidth()
+        onClick = onConfirmClicked, modifier = Modifier.fillMaxWidth()
     ) {
         Text(text = stringResource(R.string.dialog_add_location_confirm_button_text))
     }
@@ -911,14 +1025,12 @@ private fun Title(
     onButtonClicked: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
 //            .padding(horizontal = Layout.bodyMargin),
 //        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         TextField(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
 //                .padding(end = 80.dp),
             value = locationQuery,
             onValueChange = onLocationQueryChanged,
@@ -972,9 +1084,7 @@ private fun Body(
     val mapProperties by remember {
         mutableStateOf(
             MapProperties(
-                isMyLocationEnabled = true,
-                maxZoomPreference = 20f,
-                minZoomPreference = 2f
+                isMyLocationEnabled = true, maxZoomPreference = 20f, minZoomPreference = 2f
             )
         )
     }
@@ -997,8 +1107,7 @@ private fun Body(
 
 
     Box(
-        modifier = Modifier
-            .height(500.dp)
+        modifier = Modifier.height(500.dp)
 //            .clip(RoundedCornerShape(10.dp))
     ) {
         GoogleMap(
@@ -1018,8 +1127,7 @@ fun MapPinOverlay() {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.BottomCenter
+                .fillMaxWidth(), contentAlignment = Alignment.BottomCenter
         ) {
             Image(
                 modifier = Modifier.size(50.dp),
@@ -1048,23 +1156,19 @@ private fun CounterListFab(
             .widthIn(min = 48.dp),
         containerColor = MaterialTheme.colorScheme.tertiaryContainer
     ) {
-        AnimatingFabContent(
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = stringResource(
-                        R.string.add
-                    )
+        AnimatingFabContent(icon = {
+            Icon(
+                imageVector = Icons.Outlined.Add, contentDescription = stringResource(
+                    R.string.add
                 )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.add
-                    ),
-                )
-            },
-            extended = extended()
+            )
+        }, text = {
+            Text(
+                text = stringResource(
+                    id = R.string.add
+                ),
+            )
+        }, extended = extended()
         )
     }
 }

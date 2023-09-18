@@ -37,6 +37,25 @@ fun AnalyticsHelper.logDarkThemeConfigChanged(darkThemeConfigName: String) =
         ),
     )
 
+fun AnalyticsHelper.logSortStateChanged(sortName: String) =
+    logEvent(
+        AnalyticsEvent(
+            type = "all_counters_sort_changed",
+            extras = listOf(
+                Param(key = "all_counters_sort", value = sortName),
+            ),
+        ),
+    )
+fun AnalyticsHelper.logSortAscStateToggled(sortAsc: Boolean) =
+    logEvent(
+        AnalyticsEvent(
+            type = "all_counters_sort_asc_toggled",
+            extras = listOf(
+                Param(key = "all_counters_sort_asc", value = sortAsc.toString()),
+            ),
+        ),
+    )
+
 fun AnalyticsHelper.logDynamicColorPreferenceChanged(useDynamicColor: Boolean) =
     logEvent(
         AnalyticsEvent(

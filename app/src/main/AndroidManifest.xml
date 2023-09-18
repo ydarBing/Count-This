@@ -19,9 +19,9 @@
         android:name=".CountThisApplication"
         android:allowBackup="true"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@drawable/ic_ct_notification"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_ct_notification"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.countthis.Home">
 

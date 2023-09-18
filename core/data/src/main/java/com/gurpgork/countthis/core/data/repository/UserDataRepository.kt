@@ -1,6 +1,7 @@
 package com.gurpgork.countthis.core.data.repository
 
 import com.gurpgork.countthis.core.model.data.DarkThemeConfig
+import com.gurpgork.countthis.core.model.data.SortOption
 import com.gurpgork.countthis.core.model.data.UserData
 import kotlinx.coroutines.flow.Flow
 
@@ -42,5 +43,13 @@ interface UserDataRepository {
      * Sets whether the user has completed the onboarding process.
      */
     suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean)
+    /**
+     * Sets how the main screen counters should be sorted
+     */
+    suspend fun setSort(sort: SortOption)
+    /**
+     * Sets how the main screen counters should be ordered, ascending or descending
+     */
+    suspend fun toggleSortAsc()
 
 }

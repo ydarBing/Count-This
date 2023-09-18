@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +20,7 @@ import com.gurpgork.countthis.core.model.data.History
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
 
 @Composable
-internal fun HistoryTab(history: List<History>) {
+fun HistoryTab(history: List<History>) {
     val listState = rememberLazyListState()
 
 //    if (history.isNotEmpty()) {
@@ -51,7 +51,7 @@ internal fun HistoryTab(history: List<History>) {
                 Text(text = "$s - $e")
             }
 
-            Divider()
+            HorizontalDivider()
         }
 
     }

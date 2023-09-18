@@ -12,9 +12,6 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
-//val appVersionCode = propOrDef("COUNTTHIS_VERSIONCODE", 1).toInt()
-//println("APK version code: $appVersionCode")
-
 //val useReleaseKeystore = rootProject.file("release/app-release.jks").exists()
 
 android {
@@ -30,46 +27,6 @@ android {
             useSupportLibrary = true
         }
     }
-
-//    signingConfigs {
-//        // We use a bundled debug keystore, to allow debug builds from CI to be upgradable
-//        getByName("debug") {
-//            storeFile = rootProject.file("release/app-debug.keystore")
-//            storePassword = "android"
-//            keyAlias = "androiddebugkey"
-//            keyPassword = "android"
-//        }
-//        create("release"){
-//            if (useReleaseKeystore) {
-//                storeFile = rootProject.file("release/app-release.jks")
-//                storePassword = propOrDef("COUNTTHIS_RELEASE_KEYSTORE_PWD", "")
-//                keyAlias = "countthis"
-//                keyPassword = propOrDef("COUNTTHIS_RELEASE_KEY_PWD", "")
-//            }
-//        }
-//    }
-
-//    lint {
-//        baseline = file("lint-baseline.xml")
-//        // Disable lintVital. Not needed since lint is run on CI
-//        checkReleaseBuilds = false
-//        // Ignore any tests
-//        ignoreTestSources = true
-//        // Make the build fail on any lint errors
-//        abortOnError = true
-//        // Allow lint to check dependencies
-//        checkDependencies = true
-//    }
-//TODO test uncommenting this
-//    buildFeatures {
-//        viewBinding = true
-//        compose = true
-//    }
-//    composeOptions {
-//        kotlinCompilerExtensionVersion = libs.versions.composecompiler.get()
-//    }
-
-
 
     buildTypes {
         debug {
@@ -113,7 +70,7 @@ dependencies {
     implementation(project(":feature:accountui"))
     implementation(project(":feature:allcounters"))
     implementation(project(":feature:counterdetails"))
-    implementation(project(":feature:editcreate"))
+    implementation(project(":feature:addedit"))
     implementation(project(":feature:settings"))
 
     implementation(project(":core:common"))
@@ -162,7 +119,7 @@ dependencies {
 // Dagger - Hilt
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.ext.work)
-    kapt(libs.hilt.ext.compiler)
+    ksp(libs.hilt.ext.compiler)
 
 
     implementation(libs.kotlin.stdlib)

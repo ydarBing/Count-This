@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,7 +57,7 @@ fun CollapsableLazyColumn(
                             .weight(1f)
                     )
                 }
-                Divider()
+                HorizontalDivider()
             }
             if (!collapsed) {
                 items(dataItem.rows) { row ->
@@ -69,7 +69,7 @@ fun CollapsableLazyColumn(
                                 .padding(vertical = 10.dp)
                         )
                     }
-                    Divider()
+                    HorizontalDivider()
                 }
             }
         }

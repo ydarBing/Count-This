@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.gurpgork.countthis.core.model.data.History
-import java.time.OffsetDateTime
+import kotlinx.datetime.Instant
 
 @Entity(
     tableName = "history",
@@ -25,8 +25,10 @@ data class HistoryEntity (
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long = 0,
     @ColumnInfo(name = "counter_id") val counterId: Long,
     @ColumnInfo(name = "count") val count: Int? = null,
-    @ColumnInfo(name = "start_date") val startDate: OffsetDateTime,
-    @ColumnInfo(name = "end_date") val endDate: OffsetDateTime,
+    @ColumnInfo(name = "start_date") val startDate: Instant,
+    @ColumnInfo(name = "end_date") val endDate: Instant,
+//    @ColumnInfo(name = "start_date") val startDate: OffsetDateTime,
+//    @ColumnInfo(name = "end_date") val endDate: OffsetDateTime,
 )
 
 fun HistoryEntity.asExternalModel() = History(

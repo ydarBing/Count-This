@@ -45,6 +45,6 @@ include(":core:ui")
 
 include(":feature:settings")
 include(":feature:counterdetails")
-include(":feature:editcreate")
+include(":feature:addedit")
 include(":feature:allcounters")
 include(":feature:accountui")

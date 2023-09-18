@@ -30,12 +30,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withTimeout
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 abstract class Interactor<in P> {
     operator fun invoke(
         params: P,
-        timeoutMs: Long = defaultTimeoutMs,
+        timeoutMs: Duration = defaultTimeoutMs,
     ): Flow<InvokeStatus> = flow {
         try {
             withTimeout(timeoutMs) {
@@ -53,32 +54,14 @@ abstract class Interactor<in P> {
     protected abstract suspend fun doWork(params: P)
 
     companion object {
-        private val defaultTimeoutMs = TimeUnit.MINUTES.toMillis(5)
+        private val defaultTimeoutMs = 5.minutes
     }
-}
-
-abstract class ResultInteractor<in P, R> {
-    operator fun invoke(params: P): Flow<R> = flow {
-        emit(doWork(params))
-    }
-
-    suspend fun executeSync(params: P): R = doWork(params)
-
-    protected abstract suspend fun doWork(params: P): R
 }
 
 abstract class PagingInteractor<P : PagingInteractor.Parameters<T>, T : Any> : SubjectInteractor<P, PagingData<T>>() {
     interface Parameters<T : Any> {
         val pagingConfig: PagingConfig
     }
-}
-
-abstract class SuspendingWorkInteractor<P : Any, T> : SubjectInteractor<P, T>() {
-    override fun createObservable(params: P): Flow<T> = flow {
-        emit(doWork(params))
-    }
-
-    abstract suspend fun doWork(params: P): T
 }
 
 abstract class SubjectInteractor<P : Any, T> {

@@ -1,7 +1,7 @@
 plugins {
     id("countthis.android.library")
     id("countthis.android.library.jacoco")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -17,7 +17,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
 
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
 //    testImplementation(project(":core:testing"))
 }

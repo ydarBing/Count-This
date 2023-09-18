@@ -16,7 +16,6 @@
 
 package com.gurpgork.countthis.core.designsystem.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -24,7 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults.Elevation
+import androidx.compose.material3.SearchBarDefaults.ShadowElevation
+import androidx.compose.material3.SearchBarDefaults.TonalElevation
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.Dp
  * A wrapper around [TopAppBar] which allows some [bottomContent] below the bar, but within the same
  * surface. This is useful for tabs.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBarWithBottomContent(
     title: @Composable () -> Unit,
@@ -50,8 +50,8 @@ fun TopAppBarWithBottomContent(
     topAppBarColors: TopAppBarColors = topAppBarColors(),
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
     contentColor: Color = contentColorFor(backgroundColor),
-    tonalElevation: Dp = Elevation, //TODO change this default value to something better
-    shadowElevation: Dp = Elevation, //TODO change this default value to something better
+    tonalElevation: Dp = TonalElevation, //TODO change this default value to something better
+    shadowElevation: Dp = ShadowElevation, //TODO change this default value to something better
     contentPadding: PaddingValues? = null
 ) {
     Surface(

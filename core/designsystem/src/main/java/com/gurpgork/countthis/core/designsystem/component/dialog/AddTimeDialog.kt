@@ -72,7 +72,7 @@ fun AddTimeDialog(
     ) {
         Surface(
             shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.primaryContainer,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             tonalElevation = 3.0.dp,
         ) {
             Column(
@@ -172,7 +172,7 @@ private fun BodyMaterial3(
                     .requiredWidth(360.0.dp)
                     .heightIn(max = 568.0.dp),
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 tonalElevation = 6.0.dp,
             ) {
                 Column(verticalArrangement = Arrangement.SpaceBetween,

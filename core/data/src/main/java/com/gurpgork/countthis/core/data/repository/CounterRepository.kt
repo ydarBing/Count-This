@@ -16,19 +16,26 @@ import kotlinx.coroutines.flow.Flow
 interface CounterRepository {
     suspend fun resetCounter(counterId: Long)
     suspend fun deleteWithId(id: Long)
-    fun getCounter(id: Long) : Counter
-    fun observeCounter(id: Long) : Flow<Counter>
-    fun observeCounterList(numCounterToObserver: Int) : Flow<List<Counter>>
-    fun observeForPaging(pagingConfig: PagingConfig, sort: SortOption): Flow<PagingData<CounterWithIncrementInfo>>
-    fun observeCounterWithIncrementsAndHistory(counterId: Long) : Flow<CounterWithIncrementsAndHistory?>
+    suspend fun getCounterById(id: Long): Counter?
+    fun observeCounter(id: Long): Flow<Counter>
+    fun observeCounterList(numCounterToObserver: Int): Flow<List<Counter>>
+    fun observeCountersWithInfo(): Flow<List<CounterWithIncrementInfo>>
 
-    suspend fun getCounterWithIncrementsAndHistory(counterId: Long) : CounterWithIncrementsAndHistory?
+    fun observeCountersWithInfo(sqlSort: SortOption): Flow<List<CounterWithIncrementInfo>>
+    fun observeForPaging(
+        pagingConfig: PagingConfig,
+        sort: SortOption
+    ): Flow<PagingData<CounterWithIncrementInfo>>
+
+    fun observeCounterWithIncrementsAndHistory(counterId: Long): Flow<CounterWithIncrementsAndHistory?>
+
+    suspend fun getCounterWithIncrementsAndHistory(counterId: Long): CounterWithIncrementsAndHistory?
+
     // By default Room runs suspend queries off the main thread, therefore, we don't need to
     // implement anything else to ensure we're not doing long running database work
     // off the main thread.
     suspend fun insertCounter(counter: Counter)
     suspend fun updateCounter(counter: Counter)
-
 
 
 }

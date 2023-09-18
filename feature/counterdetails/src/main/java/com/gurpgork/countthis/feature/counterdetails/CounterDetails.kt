@@ -2,19 +2,36 @@ package com.gurpgork.countthis.feature.counterdetails
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,25 +41,27 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gurpgork.countthis.core.designsystem.component.AnimatingFabContent
-import com.gurpgork.countthis.core.designsystem.component.AppBarAlphas
+import com.gurpgork.countthis.core.designsystem.component.CtAppBarState
 import com.gurpgork.countthis.core.designsystem.component.FunctionalityNotAvailablePopup
-import com.gurpgork.countthis.core.designsystem.component.TopAppBarWithBottomContent
 import com.gurpgork.countthis.core.designsystem.component.bodyWidth
 import com.gurpgork.countthis.core.designsystem.component.pagerTabIndicatorOffset
+import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import com.gurpgork.countthis.core.designsystem.theme.CtTheme
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun CounterDetailsRoute(
     navigateUp: () -> Unit,
-    openEditCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
+    openEditCounter: (counterId: Long) -> Unit,
     openCounterDetails: (counterId: Long) -> Unit,
-){
+    onComposing: (CtAppBarState) -> Unit,
+) {
     CounterDetails(
         viewModel = hiltViewModel(),
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
         openCounterDetails = openCounterDetails,
+        onComposing = onComposing,
     )
 }
 
@@ -50,100 +69,86 @@ internal fun CounterDetailsRoute(
 internal fun CounterDetails(
     viewModel: CounterDetailsViewModel,
     navigateUp: () -> Unit,
-    openEditCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
+    openEditCounter: (counterId: Long) -> Unit,
     openCounterDetails: (counterId: Long) -> Unit,
+    onComposing: (CtAppBarState) -> Unit,
 ) {
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-//    val viewState by viewModel.state.collectAsState()
 
     CounterDetails(
         viewState = viewState,
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
-        openCounterDetails = openCounterDetails
+        onDeleteCounter = {id -> viewModel.deleteCounter(id)},
+        openCounterDetails = openCounterDetails,
+        onComposing = onComposing,
     )
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class,
 )
 @Composable
 internal fun CounterDetails(
     viewState: CounterDetailsViewState,
     navigateUp: () -> Unit,
-    openEditCounter: (counterId: Long, wasTrackingLocation: Boolean) -> Unit,
+    openEditCounter: (counterId: Long) -> Unit,
+    onDeleteCounter: (counterId: Long) -> Unit,
     openCounterDetails: (counterId: Long) -> Unit, // used to open another counter
+    onComposing: (CtAppBarState) -> Unit,
 ) {
     var functionalityNotAvailablePopupShown by remember { mutableStateOf(false) }
     if (functionalityNotAvailablePopupShown) {
         FunctionalityNotAvailablePopup { functionalityNotAvailablePopupShown = false }
     }
 
+    //TODO only make history and details if there are elements in each respective list
     val pages = listOf("STATS", "DETAILS", "HISTORY")
-    val pagerState = rememberPagerState(pageCount = {pages.size})
+    val pagerState = rememberPagerState(pageCount = { pages.size })
 
-    Scaffold(
-        topBar = {
-            TopAppBarWithBottomContent(
-                title = {
-                    viewState.counterInfo?.counter?.name?.let {
-                        Text(
-                            text = it,
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee()
-                        )
-                    }
-                },
-                contentPadding = WindowInsets.systemBars
-                    .only(WindowInsetsSides.Horizontal)// + WindowInsetsSides.Top) // TODO why is top bad
-                    .asPaddingValues(),
+    LaunchedEffect(key1 = true) {
+        val title = viewState.counterInfo?.counter?.name ?: "INVALID COUNTER"
+        onComposing(
+            CtAppBarState(title = title,
                 navigationIcon = {
                     IconButton(onClick = navigateUp) {
-                        androidx.compose.material.Icon(
+                        Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = stringResource(R.string.cd_navigate_up)
                         )
                     }
                 },
                 actions = {
-                    // More icon
-                    Icon(
-                        imageVector = Icons.Outlined.MoreVert,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .clickable(onClick = { functionalityNotAvailablePopupShown = true })
-                            .padding(horizontal = 12.dp, vertical = 16.dp)
-                            .height(24.dp),
-                        contentDescription = stringResource(id = R.string.more_options)
-                    )
-                },
-                backgroundColor = MaterialTheme.colorScheme.surface.copy(
-                    alpha = AppBarAlphas.translucentBarAlpha()
-                ),
-                bottomContent = {
-                    Tabs(
-                        pagerState = pagerState,
-                        tabs = pages,
-                        modifier = Modifier.fillMaxWidth(),
-                        containerColor = Color.Transparent,
-                        contentColor = LocalContentColor.current
-                    )
-                }
-            )
-        },
-        floatingActionButton = {
-            CounterFab(
-                extended = true, // scrollstate.value == 0
-                onFabClicked = {
-                    viewState.counterInfo?.let {
-                        openEditCounter(it.counter.id, it.counter.trackLocation)
+                    IconButton(onClick = {
+                        viewState.counterInfo?.let {
+                            openEditCounter(it.counter.id)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = CtIcons.Edit, contentDescription = "edit"
+                        )
                     }
-                }
-            )
-        },
-        floatingActionButtonPosition = FabPosition.End
-    ) { padding ->
+                    IconButton(onClick = { //TODO are you sure you want to delete or undo on snackbar
+                        viewState.counterInfo?.let {
+                            onDeleteCounter(it.counter.id)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = CtIcons.Delete, contentDescription = "delete"
+                        )
+                    }
+                })
+        )
+    }
+    Column {
+        Tabs(
+            pagerState = pagerState,
+            tabs = pages,
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = Color.Transparent,
+            contentColor = LocalContentColor.current
+        )
+
         CounterDetailsPager(
             pages = pages,
             viewState = viewState,
@@ -151,11 +156,9 @@ internal fun CounterDetails(
             modifier = Modifier
                 .fillMaxHeight()
                 .bodyWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            padding = padding
+                .background(MaterialTheme.colorScheme.primaryContainer)
         )
     }
-
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -165,14 +168,14 @@ private fun CounterDetailsPager(
     viewState: CounterDetailsViewState,
     pagerState: PagerState,
     modifier: Modifier = Modifier,
-    padding: PaddingValues
+//    padding: PaddingValues
 ) {
     var userScrollEnabled by remember { mutableStateOf(true) }
 
     HorizontalPager(
         state = pagerState,
         modifier = modifier,
-        contentPadding = padding,
+//        contentPadding = padding,
         verticalAlignment = Alignment.Top,
         userScrollEnabled = userScrollEnabled
     ) { pageIndex ->

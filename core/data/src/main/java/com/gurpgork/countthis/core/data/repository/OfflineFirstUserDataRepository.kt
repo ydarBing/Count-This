@@ -3,8 +3,10 @@ package com.gurpgork.countthis.core.data.repository
 import com.gurpgork.countthis.core.analytics.AnalyticsHelper
 import com.gurpgork.countthis.core.datastore.CtPreferencesDataSource
 import com.gurpgork.countthis.core.model.data.DarkThemeConfig
+import com.gurpgork.countthis.core.model.data.SortOption
 import com.gurpgork.countthis.core.model.data.UserData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.last
 import javax.inject.Inject
 
 class OfflineFirstUserDataRepository @Inject constructor(
@@ -42,5 +44,14 @@ class OfflineFirstUserDataRepository @Inject constructor(
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) {
         ctPreferencesDataSource.setShouldHideOnboarding(shouldHideOnboarding)
         analyticsHelper.logOnboardingStateChanged(shouldHideOnboarding)
+    }
+
+    override suspend fun setSort(sort: SortOption) {
+        ctPreferencesDataSource.setSort(sort)
+        analyticsHelper.logSortStateChanged(sort.name)
+    }
+    override suspend fun toggleSortAsc() {
+        ctPreferencesDataSource.toggleSortAsc()
+        analyticsHelper.logSortAscStateToggled(userData.last().sortAsc)
     }
 }

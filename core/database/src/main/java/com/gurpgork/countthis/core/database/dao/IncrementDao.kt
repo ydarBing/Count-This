@@ -1,11 +1,15 @@
 package com.gurpgork.countthis.core.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import androidx.room.Upsert
 import com.gurpgork.countthis.core.database.model.IncrementEntity
 import kotlinx.coroutines.flow.Flow
-import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 
 @Dao
 interface IncrementDao {//: EntityDao<IncrementEntity>(){
@@ -17,12 +21,10 @@ interface IncrementDao {//: EntityDao<IncrementEntity>(){
     @Query("SELECT * FROM increments WHERE id IN (:id)")
     fun getIncrementsFromCounterId(id: Long): List<IncrementEntity>
 
-    @Query("INSERT INTO increments (counter_id, date, time_zone_offset, time_zone_id, increment) " +
-            "VALUES(:counterId,:date, :zoneOffset, :zoneId, :increment);")
+    @Query("INSERT INTO increments (counter_id, time_zone_id, increment) " +
+            "VALUES(:counterId, :zoneId, :increment);")
     fun insertWithDefaultValues(
         counterId: Long,
-        date: OffsetDateTime,
-        zoneOffset: ZoneOffset,
         zoneId: ZoneId,
         increment: Int
     ): Long

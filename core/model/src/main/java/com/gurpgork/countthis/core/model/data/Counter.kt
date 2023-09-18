@@ -1,7 +1,6 @@
 package com.gurpgork.countthis.core.model.data
 
 import kotlinx.datetime.Instant
-import java.time.OffsetDateTime
 /**
  * External data layer representation of a Ct Counter
  */
@@ -11,8 +10,9 @@ data class Counter (
     val increment: Int,
     val count: Int,
     val goal: Int,
-    val creationDateTime: OffsetDateTime,
-    val creationInstant: Instant,
+    val creationDate: Instant,
     val listIndex: Int,
     val trackLocation: Boolean,
 )
+const val INVALID_COUNTER_ID = -1L
+const val CREATE_COUNTER_ID = 0L

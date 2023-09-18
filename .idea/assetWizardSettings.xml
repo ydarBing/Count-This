@@ -331,7 +331,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialiconsoutlined/launch/outline_launch_24.xml" />
+                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/sort/baseline_sort_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -342,8 +342,8 @@
                         <option name="values">
                           <map>
                             <entry key="autoMirrored" value="true" />
-                            <entry key="outputName" value="ic_outline_launch_24" />
-                            <entry key="sourceFile" value="C:\Users\brady\StudioProjects\ModernCountThis" />
+                            <entry key="outputName" value="baseline_sort_24" />
+                            <entry key="sourceFile" value="C:\Users\brady\Downloads\ct_logo.svg" />
                           </map>
                         </option>
                       </PersistentState>

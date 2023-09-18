@@ -6,11 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -35,7 +38,6 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.gurpgork.countthis.CountThisActivity
 import com.gurpgork.countthis.core.analytics.AnalyticsHelper
 import com.gurpgork.countthis.core.analytics.LocalAnalyticsHelper
@@ -57,17 +59,15 @@ class MainActivity : CountThisActivity() {
     @Inject
     internal lateinit var countThisDateFormatter: CountThisDateFormatter
 
-    //    @Inject
-//    internal lateinit var preferences: CountThisPreferences
     @Inject
     internal lateinit var contentViewSetter: ContentViewSetter
 
-    //    @Inject
-//    internal lateinit var analytics: Analytics
     @Inject
     internal lateinit var analyticsHelper: AnalyticsHelper
 
-    //    private lateinit var viewModel: MainActivityViewModel
+//    @Inject
+//    lateinit var counterRepository: CounterRepository
+
     val viewModel: MainActivityViewModel by viewModels()
 
     private var foregroundOnlyLocationServiceBound = false
@@ -131,20 +131,38 @@ class MainActivity : CountThisActivity() {
         // Turn off the decor fitting system windows, which allows us to handle insets,
         // including IME animations
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
 
         setContent {
-            val systemUiController = rememberSystemUiController()
             val darkTheme = shouldUseDarkTheme(uiState)
-
+//            val systemUiController = rememberSystemUiController()
             // Update the dark content of the system bars to match the theme
-            DisposableEffect(systemUiController, darkTheme) {
-                systemUiController.systemBarsDarkContentEnabled = !darkTheme
+//            DisposableEffect(systemUiController, darkTheme) {
+//                systemUiController.systemBarsDarkContentEnabled = !darkTheme
+//                onDispose {}
+//            }
+            // Update the edge to edge configuration to match the theme
+            // This is the same parameters as the default enableEdgeToEdge call, but we manually
+            // resolve whether or not to show dark theme using uiState, since it can be different
+            // than the configuration's dark theme value based on the user preference.
+            DisposableEffect(darkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        Color.TRANSPARENT,
+                        Color.TRANSPARENT,
+                    ) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        lightScrim,
+                        darkScrim,
+                    ) { darkTheme },
+                )
                 onDispose {}
             }
 
+
             CompositionLocalProvider(
                 LocalAnalyticsHelper provides analyticsHelper,
-                LocalCountThisDateFormatter provides countThisDateFormatter
+                LocalCountThisDateFormatter provides countThisDateFormatter,
             ) {
                 CtTheme(
                     darkTheme = darkTheme,
@@ -152,29 +170,12 @@ class MainActivity : CountThisActivity() {
                 ) {
                     Home(
                         windowSizeClass = calculateWindowSizeClass(this),
-//                    analytics = analytics,
-//                        onOpenSettings = {
-//                            startActivity(
-//                                Intent(
-//                                    this@MainActivity,
-//                                    com.gurpgork.countthis.core.datastore.preference.SettingsActivity::class.java
-//                                )
-//                            )
-//                        },
+//                        counterRepository
                     )
                 }
             }
 
         }
-//        viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
-//        val composeView = ComposeView(this).apply {
-//            setContent {
-//                CountThisContent()
-//            }
-//        }
-//        // Copied from setContent {} ext-fun
-//        setOwners()
-//        contentViewSetter.setContentView(this, composeView)
     }
 
     override fun onResume() {
@@ -207,7 +208,6 @@ class MainActivity : CountThisActivity() {
 
         // TODO figure out of distinctUntilChanged is necessary
         lifecycleScope.launch {
-//            preferences.observeTrackingLocation()
             viewModel.uiState.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
                 /*.distinctUntilChanged()*/.collect {
                     // tracking location updated!
@@ -242,31 +242,6 @@ class MainActivity : CountThisActivity() {
             Manifest.permission.POST_NOTIFICATIONS
         )
     }
-
-//    @Composable
-//    private fun CountThisContent(darkTheme: Boolean) {
-//        CompositionLocalProvider(
-//            LocalAnalyticsHelper provides analyticsHelper,
-//            LocalCountThisDateFormatter provides countThisDateFormatter
-//        ) {
-//            CountThisTheme(
-//                darkTheme = darkTheme,
-//                dynamicColor = shouldUseDynamicColors(uiState)
-//            ) {
-//                Home(
-////                    analytics = analytics,
-////                    onOpenSettings = {
-////                        startActivity(
-////                            Intent(
-////                                this@MainActivity,
-////                                com.gurpgork.countthis.core.datastore.preference.SettingsActivity::class.java
-////                            )
-////                        )
-////                    },
-//                )
-//            }
-//        }
-//    }
 }
 
 /**
@@ -319,3 +294,15 @@ private fun ComponentActivity.setOwners() {
         decorView.setViewTreeSavedStateRegistryOwner(this)
     }
 }
+
+/**
+ * The default light scrim, as defined by androidx and the platform:
+ * https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:activity/activity/src/main/java/androidx/activity/EdgeToEdge.kt;l=35-38;drc=27e7d52e8604a080133e8b842db10c89b4482598
+ */
+private val lightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
+
+/**
+ * The default dark scrim, as defined by androidx and the platform:
+ * https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:activity/activity/src/main/java/androidx/activity/EdgeToEdge.kt;l=40-44;drc=27e7d52e8604a080133e8b842db10c89b4482598
+ */
+private val darkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,7 +49,7 @@ import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
 var initialSetup: Boolean = true
 
 @Composable
-internal fun StatsTab(
+fun StatsTab(
     counterInfo: Counter,
     increments: List<Increment>,
     hasLocations: Boolean,
@@ -84,29 +84,27 @@ internal fun StatsTab(
 
 @Composable
 private fun CounterInfoFields(counterInfo: Counter, mostRecentIncrement: Increment?) {
-    if (counterInfo.creationDateTime != null) {
-        Divider()
-        CounterProperty(
-            stringResource(R.string.stats_date_created),
-            LocalCountThisDateFormatter.current
-                .formatShortDate(counterInfo.creationDateTime)
-        )
-    }
+    HorizontalDivider()
+    CounterProperty(
+        stringResource(R.string.stats_date_created),
+        LocalCountThisDateFormatter.current
+            .formatShortDate(counterInfo.creationDate)
+    )
 
-    Divider()
+    HorizontalDivider()
     CounterProperty(
         stringResource(R.string.stats_current_count),
         counterInfo.count.toString()
     )
     if (mostRecentIncrement != null) {
-        Divider()
+        HorizontalDivider()
         CounterProperty(
             stringResource(R.string.stats_most_recent),
             LocalCountThisDateFormatter.current
-                .formatMediumDateTime(mostRecentIncrement.date)
+                .formatMediumDateTime(mostRecentIncrement.incrementDate)
         )
     }
-    Divider()
+    HorizontalDivider()
     GoalProgressBar(counterInfo.count, counterInfo.goal)
 }
 
@@ -209,7 +207,7 @@ private fun GoogleMapClusteringWithIncrements(
                 markers.add(
                     ClusterMapMarker(
                         position,
-                        increment.date.toString(),
+                        increment.incrementDate.toString(),
                         "",
                         index
                     )

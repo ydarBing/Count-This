@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.gurpgork.countthis.core.model.data.Counter
 import kotlinx.datetime.Instant
-import java.time.OffsetDateTime
 
 @Entity(tableName = "counters")
 data class CounterEntity(
@@ -14,8 +13,7 @@ data class CounterEntity(
     @ColumnInfo(name = "increment") val increment: Int = 1,
     @ColumnInfo(name = "count") val count: Int = 0,
     @ColumnInfo(name = "goal") val goal: Int = 0,
-    @ColumnInfo(name = "created") val creationDateTime: OffsetDateTime,
-    @ColumnInfo(name = "created_instant") val creationInstant: Instant,
+    @ColumnInfo(name = "creation_date") val creationDate: Instant,
     @ColumnInfo(name = "list_index") val listIndex: Int? = null,
     @ColumnInfo(name = "track_location") val trackLocation: Boolean? = null
 ){
@@ -23,12 +21,11 @@ data class CounterEntity(
         id = counter.id,
         name = counter.name,
         increment = counter.increment,
-        creationDateTime = counter.creationDateTime,
-        creationInstant = counter.creationInstant,
+        creationDate = counter.creationDate,  //Clock.System.now()
         goal = counter.goal,
         count = counter.count,
         listIndex = counter.listIndex,
-        trackLocation = counter.trackLocation
+        trackLocation = counter.trackLocation,
     )
 }
 
@@ -38,8 +35,7 @@ fun CounterEntity.asExternalModel() = Counter(
     increment = increment,
     count = count,
     goal = goal,
-    creationDateTime = creationDateTime,
-    creationInstant = creationInstant,
+    creationDate = creationDate,
     listIndex = listIndex ?: -1,
     trackLocation = trackLocation ?: false,
 )

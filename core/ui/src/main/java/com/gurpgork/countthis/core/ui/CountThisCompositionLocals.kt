@@ -6,6 +6,10 @@ val LocalCountThisDateFormatter = staticCompositionLocalOf<CountThisDateFormatte
     error("CountThisDateFormatter not provided")
 }
 
+//val LocalCtDateFormatter = staticCompositionLocalOf<CtDateFormatter> {
+//    error("CtDateFormatter not provided")
+//}
+
 //val LocalCountThis = staticCompositionLocalOf<CountThisDateFormatter> {
 //    error("CountThisDateFormatter not provided")
 //}

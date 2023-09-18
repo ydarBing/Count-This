@@ -3,12 +3,21 @@ package com.gurpgork.countthis.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
+import com.gurpgork.countthis.core.designsystem.component.CtAppBarState
+import com.gurpgork.countthis.feature.addedit.navigation.addEditCounterScreen
+import com.gurpgork.countthis.feature.addedit.navigation.navigateToAddEditCounter
 import com.gurpgork.countthis.feature.allcounters.navigation.allCountersNavigationRoute
 import com.gurpgork.countthis.feature.allcounters.navigation.allCountersScreen
+import com.gurpgork.countthis.feature.counterdetails.navigation.counterDetailsScreen
 import com.gurpgork.countthis.feature.counterdetails.navigation.navigateToCounter
-import com.gurpgork.countthis.feature.editcreate.create.navigation.navigateToCreteCounter
-import com.gurpgork.countthis.feature.editcreate.edit.navigation.navigateToEditCounter
 import com.gurpgork.countthis.home.CtAppState
+
+
+object MainDestinations {
+    const val ALL_COUNTERS_ROUTE = "allCounters"
+    const val COUNTER_DETAILS_ROUTE = "counter"
+    const val COUNTER_DETAIL_ID_KEY = "counterId"
+}
 
 /**
  * Top-level navigation graph. Navigation is organized as explained at
@@ -23,6 +32,8 @@ fun CtNavHost(
     onShowSnackbar: suspend (String, String?) -> Boolean,
     modifier: Modifier = Modifier,
     startDestination: String = allCountersNavigationRoute,
+    onSettingsClicked: () -> Unit,
+    onComposing: (CtAppBarState) -> Unit,
 ) {
     val navController = appState.navController
     NavHost(
@@ -31,11 +42,28 @@ fun CtNavHost(
         modifier = modifier,
     ) {
         allCountersScreen(
-            openCounter = navController::navigateToCounter,//{counterId -> navController.navigateToCounter(counterId)},
-            createNewCounter = navController::navigateToCreteCounter,
-            editCounter = { counterId, wasTrackingLocation ->
-                navController.navigateToEditCounter(counterId, wasTrackingLocation)},
+            onShowSnackbar = onShowSnackbar,
+            openCounter = navController::navigateToCounter,
+            addEditCounter = navController::navigateToAddEditCounter,
             openUser = {},//navController.navigateToUser(),
+            onSettingsClicked = onSettingsClicked,
+            onComposing = onComposing,
         )
+        addEditCounterScreen(navController::navigateUp, onShowSnackbar, onComposing)
+        counterDetailsScreen(
+            navigateUp = navController::navigateUp,
+            openEditCounter = navController::navigateToAddEditCounter,
+            openCounterDetails = navController::navigateToCounter,
+            onComposing = onComposing,
+        )
+
+//        groupedCountersScreen(
+//            openGroup = navController::navigateToGroup,
+//            openCounter = navController::navigateToCounter,
+//            addEditGroup = navController::navigateToAddEditGroup,
+//            openUser = {},//navController.navigateToUser(),
+//            onSettingsClicked = onSettingsClicked,
+//            onComposing = onComposing,
+//        )
     }
 }

@@ -1,138 +1,154 @@
 package com.gurpgork.countthis.core.ui
 
 import android.text.format.DateUtils
-import java.time.Instant
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toJavaZoneId
+import kotlinx.datetime.toLocalDateTime
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.Temporal
+import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.days
 
 @Singleton
 class CountThisDateFormatter @Inject constructor(
     @ShortTime private val shortTimeFormatter: DateTimeFormatter,
-    @ShortDate private val shortDateFormatter: DateTimeFormatter,
+//    @ShortDate private val shortDateFormatter: DateTimeFormatter,
     @MediumDate private val mediumDateFormatter: DateTimeFormatter,
-    @MediumDateTime private val mediumDateTimeFormatter: DateTimeFormatter
+    @MediumDateTime private val mediumDateTimeFormatter: DateTimeFormatter,
 ) {
-    fun formatShortDate(temporalAmount: Temporal): String = shortDateFormatter.format(temporalAmount)
+    private val locale: Locale = Locale.getDefault()
+    internal val timeZone: TimeZone = TimeZone.currentSystemDefault()
 
-    fun formatMediumDate(temporalAmount: Temporal): String = mediumDateFormatter.format(temporalAmount)
+    private val shortDateFormatter: DateTimeFormatter by lazy {
+        DateTimeFormatter
+            .ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(locale)
+            .withZone(timeZone.toJavaZoneId())
+    }
+    //TODO use these if decide don't want @ShortTime and other stuff
+//    private val shortTimeFormatter: DateTimeFormatter by lazy {
+//        DateTimeFormatter
+//            .ofLocalizedTime(FormatStyle.SHORT)
+//            .withLocale(locale)
+//            .withZone(timeZone.toJavaZoneId())
+//    }
+//    private val mediumDateFormatter: DateTimeFormatter by lazy {
+//        DateTimeFormatter
+//            .ofLocalizedDate(FormatStyle.MEDIUM)
+//            .withLocale(locale)
+//            .withZone(timeZone.toJavaZoneId())
+//    }
+//    private val mediumDateTimeFormatter: DateTimeFormatter by lazy {
+//        DateTimeFormatter
+//            .ofLocalizedDateTime(FormatStyle.MEDIUM)
+//            .withLocale(locale)
+//            .withZone(timeZone.toJavaZoneId())
+//    }
 
-    fun formatMediumDateTime(temporalAmount: Temporal): String = mediumDateTimeFormatter.format(temporalAmount)
+    private val dayOfWeekFormatter: DateTimeFormatter by lazy {
+        DateTimeFormatter.ofPattern("EEEE")
+            .withLocale(locale)
+            .withZone(timeZone.toJavaZoneId())
+    }
+    private fun Instant.toTemporal(): Temporal{
+        return LocalDateTime.ofInstant(toJavaInstant(), timeZone.toJavaZoneId())
+    }
 
-    fun formatShortTime(localTime: LocalTime): String = shortTimeFormatter.format(localTime)
 
-    fun formatShortRelativeTime(dateTime: OffsetDateTime): String {
-        val now = OffsetDateTime.now()
+    fun formatShortTime(instant: Instant): String {
+        return shortTimeFormatter.format(instant.toTemporal())
+    }
+    fun formatShortDate(instant: Instant): String{
+        return shortDateFormatter.format(instant.toTemporal())
+    }
+    fun formatMediumDate(instant: Instant): String{
+        return mediumDateFormatter.format(instant.toTemporal())
+    }
+    fun formatMediumDateTime(instant: Instant): String {
+        return mediumDateTimeFormatter.format(instant.toTemporal())
+    }
 
-        return if (dateTime.isBefore(now)) {
-            if (dateTime.year == now.year || dateTime.isAfter(now.minusDays(7))) {
-                // Within the past week
-                DateUtils.getRelativeTimeSpanString(
-                    dateTime.toInstant().toEpochMilli(),
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_SHOW_DATE
-                ).toString()
-            } else {
-                // More than 7 days ago
-                formatShortDate(dateTime)
-            }
-        } else {
-            if (dateTime.year == now.year || dateTime.isBefore(now.plusDays(14))) {
-                // In the near future (next 2 weeks)
-                DateUtils.getRelativeTimeSpanString(
-                    dateTime.toInstant().toEpochMilli(),
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_SHOW_DATE
-                ).toString()
-            } else {
-                // In the far future
-                formatShortDate(dateTime)
+    fun formatShortRelativeTime(date: Instant, reference: Instant = Clock.System.now()): String = when{
+        // within past week
+        date < reference && (reference - date) < 7.days -> {
+            DateUtils.getRelativeTimeSpanString(
+                date.toEpochMilliseconds(),
+                reference.toEpochMilliseconds(),
+                DateUtils.MINUTE_IN_MILLIS,
+                DateUtils.FORMAT_SHOW_DATE,
+            ).toString()
+        }
+        date > reference && (date - reference) < 14.days -> {
+            DateUtils.getRelativeTimeSpanString(
+                date.toEpochMilliseconds(),
+                reference.toEpochMilliseconds(),
+                DateUtils.MINUTE_IN_MILLIS,
+                DateUtils.FORMAT_SHOW_DATE,
+            ).toString()
+        }
+        else -> formatShortDate(date)
+    }
+
+    fun formatDayOfWeek(dayOfWeek: DayOfWeek): String {
+        return Clock.System.now()
+            .toLocalDateTime(timeZone)
+            .toJavaLocalDateTime()
+            .with(TemporalAdjusters.nextOrSame(dayOfWeek.toJavaDayOfWeek()))
+            .let { dayOfWeekFormatter.format(it) }
+    }
+
+//    fun formatShortDate(temporalAmount: Temporal): String = shortDateFormatter.format(temporalAmount)
+//
+//    fun formatMediumDate(temporalAmount: Temporal): String = mediumDateFormatter.format(temporalAmount)
+//
+//    fun formatMediumDateTime(temporalAmount: Temporal): String = mediumDateTimeFormatter.format(temporalAmount)
+
+    @Composable
+    fun dateFormatted(publishedDate: Instant): String{
+        var zoneId by remember{ mutableStateOf(ZoneId.systemDefault()) }
+        val context = LocalContext.current
+
+        DisposableEffect(context){
+            val receiver = TimeZoneBroadcastReceiver(
+                onTimeZoneChanged = { zoneId = ZoneId.systemDefault() },
+            )
+            receiver.register(context)
+            onDispose {
+                receiver.unregister(context)
             }
         }
+
+        return DateTimeFormatter
+            .ofLocalizedDate(FormatStyle.MEDIUM)
+            .withLocale(Locale.getDefault())
+            .withZone(zoneId)
+            .format(publishedDate.toJavaInstant())
     }
-    fun formatShortRelativeTime(instant: Instant): String {
-        val givenDate = LocalDateTime.from(instant)
-        val nowDate = LocalDateTime.now()
-
-        return if (instant.isBefore(Instant.now())) {
-            if (givenDate.year == nowDate.year || givenDate.isAfter(nowDate.minusDays(7))) {
-                // Within the past week
-                DateUtils.getRelativeTimeSpanString(
-                    instant.toEpochMilli(),
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_SHOW_DATE
-                ).toString()
-            } else {
-                // More than 7 days ago
-                formatShortDate(instant)
-            }
-        } else {
-            if (givenDate.year == nowDate.year || givenDate.isBefore(nowDate.plusDays(14))) {
-                // In the near future (next 2 weeks)
-                DateUtils.getRelativeTimeSpanString(
-                    instant.toEpochMilli(),
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_SHOW_DATE
-                ).toString()
-            } else {
-                // In the far future
-                formatShortDate(instant)
-            }
-        }
-    }
-
-    fun formatShortRelativeTime(instant: Instant, zoneId: ZoneId): String {
-        val zdt = instant.atZone(zoneId)
-        val nzdt = ZonedDateTime.now(zoneId)
-
-//        val odt = instant.atOffset(ZoneOffset.UTC)
-//        val nodt = OffsetDateTime.now()
-//        val givenDate = LocalDateTime.from(instant)
-//        val nowDate = LocalDateTime.now()
-
-        return if (instant.isBefore(Instant.now())) {
-            if (zdt.year == nzdt.year || zdt.isAfter(nzdt.minusDays(7))) {
-                // Within the past week
-                DateUtils.getRelativeTimeSpanString(
-                    zdt.toEpochSecond() * 1000,//instant.toEpochMilli(),
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_SHOW_DATE
-                ).toString()
-            } else {
-                // More than 7 days ago
-                formatShortDate(instant)
-            }
-        } else {
-            if (zdt.year == nzdt.year || zdt.isBefore(nzdt.plusDays(14))) {
-                // In the near future (next 2 weeks)
-                DateUtils.getRelativeTimeSpanString(
-                    instant.toEpochMilli(),
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_SHOW_DATE
-                ).toString()
-            } else {
-                // In the far future
-                formatShortDate(instant)
-            }
-        }
-    }
-
-    fun formatShortRelativeTime(instant: Instant, zoneOffset: ZoneOffset): String {
-        val odt = instant.atOffset(zoneOffset)
-
-        return formatShortRelativeTime(odt)
-    }
+}
+private fun DayOfWeek.toJavaDayOfWeek(): java.time.DayOfWeek = when (this) {
+    java.time.DayOfWeek.MONDAY -> DayOfWeek.MONDAY
+    java.time.DayOfWeek.TUESDAY -> DayOfWeek.TUESDAY
+    java.time.DayOfWeek.WEDNESDAY -> DayOfWeek.WEDNESDAY
+    java.time.DayOfWeek.THURSDAY -> DayOfWeek.THURSDAY
+    java.time.DayOfWeek.FRIDAY -> DayOfWeek.FRIDAY
+    java.time.DayOfWeek.SATURDAY -> DayOfWeek.SATURDAY
+    java.time.DayOfWeek.SUNDAY -> DayOfWeek.SUNDAY
 }

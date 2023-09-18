@@ -21,9 +21,10 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun rememberCtAppState(
     windowSizeClass: WindowSizeClass,
+//    networkMonitor: NetworkMonitor,
+//    counterRepository: CounterRepository,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController = rememberNavController(),
-//    networkMonitor: NetworkMonitor,
 ): CtAppState {
 
     return remember(
@@ -31,12 +32,14 @@ fun rememberCtAppState(
         coroutineScope,
         windowSizeClass,
 //        networkMonitor,
+//        counterRepository,
     ){
         CtAppState(
             navController,
             coroutineScope,
             windowSizeClass,
 //            networkMonitor,
+//            counterRepository,
         )
     }
 }
@@ -46,7 +49,8 @@ class CtAppState(
     val navController: NavHostController,
     val coroutineScope: CoroutineScope,
     val windowSizeClass: WindowSizeClass,
-//    networkMonitor: NetworkMonitor
+//    networkMonitor: NetworkMonitor,
+//    counterRepository: CounterRepository,
 ){
     val currentDestination: NavDestination?
         @Composable get() = navController
@@ -77,7 +81,7 @@ class CtAppState(
      * Map of top level destinations to be used in the TopBar, BottomBar and NavRail. The key is the
      * route.
      */
-    val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.values().asList()
+    val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.entries
 
     fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination){
         trace("Navigation: ${topLevelDestination.name}") {

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "com.gurpgork.countthis";
+option java_multiple_files = true;
+
+enum SortOptionsConfigProto {
+    USER_SORTED = 0;
+    LAST_UPDATED = 1;
+    ALPHABETICAL = 2;
+    DATE_ADDED = 3;
+}

@@ -1,20 +1,23 @@
 package com.gurpgork.countthis.feature.counterdetails.navigation
 
 import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.gurpgork.countthis.core.designsystem.component.CtAppBarState
+import com.gurpgork.countthis.core.model.data.INVALID_COUNTER_ID
 import com.gurpgork.countthis.feature.counterdetails.CounterDetailsRoute
 
 
 @VisibleForTesting
 internal const val counterIdArg = "counterId"
-//internal class CounterDetailsArgs(val counterId: Long){
-//    constructor(savedStateHandle: SavedStateHandle):
-//            this(savedStateHandle[counterIdArg])
-//}
+internal class CounterDetailsArgs(val counterId: Long){
+    constructor(savedStateHandle: SavedStateHandle):
+            this(savedStateHandle[counterIdArg] ?: INVALID_COUNTER_ID)
+}
 
 fun NavController.navigateToCounter(counterId: Long){
     this.navigate("counter_route/$counterId"){
@@ -24,8 +27,9 @@ fun NavController.navigateToCounter(counterId: Long){
 
 fun NavGraphBuilder.counterDetailsScreen(
     navigateUp: () -> Unit,
-    openEditCounter: (Long, Boolean) -> Unit,
+    openEditCounter: (Long) -> Unit,
     openCounterDetails: (Long) -> Unit,
+    onComposing: (CtAppBarState) -> Unit,
 ){
     composable(
         route = "counter_route/{$counterIdArg}",
@@ -37,6 +41,7 @@ fun NavGraphBuilder.counterDetailsScreen(
             navigateUp = navigateUp,
             openEditCounter = openEditCounter,
             openCounterDetails = openCounterDetails,
+            onComposing = onComposing,
         )
     }
 }
