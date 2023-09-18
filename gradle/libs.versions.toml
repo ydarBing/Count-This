@@ -1,48 +1,48 @@
 [versions]
 agp = "8.2.0-beta04"
 accompanist = "0.30.1"
-activityCompose = "1.8.0-alpha07"#"1.7.2"
+activityCompose = "1.8.0-beta01"#"1.7.2"
 androidDesugarJdkLibs = "2.0.3"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.6.0"
-androidxComposeBom = "2023.08.00"
+androidxComposeBom = "2023.09.00"
 androidxComposeCompiler = "1.5.3"
-androidxComposeMaterial = "1.4.3"
-androidxComposeMaterial3 = "1.2.0-alpha04" #alpha05 + 06 breaks swipetodismiss
-androidxNavigation = "2.7.1"
+androidxComposeMaterial = "1.6.0-alpha05"#"1.5.1"
+androidxComposeMaterial3 = "1.2.0-alpha07" #alpha05 + 06 breaks swipetodismiss
+androidxNavigation = "2.7.2"
 androidConstraintLayout = "2.1.4"
-androidxCore = "1.10.1"
+androidxCore = "1.12.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxEspresso = "3.5.1"
 androidxHiltNavigationCompose = "1.0.0"
 androidxLocalBroadcastManager = "1.1.0"
-androidxLifecycle = "2.6.1"
-androidxPagingCompose = "3.2.0"
+androidxLifecycle = "2.6.2"
+androidxPagingCompose = "3.2.1"
 androidxPreferences = "1.2.1"
 androidxSavedstate = "1.2.1"
 androidxStartup = "1.1.1"
 androidxTest = "1.5.0"
 androidxTestExt = "1.1.5"
 androidxTracing = "1.1.0"
-androidxWork = "2.9.0-alpha02"
+androidxWork = "2.9.0-beta01"
 composeMaps = "2.11.4"
 coroutines = "1.7.3"
 datastore = "1.0.0"
-firebaseBom = "32.2.3"
+firebaseBom = "32.3.1"
 firebaseCrashlyticsPlugin = "2.9.9"
 firebasePerfPlugin = "1.4.2"
-gmsPlugin = "4.3.15"
-gradleEnterprisePlugin = "3.14.1"
+gmsPlugin = "4.4.0"
+gradleEnterprisePlugin = "3.15"
 hilt = "2.48"
-hiltExt = "1.1.0-alpha01"#"1.0.0"
+hiltExt = "1.1.0-alpha01"
 jacoco = "0.8.7"
 junit4 = "4.13.2"
 kotlin = "1.9.10"
 kotlinxDatetime = "0.4.1"
-kotlinxSerializationJson = "1.5.1"
+kotlinxSerializationJson = "1.6.0"
 ksp = "1.9.10-1.0.13"
 ktlint = "0.48.1"
-paging = "3.1.1"
+paging = "3.2.1"
 playservicesLocation = "21.0.1"
 playservicesMaps = "18.1.0"
 playservicesMapsUtils = "3.4.0"
@@ -68,7 +68,6 @@ firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "fireb
 gms = { id = "com.google.gms.google-services", version.ref = "gmsPlugin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-#kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
@@ -100,8 +99,6 @@ androidx-compose-material = { group = "androidx.compose.material", name = "mater
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidxComposeMaterial3" }
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "androidxComposeMaterial3" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
-#androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
-#androidx-compose-runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "androidxComposeRuntimeTracing" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
@@ -126,7 +123,6 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-localbroadcastmanager = { group = "androidx.localbroadcastmanager", name = "localbroadcastmanager", version.ref = "androidxLocalBroadcastManager" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "androidxNavigation" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "androidxNavigation" }
-#androidx-paging-common = { group = "androidx.paging", name = "paging-runtime", version = "paging" } # fails to resolve...
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidxPagingCompose" }
 androidx-preferences = { group = "androidx.preference", name = "preference-ktx", version.ref = "androidxPreferences" }

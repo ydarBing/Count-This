@@ -26,7 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -249,11 +248,11 @@ fun AppNumberField(
         keyboardOptions = KeyboardOptions(imeAction = imeAction, keyboardType = keyboardType),
         keyboardActions = keyBoardActions,
         enabled = isEnabled,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
+            disabledTextColor = Color.Black,
             focusedBorderColor = Color.Black,
             unfocusedBorderColor = Color.Gray,
             disabledBorderColor = Color.Gray,
-            disabledTextColor = Color.Black
         ),
         placeholder = {
             Text(text = placeholder, style = TextStyle(fontSize = 18.sp, color = Color.LightGray))
