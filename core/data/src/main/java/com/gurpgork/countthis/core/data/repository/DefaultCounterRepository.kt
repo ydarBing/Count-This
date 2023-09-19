@@ -105,7 +105,11 @@ class DefaultCounterRepository @Inject constructor(
 
     @WorkerThread
     override suspend fun updateCounter(counter: Counter) {
-//        counterDao.insertOrUpdate(counter)
         counterDao.update(CounterEntity(counter))
+    }
+
+    @WorkerThread
+    override suspend fun upsertCounter(counter: Counter) {
+        counterDao.upsert(CounterEntity(counter))
     }
 }

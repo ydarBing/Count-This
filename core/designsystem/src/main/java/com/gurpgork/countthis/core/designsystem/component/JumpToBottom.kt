@@ -67,7 +67,7 @@ fun JumpToBottom(
                 )
             },
             text = {
-                Text(text = stringResource(id = R.string.jumpBottom))
+                Text(text = stringResource(id = R.string.jump_to_bottom))
             },
             onClick = onClicked,
             containerColor = MaterialTheme.colorScheme.surface,

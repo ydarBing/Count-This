@@ -53,7 +53,6 @@ fun CtNavHost(
         counterDetailsScreen(
             navigateUp = navController::navigateUp,
             openEditCounter = navController::navigateToAddEditCounter,
-            openCounterDetails = navController::navigateToCounter,
             onComposing = onComposing,
         )
 

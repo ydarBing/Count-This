@@ -28,7 +28,6 @@ fun NavController.navigateToCounter(counterId: Long){
 fun NavGraphBuilder.counterDetailsScreen(
     navigateUp: () -> Unit,
     openEditCounter: (Long) -> Unit,
-    openCounterDetails: (Long) -> Unit,
     onComposing: (CtAppBarState) -> Unit,
 ){
     composable(
@@ -40,7 +39,6 @@ fun NavGraphBuilder.counterDetailsScreen(
         CounterDetailsRoute(
             navigateUp = navigateUp,
             openEditCounter = openEditCounter,
-            openCounterDetails = openCounterDetails,
             onComposing = onComposing,
         )
     }

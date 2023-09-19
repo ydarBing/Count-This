@@ -12,20 +12,10 @@
     <string name="jumpBottom">Jump to bottom</string>
 
 
-    <string name="dialog_title_delete_counter">Delete Counter</string>
-    <string name="dialog_message_delete_counter">Are you sure that you want to delete %1$s?</string>
-    <string name="dialog_title_confirm_delete_counter">Delete</string>
-
-    <string name="dialog_title_reset_counter">Reset Counter</string>
-    <string name="dialog_message_reset_counter">Are you sure that you want to reset %1$s?</string>
-    <string name="dialog_title_confirm_reset_counter">Reset</string>
-
-
     <string name="dialog_add_time_title">Add Time</string>
     <string name="dialog_add_time_dismiss_button_text">Cancel</string>
     <string name="dialog_add_time_confirm_button_text">Add</string>
     <string name="dialog_add_time_add_location_button_text">Location</string>
 
     <string name="dialog_add_location_confirm_button_text">Confirm</string>
-    <string name="dialog_dismiss">Dismiss</string>
 </resources>

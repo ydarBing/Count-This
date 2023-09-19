@@ -36,6 +36,7 @@ interface CounterRepository {
     // off the main thread.
     suspend fun insertCounter(counter: Counter)
     suspend fun updateCounter(counter: Counter)
+    suspend fun upsertCounter(counter: Counter)
 
 
 }

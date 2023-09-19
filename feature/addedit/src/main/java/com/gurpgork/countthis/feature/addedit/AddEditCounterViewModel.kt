@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.gurpgork.countthis.core.data.repository.UserDataRepository
 import com.gurpgork.countthis.core.designsystem.component.UiMessageManager
 import com.gurpgork.countthis.core.domain.GetCounter
-import com.gurpgork.countthis.core.domain.interactors.UpdateCounter
+import com.gurpgork.countthis.core.domain.interactors.UpsertCounter
 import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
 import com.gurpgork.countthis.core.model.data.Counter
 import com.gurpgork.countthis.feature.addedit.navigation.AddEditArgs
@@ -24,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditCounterViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
-    private val updateCounter: UpdateCounter,
+    private val upsertCounter: UpsertCounter,
     private val getCounter: GetCounter,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -156,7 +156,7 @@ class AddEditCounterViewModel @Inject constructor(
             userDataRepository.incrementCountersTrackingLocation()
         }
 
-        updateCounter.executeSync(UpdateCounter.Params(editedCounter))
+        upsertCounter.executeSync(UpsertCounter.Params(editedCounter))
     }
 
     fun clearMessage(id: Long) {

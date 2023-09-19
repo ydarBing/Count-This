@@ -21,7 +21,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
@@ -44,6 +43,7 @@ import com.gurpgork.countthis.core.designsystem.component.AnimatingFabContent
 import com.gurpgork.countthis.core.designsystem.component.CtAppBarState
 import com.gurpgork.countthis.core.designsystem.component.FunctionalityNotAvailablePopup
 import com.gurpgork.countthis.core.designsystem.component.bodyWidth
+import com.gurpgork.countthis.core.designsystem.component.dialog.DeleteCounterAlertDialog
 import com.gurpgork.countthis.core.designsystem.component.pagerTabIndicatorOffset
 import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import com.gurpgork.countthis.core.designsystem.theme.CtTheme
@@ -53,14 +53,12 @@ import kotlinx.coroutines.launch
 internal fun CounterDetailsRoute(
     navigateUp: () -> Unit,
     openEditCounter: (counterId: Long) -> Unit,
-    openCounterDetails: (counterId: Long) -> Unit,
     onComposing: (CtAppBarState) -> Unit,
 ) {
     CounterDetails(
         viewModel = hiltViewModel(),
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
-        openCounterDetails = openCounterDetails,
         onComposing = onComposing,
     )
 }
@@ -70,7 +68,6 @@ internal fun CounterDetails(
     viewModel: CounterDetailsViewModel,
     navigateUp: () -> Unit,
     openEditCounter: (counterId: Long) -> Unit,
-    openCounterDetails: (counterId: Long) -> Unit,
     onComposing: (CtAppBarState) -> Unit,
 ) {
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -79,8 +76,7 @@ internal fun CounterDetails(
         viewState = viewState,
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
-        onDeleteCounter = {id -> viewModel.deleteCounter(id)},
-        openCounterDetails = openCounterDetails,
+        onDeleteCounter = { id -> viewModel.deleteCounter(id) },
         onComposing = onComposing,
     )
 }
@@ -94,9 +90,9 @@ internal fun CounterDetails(
     navigateUp: () -> Unit,
     openEditCounter: (counterId: Long) -> Unit,
     onDeleteCounter: (counterId: Long) -> Unit,
-    openCounterDetails: (counterId: Long) -> Unit, // used to open another counter
     onComposing: (CtAppBarState) -> Unit,
 ) {
+    var wantsToDelete by remember { mutableStateOf(false) }
     var functionalityNotAvailablePopupShown by remember { mutableStateOf(false) }
     if (functionalityNotAvailablePopupShown) {
         FunctionalityNotAvailablePopup { functionalityNotAvailablePopupShown = false }
@@ -106,10 +102,11 @@ internal fun CounterDetails(
     val pages = listOf("STATS", "DETAILS", "HISTORY")
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
-    LaunchedEffect(key1 = true) {
-        val title = viewState.counterInfo?.counter?.name ?: "INVALID COUNTER"
+    LaunchedEffect(key1 = viewState.counterInfo) {
+        val title = viewState.counterInfo?.counter?.name ?: ""
         onComposing(
-            CtAppBarState(title = title,
+            CtAppBarState(
+                title = title,
                 navigationIcon = {
                     IconButton(onClick = navigateUp) {
                         Icon(
@@ -128,9 +125,9 @@ internal fun CounterDetails(
                             imageVector = CtIcons.Edit, contentDescription = "edit"
                         )
                     }
-                    IconButton(onClick = { //TODO are you sure you want to delete or undo on snackbar
+                    IconButton(onClick = {
                         viewState.counterInfo?.let {
-                            onDeleteCounter(it.counter.id)
+                            wantsToDelete = true
                         }
                     }) {
                         Icon(
@@ -139,6 +136,18 @@ internal fun CounterDetails(
                     }
                 })
         )
+    }
+
+    if (wantsToDelete) {
+        viewState.counterInfo?.let {
+            DeleteCounterAlertDialog(
+                counterName = it.counter.name,
+                onConfirm = {
+                    onDeleteCounter(it.counter.id)
+                    navigateUp()
+                },
+                onDismiss = { wantsToDelete = false })
+        }
     }
     Column {
         Tabs(
@@ -183,8 +192,8 @@ private fun CounterDetailsPager(
             0 -> viewState.counterInfo?.let {
                 StatsTab(
                     it.counter,
-                    viewState.counterInfo.increments,
-                    viewState.counterInfo.hasLocations,
+                    it.increments,
+                    it.hasLocations,
                     onMapMoved = { movingMap ->
                         // only update userScrollEnabled when a new val comes in
                         if (movingMap == userScrollEnabled)

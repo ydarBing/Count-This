@@ -1,6 +1,14 @@
 <resources>
 
-    <string name="jumpBottom">Jump to bottom</string>
+    <string name="dialog_dismiss">Dismiss</string>
+    <string name="dialog_title_delete_counter">Delete Counter</string>
+    <string name="dialog_message_delete_counter">Are you sure that you want to delete %1$s?</string>
+    <string name="dialog_title_confirm_delete_counter">Delete</string>
+
+
+    <string name="dialog_title_reset_counter">Reset Counter</string>
+    <string name="dialog_message_reset_counter">Are you sure that you want to reset %1$s?</string>
+    <string name="dialog_title_confirm_reset_counter">Reset</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -19,6 +27,8 @@
         <item>Delete</item>
     </string-array>
 
+
+    <string name="jump_to_bottom">Jump To Bottom</string>
     <!-- Accessibility descriptions -->
     <string name="send">Send</string>
     <string name="textfield_hint">Message</string>

@@ -8,22 +8,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.ui.LocalScaffoldPadding
 import com.gurpgork.countthis.core.designsystem.component.Layout
@@ -77,36 +67,6 @@ fun IncrementRow(increment: Increment, modifier: Modifier) {
         Text(text = increment.increment.toString(),
             style = MaterialTheme.typography.bodyMedium)
     }
-}
-
-
-@Composable
-fun Header(increment: Increment, modifier: Modifier) {
-
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CounterDetailsAppBar(
-    backgroundColor: Color,
-    navigateUp: () -> Unit,
-    elevation: Dp,
-    modifier: Modifier = Modifier,
-) {
-    TopAppBar(
-        title = {},
-        navigationIcon = {
-            IconButton(onClick = navigateUp) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.cd_close),
-                )
-            }
-        },
-        colors = topAppBarColors(),
-        modifier = modifier
-    )
 }
 
 

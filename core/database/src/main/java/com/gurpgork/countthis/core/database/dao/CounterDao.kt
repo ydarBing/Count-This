@@ -9,6 +9,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.gurpgork.countthis.core.database.model.CounterEntity
@@ -26,6 +27,8 @@ interface CounterDao {
 
     @Update
     suspend fun update(entity: CounterEntity)
+    @Upsert
+    suspend fun upsert(entity: CounterEntity)
 
     @Query("SELECT * FROM counters")
     fun countersObservable(): Flow<List<CounterEntity>>

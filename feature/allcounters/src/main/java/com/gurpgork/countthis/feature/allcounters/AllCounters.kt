@@ -115,7 +115,8 @@ import com.gurpgork.countthis.core.designsystem.component.ListItemContextMenuOpt
 import com.gurpgork.countthis.core.designsystem.component.SwipeDismissSnackbarHost
 import com.gurpgork.countthis.core.designsystem.component.dialog.AddTimeDialog
 import com.gurpgork.countthis.core.designsystem.component.dialog.AddTimeInformation
-import com.gurpgork.countthis.core.designsystem.component.dialog.CountThisAlertDialog
+import com.gurpgork.countthis.core.designsystem.component.dialog.DeleteCounterAlertDialog
+import com.gurpgork.countthis.core.designsystem.component.dialog.ResetCounterAlertDialog
 import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
 import com.gurpgork.countthis.core.model.data.CtLocation
@@ -390,7 +391,7 @@ internal fun AllCountersScreen(
             },
             onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE })
 
-        ListItemContextMenuOption.RESET -> OpenResetAlertDialog(counterName = counterContextMenuName,
+        ListItemContextMenuOption.RESET -> ResetCounterAlertDialog(counterName = counterContextMenuName,
             onConfirm = {
                 onContextMenuOptionSelected(
                     counterContextMenuId, menuOptionSelected, null
@@ -399,7 +400,7 @@ internal fun AllCountersScreen(
             },
             onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE })
 
-        ListItemContextMenuOption.DELETE -> OpenDeleteAlertDialog(counterName = counterContextMenuName,
+        ListItemContextMenuOption.DELETE -> DeleteCounterAlertDialog(counterName = counterContextMenuName,
             onConfirm = {
                 onContextMenuOptionSelected(
                     counterContextMenuId, menuOptionSelected, null
@@ -817,33 +818,9 @@ private fun LongPressContextMenu(
 }
 
 
-@Composable
-private fun OpenResetAlertDialog(
-    counterName: String, onConfirm: () -> Unit, onDismiss: () -> Unit
-) {
-    CountThisAlertDialog(
-        title = stringResource(R.string.dialog_title_reset_counter),
-        message = stringResource(R.string.dialog_message_reset_counter, counterName),
-        confirmText = stringResource(R.string.dialog_title_confirm_reset_counter),
-        onConfirm = { onConfirm() },
-        dismissText = stringResource(R.string.dialog_dismiss),
-        onDismissRequest = { onDismiss() },
-    )
-}
 
-@Composable
-private fun OpenDeleteAlertDialog(
-    counterName: String, onConfirm: () -> Unit, onDismiss: () -> Unit
-) {
-    CountThisAlertDialog(
-        title = stringResource(R.string.dialog_title_delete_counter),
-        message = stringResource(R.string.dialog_message_delete_counter, counterName),
-        confirmText = stringResource(R.string.dialog_title_confirm_delete_counter),
-        onConfirm = { onConfirm() },
-        dismissText = stringResource(R.string.dialog_dismiss),
-        onDismissRequest = { onDismiss() },
-    )
-}
+
+
 
 @Composable
 private fun OpenAddTimeDialog(

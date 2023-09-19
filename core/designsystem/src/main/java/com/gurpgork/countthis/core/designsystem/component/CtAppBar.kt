@@ -1,5 +1,7 @@
 package com.gurpgork.countthis.core.designsystem.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -16,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CtTopAppBar(
     modifier: Modifier = Modifier,
@@ -24,7 +26,13 @@ fun CtTopAppBar(
     appBarState: CtAppBarState,
 ) {
     CenterAlignedTopAppBar(
-        title = { Text(text = appBarState.title) },
+        title = {
+            Text(
+                text = appBarState.title,
+                maxLines = 1,
+//                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.basicMarquee()
+            )},
         navigationIcon = { appBarState.navigationIcon.invoke() },
         actions = { appBarState.actions.invoke(this) },
         colors = colors,
