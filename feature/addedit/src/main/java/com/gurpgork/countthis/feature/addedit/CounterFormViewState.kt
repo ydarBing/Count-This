@@ -1,7 +1,7 @@
 package com.gurpgork.countthis.feature.addedit
 
+import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
 import com.gurpgork.countthis.core.model.data.Counter
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 data class CounterFormViewState(
@@ -24,9 +24,9 @@ data class CounterFormViewState(
 )
 
 fun CounterFormViewState.asExternalModel(
-    id:Long = 0,
-    listIndex: Int = -1,
-    creationDate: Instant = Clock.System.now(),
+    listIndex: Int,
+    creationDate: Instant,
+    id:Long = CREATE_COUNTER_ID,
 ) = Counter(
     id = id,
     listIndex = listIndex,

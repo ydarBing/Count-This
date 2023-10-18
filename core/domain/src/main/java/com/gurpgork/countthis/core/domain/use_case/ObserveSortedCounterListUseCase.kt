@@ -14,7 +14,7 @@ class ObserveSortedCounterListUseCase @Inject constructor(
 ) {
     operator fun invoke(): Flow<List<CounterWithIncrementInfo>> {
         return combine(
-            userDataRepository.userData,//.map { it.currentSort },
+            userDataRepository.userData,
             counterRepository.observeCountersWithInfo(),
         ){ userData, counters ->
             counters.sortedWith(

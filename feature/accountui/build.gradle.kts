@@ -1,7 +1,7 @@
 plugins {
-    id("countthis.android.feature")
-    id("countthis.android.library.compose")
-    id("countthis.android.library.jacoco")
+    alias(libs.plugins.countthis.android.feature)
+    alias(libs.plugins.countthis.android.library.compose)
+    alias(libs.plugins.countthis.android.library.jacoco)
 }
 
 android {

@@ -50,6 +50,11 @@ class OfflineFirstUserDataRepository @Inject constructor(
         ctPreferencesDataSource.setSort(sort)
         analyticsHelper.logSortStateChanged(sort.name)
     }
+
+    override suspend fun setSortAsc(sortAsc: Boolean){
+        ctPreferencesDataSource.setSortAsc(sortAsc)
+        analyticsHelper.logSortAscStateSet(sortAsc)
+    }
     override suspend fun toggleSortAsc() {
         ctPreferencesDataSource.toggleSortAsc()
         analyticsHelper.logSortAscStateToggled(userData.last().sortAsc)

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "5bc8a735b523335ed47dc6ac0c594ecb",
+    "identityHash": "e3f1ede8205eb9bb7db4d4456a4c4f65",
     "entities": [
       {
         "tableName": "counters",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `increment` INTEGER NOT NULL, `count` INTEGER NOT NULL, `goal` INTEGER NOT NULL, `creation_date` INTEGER NOT NULL, `list_index` INTEGER, `track_location` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `increment` INTEGER NOT NULL, `count` INTEGER NOT NULL, `goal` INTEGER NOT NULL, `creation_date` INTEGER NOT NULL, `list_index` INTEGER NOT NULL, `track_location` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -48,7 +48,7 @@
             "fieldPath": "listIndex",
             "columnName": "list_index",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "trackLocation",
@@ -277,7 +277,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5bc8a735b523335ed47dc6ac0c594ecb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e3f1ede8205eb9bb7db4d4456a4c4f65')"
     ]
   }
 }

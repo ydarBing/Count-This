@@ -101,6 +101,17 @@ class CtPreferencesDataSource @Inject constructor(
                     SortOption.ALPHABETICAL -> SortOptionsConfigProto.ALPHABETICAL
                     SortOption.USER_SORTED -> SortOptionsConfigProto.USER_SORTED
                 }
+
+                if(sort == SortOption.USER_SORTED)
+                    this.allCountersSortAsc = true
+            }
+        }
+    }
+
+    suspend fun setSortAsc(sortAsc: Boolean) {
+        userPreferences.updateData {
+            it.copy {
+                this.allCountersSortAsc = sortAsc
             }
         }
     }

@@ -38,5 +38,6 @@ interface CounterRepository {
     suspend fun updateCounter(counter: Counter)
     suspend fun upsertCounter(counter: Counter)
 
+    suspend fun updateListIndex(counterId: Long, newIndex: Int): Int
 
 }

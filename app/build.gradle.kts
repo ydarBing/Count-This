@@ -1,13 +1,13 @@
 import com.gurpgork.countthis.CtBuildType
 
 plugins {
-    id("countthis.android.application")
-    id("countthis.android.application.compose")
-    id("countthis.android.application.flavors")
-    id("countthis.android.application.jacoco")
-    id("countthis.android.hilt")
+    alias(libs.plugins.countthis.android.application)
+    alias(libs.plugins.countthis.android.application.compose)
+    alias(libs.plugins.countthis.android.application.flavors)
+    alias(libs.plugins.countthis.android.application.jacoco)
+    alias(libs.plugins.countthis.android.hilt)
     id("jacoco")
-    id("countthis.android.application.firebase")
+    alias(libs.plugins.countthis.android.application.firebase)
 
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
@@ -67,18 +67,18 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:accountui"))
-    implementation(project(":feature:allcounters"))
-    implementation(project(":feature:counterdetails"))
-    implementation(project(":feature:addedit"))
-    implementation(project(":feature:settings"))
+    implementation(projects.feature.accountui)
+    implementation(projects.feature.allcounters)
+    implementation(projects.feature.counterdetails)
+    implementation(projects.feature.addedit)
+    implementation(projects.feature.settings)
 
-    implementation(project(":core:common"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
-    implementation(project(":core:analytics"))
+    implementation(projects.core.common)
+    implementation(projects.core.ui)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.data)
+    implementation(projects.core.model)
+    implementation(projects.core.analytics)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

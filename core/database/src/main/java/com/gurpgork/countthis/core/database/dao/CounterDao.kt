@@ -30,6 +30,9 @@ interface CounterDao {
     @Upsert
     suspend fun upsert(entity: CounterEntity)
 
+    @Query("UPDATE counters SET list_index = :newIndex WHERE id = :counterId")
+    suspend fun updateListIndex(counterId: Long, newIndex: Int): Int
+
     @Query("SELECT * FROM counters")
     fun countersObservable(): Flow<List<CounterEntity>>
 

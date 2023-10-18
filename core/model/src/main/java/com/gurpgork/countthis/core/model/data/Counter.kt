@@ -14,5 +14,6 @@ data class Counter (
     val listIndex: Int,
     val trackLocation: Boolean,
 )
+const val INVALID_LIST_INDEX = -1
 const val INVALID_COUNTER_ID = -1L
 const val CREATE_COUNTER_ID = 0L

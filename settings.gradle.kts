@@ -29,9 +29,10 @@ dependencyResolutionManagement {
 //    }
 //}
 
-//enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
 rootProject.name = "countthis"
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 include(":app")
 include(":core:analytics")
 include(":core:common")

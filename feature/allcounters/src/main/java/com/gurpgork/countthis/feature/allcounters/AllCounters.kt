@@ -18,9 +18,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -36,12 +34,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
@@ -62,25 +57,26 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -88,11 +84,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -113,20 +107,26 @@ import com.gurpgork.countthis.core.designsystem.component.Layout
 import com.gurpgork.countthis.core.designsystem.component.ListContextMenu
 import com.gurpgork.countthis.core.designsystem.component.ListItemContextMenuOption
 import com.gurpgork.countthis.core.designsystem.component.SwipeDismissSnackbarHost
+import com.gurpgork.countthis.core.designsystem.component.conditional
 import com.gurpgork.countthis.core.designsystem.component.dialog.AddTimeDialog
 import com.gurpgork.countthis.core.designsystem.component.dialog.AddTimeInformation
 import com.gurpgork.countthis.core.designsystem.component.dialog.DeleteCounterAlertDialog
 import com.gurpgork.countthis.core.designsystem.component.dialog.ResetCounterAlertDialog
+import com.gurpgork.countthis.core.designsystem.component.reorderablelazylist.ReorderableItem
+import com.gurpgork.countthis.core.designsystem.component.reorderablelazylist.detectReorderAfterLongPress
+import com.gurpgork.countthis.core.designsystem.component.reorderablelazylist.rememberReorderableLazyListState
+import com.gurpgork.countthis.core.designsystem.component.reorderablelazylist.reorderable
 import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
 import com.gurpgork.countthis.core.model.data.CtLocation
+import com.gurpgork.countthis.core.model.data.INVALID_LIST_INDEX
 import com.gurpgork.countthis.core.model.data.SortOption
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
 
 @Composable
 internal fun AllCountersRoute(
     onShowSnackbar: suspend (String, String?) -> Boolean,
-    addEditCounter: (counterId: Long) -> Unit,
+    addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
     onSettingsClicked: () -> Unit,
@@ -146,7 +146,7 @@ internal fun AllCountersRoute(
 @Composable
 internal fun AllCounters(
     viewModel: CounterListViewModel,
-    addEditCounter: (counterId: Long) -> Unit,
+    addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
     onSettingsClicked: () -> Unit,
@@ -155,9 +155,7 @@ internal fun AllCounters(
     val context = LocalContext.current
 
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-//    val pagingItems = viewModel.pagedList.collectAsLazyPagingItems()
 
-//    val pickerLocationState by viewModel.pickerLocation.collectAsState()
     val initialLatLng = if (viewState.mostRecentLocation != null) LatLng(
         viewState.mostRecentLocation!!.latitude, viewState.mostRecentLocation!!.longitude
     )
@@ -167,9 +165,7 @@ internal fun AllCounters(
 
     AllCountersScreen(
         viewState = viewState,
-//        list = pagingItems,
         openUser = openUser,
-//        openSettings = openSettings,
         openCounter = openCounter,
         addEditCounter = addEditCounter,
         onMessageShown = { viewModel.clearMessage(it) },
@@ -184,12 +180,9 @@ internal fun AllCounters(
         onSortOrderClicked = { viewModel.toggleSortAsc() },
         pickerInitialLatLng = initialLatLng,
         pickerLocationAddress = viewState.locationPickerAddressQuery,
-//        pickerLocation = LatLng(
-//            pickerLocationState.latitude,
-//            pickerLocationState.longitude
-//        ),
         locationQueryChanged = { newAddr -> viewModel.onTextChanged(context, newAddr) },
         onLocationPickerMoved = { latLng -> viewModel.updatePickerLocation(context, latLng) },
+        onListReorder = viewModel::reorderList,
         onSettingsClicked = onSettingsClicked,
         onComposing = onComposing,
     )
@@ -198,13 +191,12 @@ internal fun AllCounters(
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalPermissionsApi::class,
-    ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
+    ExperimentalFoundationApi::class,
 )
 @Composable
 internal fun AllCountersScreen(
     viewState: AllCountersViewState,
-//    list: LazyPagingItems<CounterWithIncrementInfo>,
-    addEditCounter: (counterId: Long) -> Unit,
+    addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     onContextMenuOptionSelected: (counterId: Long, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
     onIncrementCounter: (Long, CtLocation?) -> Unit,
@@ -215,21 +207,32 @@ internal fun AllCountersScreen(
     pickerInitialLatLng: LatLng,
     onMessageShown: (id: Long) -> Unit,
     pickerLocationAddress: String,
-//    pickerLocation: LatLng,
     locationQueryChanged: (String) -> Unit,
     onLocationPickerMoved: (LatLng) -> Unit,
+    onListReorder: (Long, Int, Long, Int) -> Unit,
     onSettingsClicked: () -> Unit,
     onComposing: (CtAppBarState) -> Unit,
 ) {
     var menuOptionSelected by remember { mutableStateOf(ListItemContextMenuOption.NONE) }
-    var counterContextMenuId by remember { mutableStateOf(0L) }
+    var counterContextMenuId by remember { mutableLongStateOf(0L) }
+    var counterContextMenuListIndex by remember { mutableIntStateOf(INVALID_LIST_INDEX) }
     var counterContextMenuName by remember { mutableStateOf("") }
     var counterContextMenuTrackingLocation by remember { mutableStateOf(false) }
 
-    var selectedCounters by remember { mutableStateOf(listOf<Long>()) }
     val snackbarHostState = remember { SnackbarHostState() }
     var showSorts by remember { mutableStateOf(false) }
+    var inMoveState by remember { mutableStateOf(false) }
 
+    val state = rememberReorderableLazyListState(
+        onDragEnd = { from, to ->
+            Log.d("DRAG_END", "$from -> $to")
+            // should now update database as we have finished dragging item
+        },
+        onMove = { from, to ->
+            // still dragging but swapping indices
+            Log.d("MOVE", "From as Long: ${from.key as Long} keys: ${from.key} -> ${to.key} indices: $from -> $to")
+            onListReorder(from.key as Long, from.index, to.key as Long, to.index)
+        })
 
     val dismissSnackbarState = rememberDismissState(
         confirmValueChange = { value ->
@@ -249,20 +252,37 @@ internal fun AllCountersScreen(
         }
     }
 
-    LaunchedEffect(key1 = true) {
+    LaunchedEffect(key1 = inMoveState) {
         onComposing(
-            CtAppBarState(title = "Count This", navigationIcon = {}, actions = {
-                IconButton(onClick = { showSorts = !showSorts }) {
-                    Icon(
-                        imageVector = CtIcons.Sort, contentDescription = "Sort Counters Icon"
-                    )
+            CtAppBarState(title = "Count This", navigationIcon = {
+                if (inMoveState) {
+                    IconButton(onClick = { inMoveState = false }) {
+                        Icon(
+                            imageVector = CtIcons.Close,
+                            contentDescription = "Close/Cancel Reordering List"
+                        )
+                    }
                 }
-                IconButton(onClick = { onSettingsClicked() }) {
-                    Icon(
-                        imageVector = CtIcons.Settings,
-                        contentDescription = "Settings Icon",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
+            }, actions = {
+                if (inMoveState) {
+                    IconButton(onClick = { inMoveState = false }) {
+                        Icon(
+                            imageVector = CtIcons.Save, contentDescription = "Save Reordered List"
+                        )
+                    }
+                } else {
+                    IconButton(onClick = { showSorts = !showSorts }) {
+                        Icon(
+                            imageVector = CtIcons.Sort, contentDescription = "Sort Counters Icon"
+                        )
+                    }
+                    IconButton(onClick = { onSettingsClicked() }) {
+                        Icon(
+                            imageVector = CtIcons.Settings,
+                            contentDescription = "Settings Icon",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             })
         )
@@ -275,17 +295,26 @@ internal fun AllCountersScreen(
         )
     )
 
-    val listState = rememberLazyListState()
 
     Scaffold(floatingActionButton = {
         val extended by remember {
             derivedStateOf {
-                listState.firstVisibleItemIndex > 0
+                state.listState.firstVisibleItemIndex > 0
             }
         }
         CounterListFab(
             extended = { extended },
-            onClick = { addEditCounter(CREATE_COUNTER_ID) },
+            onClick = {
+                if (inMoveState) {
+                    inMoveState = false
+                } else {
+                    addEditCounter(CREATE_COUNTER_ID, viewState.countersWithInfo.size)
+                }
+            },
+            icon = if (inMoveState) CtIcons.Save else CtIcons.Add,
+            textDescription = if (inMoveState) stringResource(id = R.string.save) else stringResource(
+                id = R.string.add
+            ),
         )
     }, snackbarHost = {
         SnackbarHost(hostState = snackbarHostState) { data ->
@@ -306,7 +335,7 @@ internal fun AllCountersScreen(
         )
     }) { contentPadding ->
         Column(modifier = Modifier.consumeWindowInsets(contentPadding)) {
-            AnimatedVisibility(visible = showSorts) {
+            AnimatedVisibility(visible = showSorts && !inMoveState) {
                 SortOptions(
                     currentSort = viewState.sort,
                     sortAsc = viewState.sortAsc,
@@ -318,13 +347,13 @@ internal fun AllCountersScreen(
                 )
             }
 
-
             LazyColumn(
+                state = state.listState,//listState,
                 modifier = Modifier
                     .fillMaxSize()
-//                    .padding(contentPadding)
+                    .reorderable(state)
+                    .detectReorderAfterLongPress(state)
                     .testTag(CounterListTestTag),
-                state = listState,
                 verticalArrangement = Arrangement.spacedBy(0.dp),
                 reverseLayout = viewState.sortAsc,
             ) {
@@ -333,47 +362,58 @@ internal fun AllCountersScreen(
                     key = { it.counter.id },
                     contentType = { "counterListItem" },
                 ) { counter ->
-                    CounterRow(modifier = Modifier.animateItemPlacement(),
-                        useButtonIncrements = viewState.useButtonIncrements,
-                        onCounterClick = { openCounter(counter.counter.id) },
-                        onIncrementCounter = {
-                            onIncrementCounter(
-                                counter.counter.id, viewState.mostRecentLocation
-                            )
-                        },
-                        onDecrementCounter = {
-                            onDecrementCounter(
-                                counter.counter.id, viewState.mostRecentLocation
-                            )
-                        },
-                        counter = counter,
-                        locationPermissionsState = locationPermissionsState,
-                        contextMenuOptions = viewState.availableContextMenuOptions,
-                        onContextMenuOptionSelected = { option ->
-                            menuOptionSelected = option
-                            counterContextMenuId = counter.counter.id
-                            counterContextMenuName = counter.counter.name
-                            counterContextMenuTrackingLocation = counter.counter.trackLocation
-                        })
+                    ReorderableItem(
+                        reorderableState = state,
+                        key = counter.counter.id
+                    ) { isDragging ->
+                        val elevation = animateDpAsState(
+                            if (isDragging) 16.dp else 0.dp, label = "ReorderElevation"
+                        )
 
+                        CounterRow(modifier = Modifier
+                            .animateItemPlacement()
+                            .shadow(elevation.value),
+                            inMoveState = inMoveState,
+                            useButtonIncrements = viewState.useButtonIncrements,
+                            onCounterClick = { openCounter(counter.counter.id) },
+                            onIncrementCounter = {
+                                onIncrementCounter(
+                                    counter.counter.id, viewState.mostRecentLocation
+                                )
+                            },
+                            onDecrementCounter = {
+                                onDecrementCounter(
+                                    counter.counter.id, viewState.mostRecentLocation
+                                )
+                            },
+                            counter = counter,
+                            locationPermissionsState = locationPermissionsState,
+                            contextMenuOptions = viewState.availableContextMenuOptions,
+                            onContextMenuOptionSelected = { option ->
+                                menuOptionSelected = option
+                                counterContextMenuId = counter.counter.id
+                                counterContextMenuListIndex = counter.counter.listIndex
+                                counterContextMenuName = counter.counter.name
+                                counterContextMenuTrackingLocation = counter.counter.trackLocation
+                            })
+                    }
                 }
-//
             }
-
         }
     }
 
     when (menuOptionSelected) {
         ListItemContextMenuOption.NONE -> Unit // don't do anything
         ListItemContextMenuOption.EDIT -> {
-            addEditCounter(counterContextMenuId)
+            addEditCounter(counterContextMenuId, counterContextMenuListIndex)
             menuOptionSelected = ListItemContextMenuOption.NONE
         }
 
         ListItemContextMenuOption.MOVE -> {
             // immediately show how user custom sorted them so they can adjust to their liking
             onSortSelected(SortOption.USER_SORTED)
-            TODO()
+            inMoveState = true
+            menuOptionSelected = ListItemContextMenuOption.NONE
         }
 
         ListItemContextMenuOption.ADD_TIME -> OpenAddTimeDialog(counterName = counterContextMenuName,
@@ -408,23 +448,6 @@ internal fun AllCountersScreen(
                 menuOptionSelected = ListItemContextMenuOption.NONE
             },
             onDismiss = { menuOptionSelected = ListItemContextMenuOption.NONE })
-    }
-}
-
-@Composable
-fun ZeroCounters(contentPadding: PaddingValues) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.list_empty),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
@@ -532,20 +555,43 @@ fun SortOptions(
                 textAlign = TextAlign.Center
             )
         }
-
-        VerticalDivider()
-
-        IconButton(
-            onClick = { onSortOrderClicked() },
-        ) {
-            val imageVector = if (currentSort == SortOption.ALPHABETICAL) {
-                CtIcons.SortAplha
-            } else {
-                if (!sortAsc) CtIcons.ArrowUp else CtIcons.ArrowDown
-            }
-            Icon(
-                imageVector = imageVector, contentDescription = "Sort Asc or Desc"
+        TextButton(
+            onClick = {
+                onSortSelected(SortOption.USER_SORTED, false)
+            }, colors = ButtonColors(
+                containerColor = if (currentSort == SortOption.USER_SORTED) MaterialTheme.colorScheme.surfaceVariant
+                else MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = Color.DarkGray,
+                disabledContentColor = Color.Gray,
             )
+        ) {
+            Text(
+                "Custom",
+                Modifier
+                    .fillMaxHeight()
+                    .padding(4.dp)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                textAlign = TextAlign.Center
+            )
+        }
+
+
+        // USER_SORTED cannot be reversed in order
+        if(currentSort != SortOption.USER_SORTED){
+            VerticalDivider()
+            IconButton(
+                onClick = { onSortOrderClicked() },
+            ) {
+                val imageVector = if (currentSort == SortOption.ALPHABETICAL) {
+                    CtIcons.SortAplha
+                } else {
+                    if (!sortAsc) CtIcons.ArrowUp else CtIcons.ArrowDown
+                }
+                Icon(
+                    imageVector = imageVector, contentDescription = "Sort Asc or Desc"
+                )
+            }
         }
     }
 }
@@ -558,6 +604,7 @@ fun CounterRow(
     onIncrementCounter: () -> Unit,
     onDecrementCounter: () -> Unit,
     counter: CounterWithIncrementInfo,
+    inMoveState: Boolean,
     useButtonIncrements: Boolean,
     locationPermissionsState: MultiplePermissionsState,
     contextMenuOptions: List<ListItemContextMenuOption>,
@@ -574,14 +621,23 @@ fun CounterRow(
                 contextMenuOptions = contextMenuOptions,
                 onCounterClick = onCounterClick,
                 counter = counter,
-                onContextMenuOptionSelected = onContextMenuOptionSelected
+                onContextMenuOptionSelected = onContextMenuOptionSelected,
+                inMoveState = inMoveState,
             )
-            IncrementButtons(
-                modifier = modifier.fillMaxHeight(),
-                onIncrementCounter = onIncrementCounter,
-                onDecrementCounter = onDecrementCounter,
-                locationPermissionsState = locationPermissionsState,
-            )
+            if (!inMoveState) {
+                IncrementButtons(
+                    modifier = modifier.fillMaxHeight(),
+                    onIncrementCounter = onIncrementCounter,
+                    onDecrementCounter = onDecrementCounter,
+                    locationPermissionsState = locationPermissionsState,
+                )
+            } else {
+                Icon(
+                    imageVector = CtIcons.DragHandle,
+                    contentDescription = "Drag Icon",//"Reorder Icon",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
 
     } else {
@@ -593,7 +649,8 @@ fun CounterRow(
             modifier = modifier,
             onCounterClick = onCounterClick,
             contextMenuOptions = contextMenuOptions,
-            onContextMenuOptionSelected = onContextMenuOptionSelected
+            onContextMenuOptionSelected = onContextMenuOptionSelected,
+            inMoveState = inMoveState,
         )
     }
 
@@ -648,7 +705,8 @@ private fun SwipeToDismissCounterRow(
     modifier: Modifier,
     onCounterClick: () -> Unit,
     contextMenuOptions: List<ListItemContextMenuOption>,
-    onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
+    onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit,
+    inMoveState: Boolean,
 ) {
     val dismissState =
         rememberDismissState(initialValue = DismissValue.Default, confirmValueChange = {
@@ -724,7 +782,8 @@ private fun SwipeToDismissCounterRow(
                 counter = counter,
                 dismissState = dismissState,
                 contextMenuOptions = contextMenuOptions,
-                onContextMenuOptionSelected = onContextMenuOptionSelected
+                onContextMenuOptionSelected = onContextMenuOptionSelected,
+                inMoveState = inMoveState,
             )
         })
 }
@@ -733,6 +792,7 @@ private fun SwipeToDismissCounterRow(
 @Composable
 private fun CounterRowCard(
     modifier: Modifier = Modifier,
+    inMoveState: Boolean,
     onCounterClick: () -> Unit,
     counter: CounterWithIncrementInfo,
     contextMenuOptions: List<ListItemContextMenuOption>,
@@ -752,25 +812,24 @@ private fun CounterRowCard(
     Card(colors = CardDefaults.cardColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer
     ),
-//                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
-//                    else
-//                        MaterialTheme.colorScheme.surfaceVariant),
         modifier = modifier
             .onSizeChanged {
                 itemHeight = with(density) { it.height.toDp() }
             }
-            .pointerInput(Unit) {
-                detectTapGestures(onLongPress = { offset ->
-                    showContextMenuInRow = true
-                    pressOffset = DpOffset(offset.x.toDp(), offset.y.toDp())
-                },
-                    // show ripple effect
-                    onPress = {
-                        val press = PressInteraction.Press(it)
-                        interactionSource.emit(press)
-                        tryAwaitRelease()
-                        interactionSource.emit(PressInteraction.Release(press))
-                    }, onTap = { onCounterClick.invoke() })
+            .conditional(!inMoveState) {
+                pointerInput(Unit) {
+                    detectTapGestures(onLongPress = { offset ->
+                        showContextMenuInRow = true
+                        pressOffset = DpOffset(offset.x.toDp(), offset.y.toDp())
+                    },
+                        // show ripple effect
+                        onPress = {
+                            val press = PressInteraction.Press(it)
+                            interactionSource.emit(press)
+                            tryAwaitRelease()
+                            interactionSource.emit(PressInteraction.Release(press))
+                        }, onTap = { onCounterClick.invoke() })
+                }
             }
             .indication(interactionSource, LocalIndication.current)
             .height(IntrinsicSize.Min),
@@ -802,9 +861,6 @@ private fun LongPressContextMenu(
     availableContextMenuOptions: List<ListItemContextMenuOption>,
     showMenu: Boolean,
     dpOffset: DpOffset,
-//    offset: Offset,
-//    counter: CounterEntity,
-//    counterName: String,
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -816,10 +872,6 @@ private fun LongPressContextMenu(
         showMenu = showMenu,
     )
 }
-
-
-
-
 
 
 @Composable
@@ -893,7 +945,7 @@ private fun CounterRow(counter: CounterWithIncrementInfo) {
                     .weight(1f)
                     .padding(end = 10.dp)
                     .wrapContentWidth(Alignment.End),
-                text = counter.counter.count.toString()//counter.increments.count().toString()
+                text = counter.counter.count.toString()
             )
         }
 
@@ -901,7 +953,7 @@ private fun CounterRow(counter: CounterWithIncrementInfo) {
         if (counter.counter.goal > 0) {
             LinearProgressIndicator(
                 progress = (counter.counter.count.toFloat() / counter.counter.goal),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,//Color.Blue,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(4.dp)
@@ -991,42 +1043,6 @@ private fun LocationConfirmationButton(
     ) {
         Text(text = stringResource(R.string.dialog_add_location_confirm_button_text))
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Title(
-    locationQuery: String,
-    isMapEditable: Boolean,
-    onLocationQueryChanged: (query: String) -> Unit,
-    onButtonClicked: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-//            .padding(horizontal = Layout.bodyMargin),
-//        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        TextField(
-            modifier = Modifier.weight(1f),
-//                .padding(end = 80.dp),
-            value = locationQuery,
-            onValueChange = onLocationQueryChanged,
-            enabled = !isMapEditable,
-            maxLines = 1,
-        )
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(10.dp),
-//            horizontalAlignment = Alignment.End,
-//        ) {
-        Button(onClick = onButtonClicked) {
-            Text(text = if (isMapEditable) "Edit" else "Save")
-        }
-//        }
-    }
-
-
 }
 
 
@@ -1123,6 +1139,8 @@ private fun CounterListFab(
     onClick: () -> Unit,
     extended: () -> Boolean,
     modifier: Modifier = Modifier,
+    icon: ImageVector,
+    textDescription: String,
 ) {
     FloatingActionButton(
         onClick = onClick,
@@ -1135,58 +1153,17 @@ private fun CounterListFab(
     ) {
         AnimatingFabContent(icon = {
             Icon(
-                imageVector = Icons.Outlined.Add, contentDescription = stringResource(
-                    R.string.add
-                )
+                imageVector = icon, contentDescription = textDescription
             )
         }, text = {
             Text(
-                text = stringResource(
-                    id = R.string.add
-                ),
+                text = textDescription,
             )
         }, extended = extended()
         )
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CounterListAppBar(
-    modifier: Modifier = Modifier,
-//    onClickSettingsIcon: () -> Unit
-) {
-    TopAppBar(
-        colors = topAppBarColors(),
-//        backgroundColor =
-////        MaterialTheme.colorScheme.primaryContainer
-//        MaterialTheme.colorScheme.surface.copy(alpha = AppBarAlphas.translucentBarAlpha()),
-//        contentColor = MaterialTheme.colorScheme.onSurface,
-//        contentPadding = WindowInsets.systemBars
-//            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-//            .asPaddingValues(),
-        modifier = modifier,
-        title = { Text(text = stringResource(R.string.counter_list_title)) },
-        actions = {
-            IconButton(
-                onClick = {},//onClickSettingsIcon
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = stringResource(R.string.settings_title)
-                )
-            }
-        },
-//                navigationIcon = {
-//                    IconButton(
-//                        onClick = { /* "Open nav drawer" */ }
-//                    ) {
-//                        Icon(Icons.Filled.Menu, contentDescription = "Localized description")
-//                    }
-//                }
-    )
-}
 
 private val JumpToBottomThreshold = 56.dp
 

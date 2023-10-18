@@ -6,6 +6,8 @@
     <string name="list_empty">You have no counters. \n Go on, add a counter</string>
     <string name="list_error">No Counters Found or Error Loading Counters</string>
 
+    <string name="save">Save</string>
+
     <string name="add">Add</string>
     <string name="textfield_hint">Counter Name</string>
     <string name="textfield_desc">Text input</string>

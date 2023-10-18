@@ -130,17 +130,17 @@ class AddEditCounterViewModel @Inject constructor(
 
         if (!hasError) {
             viewModelScope.launch {
-                updateCounter()
+                upsertCounter()
                 validationEventChannel.send(ValidationEvent.Success)
             }
         }
     }
 
-    private suspend fun updateCounter() {
+    private suspend fun upsertCounter() {
         val editedCounter = _state.value.asExternalModel(
-            currentCounterId,
-            editingCounter?.listIndex ?: -1,
-            editingCounter?.creationDate ?: Clock.System.now()
+            listIndex = editingCounter?.listIndex ?: addEditArgs.numCounters,
+            creationDate = editingCounter?.creationDate ?: Clock.System.now(),
+            id = currentCounterId,
         )
 
         // creating a new counter that tracks location

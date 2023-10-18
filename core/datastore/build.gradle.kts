@@ -1,7 +1,7 @@
 plugins {
-    id("countthis.android.library")
-    id("countthis.android.library.jacoco")
-    id("countthis.android.hilt")
+    alias(libs.plugins.countthis.android.library)
+    alias(libs.plugins.countthis.android.hilt)
+    alias(libs.plugins.countthis.android.library.jacoco)
     alias(libs.plugins.protobuf)
 }
 
@@ -44,12 +44,12 @@ androidComponents.beforeVariants {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:model"))
+    implementation(projects.core.common)
+    implementation(projects.core.model)
     implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.protobuf.kotlin.lite)
 
-//    testImplementation(project(":core:datastore-test"))
-//    testImplementation(project(":core:testing"))
+//    testImplementation(projects.core.datastore-test)
+//    testImplementation(projects.core.testing)
 }

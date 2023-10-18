@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +55,7 @@ import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.gurpgork.countthis.core.designsystem.component.CtAppBarState
+import com.gurpgork.countthis.core.designsystem.component.CtOutlinedInputField
 import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
 
 @Composable
@@ -87,7 +87,8 @@ fun AddEditCounterScreen(
         viewModel.validationEvents.collect { event ->
             when (event) {
                 is ValidationEvent.Success -> {
-                    onShowSnackbar("Counter Edited!", null)
+                    val success = if(viewModel.currentCounterId == CREATE_COUNTER_ID) "Created" else "Edited"
+                    onShowSnackbar("Counter $success!", null)
                     navigateUp()
                 }
             }
@@ -145,6 +146,7 @@ internal fun AddEditForm(
     viewState: CounterFormViewState,
     counterFormEvent: (CounterFormEvent) -> Unit,
 ) {
+    var submitted by remember { mutableStateOf(false) }
     val keyBoardController = LocalSoftwareKeyboardController.current
 
     val permissions = listOf(
@@ -162,14 +164,16 @@ internal fun AddEditForm(
             // First, get a reference to two focus requesters
             val (first, second) = FocusRequester.createRefs() // using this to "skip" track location from focusing
 
-            CounterInputField(label = stringResource(R.string.create_counter_name),
+            CtOutlinedInputField(
+                label = stringResource(R.string.create_counter_name),
                 placeholder = viewState.namePlaceholder,
                 text = viewState.name,
                 onTextChanged = {
                     counterFormEvent(CounterFormEvent.NameChanged(it))
                 },
                 isError = viewState.hasNameError,
-                modifier = Modifier.focusRequester(first).focusProperties(fun FocusProperties.() {
+                modifier = Modifier.fillMaxWidth()
+                    .focusRequester(first).focusProperties(fun FocusProperties.() {
                     next = second
                     down = second
                 })
@@ -206,8 +210,10 @@ internal fun AddEditForm(
                     counterFormEvent(CounterFormEvent.IncrementChanged(raw))
                 })
             TextButton(
-                enabled = viewState.name.isNotEmpty(),
-                onClick = { counterFormEvent(CounterFormEvent.Submit) },
+                enabled = viewState.name.isNotEmpty() && !submitted,
+                onClick = {
+                    submitted = true
+                    counterFormEvent(CounterFormEvent.Submit) },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.secondary,
                 ),
@@ -225,7 +231,6 @@ internal fun AddEditForm(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNumberField(
     modifier: Modifier = Modifier,
@@ -261,42 +266,7 @@ fun AppNumberField(
     )
 }
 
-@Composable
-fun CounterInputField(
-    modifier: Modifier = Modifier,
-    text: String,
-    placeholder: String,
-    label: String = "",
-    leadingIcon: @Composable (() -> Unit)? = null,
-    onTextChanged: (String) -> Unit = {},
-    imeAction: ImeAction = ImeAction.Next,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    keyBoardActions: KeyboardActions = KeyboardActions(),
-    isEnabled: Boolean = true,
-    isError: Boolean = false
-) {
-    OutlinedTextField(
-        modifier = modifier.fillMaxWidth(),
-        value = text,
-        onValueChange = onTextChanged,
-        label = { Text(label) },
-        leadingIcon = leadingIcon,
-        textStyle = TextStyle(fontSize = 18.sp),
-        keyboardOptions = KeyboardOptions(imeAction = imeAction, keyboardType = keyboardType),
-        keyboardActions = keyBoardActions,
-        enabled = isEnabled,
-        colors = OutlinedTextFieldDefaults.colors(
-            disabledTextColor = Color.Black,
-            focusedBorderColor = Color.Black,
-            unfocusedBorderColor = Color.Gray,
-            disabledBorderColor = Color.Gray,
-        ),
-        placeholder = {
-            Text(text = placeholder, style = TextStyle(fontSize = 18.sp, color = Color.LightGray))
-        },
-        isError = isError,
-    )
-}
+
 
 @Composable
 @OptIn(ExperimentalPermissionsApi::class)

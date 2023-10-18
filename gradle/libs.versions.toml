@@ -1,15 +1,15 @@
 [versions]
-agp = "8.2.0-beta04"
+agp = "8.2.0-beta06"
 accompanist = "0.30.1"
-activityCompose = "1.8.0-beta01"#"1.7.2"
+activityCompose = "1.8.0-rc01"#"1.7.2"
 androidDesugarJdkLibs = "2.0.3"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.6.0"
-androidxComposeBom = "2023.09.00"
+androidxComposeBom = "2023.09.02"
 androidxComposeCompiler = "1.5.3"
 androidxComposeMaterial = "1.6.0-alpha05"#"1.5.1"
-androidxComposeMaterial3 = "1.2.0-alpha07" #alpha05 + 06 breaks swipetodismiss
-androidxNavigation = "2.7.2"
+androidxComposeMaterial3 = "1.2.0-alpha08" #alpha05 + 06 breaks swipetodismiss
+androidxNavigation = "2.7.3"
 androidConstraintLayout = "2.1.4"
 androidxCore = "1.12.0"
 androidxCoreSplashscreen = "1.0.1"
@@ -58,23 +58,6 @@ targetSdk = "34"
 junit = "1.1.5"
 material = "1.9.0"
 
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
-android-lint = { id = "com.android.lint", version.ref = "agp" }
-android-test = { id = "com.android.test", version.ref = "agp" }
-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
-firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
-gms = { id = "com.google.gms.google-services", version.ref = "gmsPlugin" }
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
-secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
-spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-gradle-enterprise = { id = "com.gradle.enterprise", version.ref = "gradleEnterprisePlugin" }
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -196,3 +179,36 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 firebase-crashlytics-gradlePlugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }
+android-test = { id = "com.android.test", version.ref = "agp" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
+gms = { id = "com.google.gms.google-services", version.ref = "gmsPlugin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
+secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+gradle-enterprise = { id = "com.gradle.enterprise", version.ref = "gradleEnterprisePlugin" }
+# Plugins defined by this project
+countthis-android-application = { id = "countthis.android.application", version = "unspecified" }
+countthis-android-application-compose = { id = "countthis.android.application.compose", version = "unspecified" }
+countthis-android-application-firebase = { id = "countthis.android.application.firebase", version = "unspecified" }
+countthis-android-application-flavors = { id = "countthis.android.application.flavors", version = "unspecified" }
+countthis-android-application-jacoco = { id = "countthis.android.application.jacoco", version = "unspecified" }
+countthis-android-feature = { id = "countthis.android.feature", version = "unspecified" }
+countthis-android-hilt = { id = "countthis.android.hilt", version = "unspecified" }
+countthis-android-library = { id = "countthis.android.library", version = "unspecified" }
+countthis-android-library-compose = { id = "countthis.android.library.compose", version = "unspecified" }
+countthis-android-library-jacoco = { id = "countthis.android.library.jacoco", version = "unspecified" }
+countthis-android-lint = { id = "countthis.android.lint", version = "unspecified" }
+countthis-android-room = { id = "countthis.android.room", version = "unspecified" }
+countthis-android-test = { id = "countthis.android.test", version = "unspecified" }
+countthis-jvm-library = { id = "countthis.jvm.library", version = "unspecified" }

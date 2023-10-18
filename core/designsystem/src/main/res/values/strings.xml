@@ -27,6 +27,8 @@
         <item>Delete</item>
     </string-array>
 
+    <string name="increment_time">Increment time</string>
+    <string name="add_increment_at">at</string>
 
     <string name="jump_to_bottom">Jump To Bottom</string>
     <!-- Accessibility descriptions -->

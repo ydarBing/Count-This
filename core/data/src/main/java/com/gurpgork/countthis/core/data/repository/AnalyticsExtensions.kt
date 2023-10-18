@@ -46,6 +46,15 @@ fun AnalyticsHelper.logSortStateChanged(sortName: String) =
             ),
         ),
     )
+fun AnalyticsHelper.logSortAscStateSet(sortAsc: Boolean) =
+    logEvent(
+        AnalyticsEvent(
+            type = "all_counters_sort_asc_set",
+            extras = listOf(
+                Param(key = "all_counters_sort_asc", value = sortAsc.toString()),
+            ),
+        ),
+    )
 fun AnalyticsHelper.logSortAscStateToggled(sortAsc: Boolean) =
     logEvent(
         AnalyticsEvent(

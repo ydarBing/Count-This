@@ -50,6 +50,10 @@ interface UserDataRepository {
     /**
      * Sets how the main screen counters should be ordered, ascending or descending
      */
+    suspend fun setSortAsc(sortAsc: Boolean)
+    /**
+     * Sets how the main screen counters should be ordered, ascending or descending
+     */
     suspend fun toggleSortAsc()
 
 }

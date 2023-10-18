@@ -1,7 +1,7 @@
 plugins {
-    id("countthis.android.library")
-    id("countthis.android.library.jacoco")
-    id("countthis.android.hilt")
+    alias(libs.plugins.countthis.android.library)
+    alias(libs.plugins.countthis.android.hilt)
+    alias(libs.plugins.countthis.android.library.jacoco)
     id("kotlinx-serialization")
 }
 
@@ -16,13 +16,13 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:analytics"))
-    implementation(project(":core:common"))
-    implementation(project(":core:database"))
-    implementation(project(":core:datastore"))
-    implementation(project(":core:model"))
-//    implementation(project(":core:network"))
-//    implementation(project(":core:notifications"))
+    implementation(projects.core.analytics)
+    implementation(projects.core.common)
+    implementation(projects.core.database)
+    implementation(projects.core.datastore)
+    implementation(projects.core.model)
+//    implementation(projects.core.network)
+//    implementation(projects.core.notifications)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
@@ -30,6 +30,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.paging.common)
 
-//    testImplementation(project(":core:datastore-test"))
-//    testImplementation(project(":core:testing"))
+//    testImplementation(projects.core.datastore-test)
+//    testImplementation(projects.core.testing)
 }

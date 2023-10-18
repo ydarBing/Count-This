@@ -28,6 +28,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,11 +37,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gurpgork.countthis.core.designsystem.component.bodyWidth
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.todayIn
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Calendar
 import java.util.Locale
 
@@ -55,9 +61,6 @@ data class AddTimeInformation(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTimeDialog(
-//    title: String,
-//    modifier: Modifier,
-//    buttons: @Composable () -> Unit,
     onDismissRequest: () -> Unit,
     onConfirmNewIncrement: (AddTimeInformation) -> Unit,
     trackingLocation: Boolean,
@@ -77,16 +80,20 @@ fun AddTimeDialog(
         ) {
             Column(
                 modifier = Modifier
-                .fillMaxWidth(0.9f),
-//                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .bodyWidth()
+                    .padding(top = 20.dp),
+//                    .fillMaxWidth(0.9f),
                 verticalArrangement = Arrangement.Center
             ) {
-//                Title(title)
 
-                BodyMaterial3(
+                Body(
                     onDateChanged = {
-                        data.value.dateTime =
-                            LocalDateTime.of(it, data.value.dateTime.toLocalTime())
+//                                .atZone(ZoneId.systemDefault()).toLocalDate()
+                        data.value.dateTime = LocalDateTime.of(
+                            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate(),
+                            data.value.dateTime.toLocalTime()
+                        )
+//                            LocalDateTime.of(it, data.value.dateTime.toLocalTime())
                     },
                     onTimeChanged = {
                         data.value.dateTime =
@@ -98,10 +105,10 @@ fun AddTimeDialog(
                 BottomButtons(
                     onDismissRequest = onDismissRequest,
                     // TODO possibly causing unnecessary recompositions
-                    onConfirm = { onConfirmNewIncrement(data.value) },
-                    dismissText,
-                    confirmText
-                    )
+                    onConfirm = {
+                        onConfirmNewIncrement(data.value)
+                    }, dismissText, confirmText
+                )
             }
         }
     }
@@ -114,19 +121,26 @@ private fun Title(title: String) {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun BodyMaterial3(
-    onDateChanged: (newDate: LocalDate) -> Unit,
+private fun Body(
+    onDateChanged: (selectedDateMillisUTC: Long) -> Unit,
     onTimeChanged: (newTime: LocalTime) -> Unit,
     trackingLocation: Boolean,
     onLocationButtonClick: () -> Unit
 ) {
-    //TODO maybe can just stack date/time pickers once more flushed out features are in
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = Instant.now().toEpochMilli(),
-        initialDisplayMode = DisplayMode.Picker)
-
-    // TODO should we remember this calendar and then update its values for displaying purposes
     val cal = Calendar.getInstance()
+    val todaysDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+    val todaysInstant = todaysDate.atStartOfDayIn(TimeZone.currentSystemDefault())
+
+    //TODO change date picker to as soon as date is pushed, that date is saved and dialog is dismissed
+    var savedDate: Long by rememberSaveable { mutableLongStateOf(todaysInstant.toEpochMilliseconds()) }
+
+    val datePickerState = rememberDatePickerState(
+        // converting to Instant changes to UTC time,
+        // but we want time zone information so we have today as initially selected
+        initialSelectedDateMillis = savedDate,
+        initialDisplayMode = DisplayMode.Picker
+    )
+    // TODO should we remember this calendar and then update its values for displaying purposes
     val hour24 = cal.get(Calendar.HOUR_OF_DAY)
     val minute = cal.get(Calendar.MINUTE)
 
@@ -135,48 +149,44 @@ private fun BodyMaterial3(
     var showTimeDialog: Boolean by rememberSaveable { mutableStateOf(false) }
 
     if (showDateDialog) {
-        val confirmEnabled = remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
-        DatePickerDialog(
-            onDismissRequest = { showDateDialog = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDateDialog = false
-                        val localDatePicked = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
-                        //TODO should i just be sending the selectedDateMillis back up? probably
-                        onDateChanged(localDatePicked)
-                    },
-                    enabled = confirmEnabled.value
-                ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showDateDialog = false
-                    }
-                ) {
-                    Text("Cancel")
-                }
+        val confirmEnabled =
+            remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
+        DatePickerDialog(onDismissRequest = { showDateDialog = false }, confirmButton = {
+            TextButton(
+                onClick = {
+                    showDateDialog = false
+                    savedDate = datePickerState.selectedDateMillis!!
+                    onDateChanged(savedDate)
+                }, enabled = confirmEnabled.value
+            ) {
+                Text("OK")
             }
-        ){
+        }, dismissButton = {
+            TextButton(onClick = {
+                showDateDialog = false
+            }) {
+                Text("Cancel")
+            }
+        }) {
             DatePicker(state = datePickerState)
         }
     }
 
-    if(showTimeDialog){
+    if (showTimeDialog) {
         AlertDialog(onDismissRequest = { showTimeDialog = false }) {
             Surface(
                 modifier = Modifier
                     .requiredWidth(360.0.dp)
                     .heightIn(max = 568.0.dp),
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 6.0.dp,
             ) {
-                Column(verticalArrangement = Arrangement.SpaceBetween,
-                       horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    Modifier.padding(top = 8.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     TimePicker(state = timePickerState)
 
                     // buttons
@@ -188,24 +198,20 @@ private fun BodyMaterial3(
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ){
-                            TextButton(
-                                onClick = {
-                                    showTimeDialog = false
-                                }
-                            ) {
+                        ) {
+                            TextButton(onClick = {
+                                showTimeDialog = false
+                            }) {
                                 Text("Cancel")
                             }
-                            TextButton(
-                                onClick = {
-                                    showTimeDialog = false
-                                    val localTimePicked = LocalTime.now(ZoneId.systemDefault())
-                                        .withHour(timePickerState.hour)
-                                        .withMinute(timePickerState.minute)
+                            TextButton(onClick = {
+                                showTimeDialog = false
+                                val localTimePicked = LocalTime.now(ZoneId.systemDefault())
+                                    .withHour(timePickerState.hour)
+                                    .withMinute(timePickerState.minute)
 
-                                    onTimeChanged.invoke(localTimePicked)
-                                }
-                            ) {
+                                onTimeChanged.invoke(localTimePicked)
+                            }) {
                                 Text("OK")
                             }
                         }
@@ -222,27 +228,55 @@ private fun BodyMaterial3(
             .padding(horizontal = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-//        DatePicker( state = datePickerState )
-//        Text("Selected date timestamp: ${datePickerState.selectedDateMillis ?: "no selection"}")
-//        val timePickerState = rememberTimePickerState()
-//        TimePicker(state = timePickerState)
-//        Text("Selected timestamp: ${timePickerState.hour}:${timePickerState.minute}")
-
+//TODO when feeling like it, turn these two rows into a single row for time (like google Maps Timeline)
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceEvenly,
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            val localDatePicked2 =
+//                Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atOffset(
+//                    ZoneOffset.UTC
+//                ).toLocalDate()
+//
+//            CtOutlinedInputField(
+//                label = stringResource(id = R.string.increment_time),
+//                text = localDatePicked2.toString(),
+//                placeholder = localDatePicked2.toString()
+//            )
+//
+//            Text(text = stringResource(id = R.string.add_increment_at))
+//
+//            cal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+//            cal.set(Calendar.MINUTE, timePickerState.minute)
+//            val timeFormatted = SimpleDateFormat("h:mm a", Locale.getDefault()).format(cal.time)
+//
+//            CtOutlinedInputField(
+//                text = timeFormatted,
+//                placeholder = timeFormatted
+//            )
+//        }
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(onClick = { showDateDialog = true }) {
                 Text(text = "Date")
             }
-            val localDatePicked = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
+//            val localDatePicked = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
+//                .atZone(ZoneId.systemDefault()).toLocalDate()
+            val localDatePicked =
+//                Instant.ofEpochMilli(savedDate).atOffset(
+                Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atOffset(
+                    ZoneOffset.UTC
+                ).toLocalDate()
             Text(text = localDatePicked.toString())
         }
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -262,8 +296,7 @@ private fun BodyMaterial3(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Button(onClick = onLocationButtonClick) {
                     Text(text = "Change Location")

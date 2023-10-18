@@ -1,7 +1,7 @@
 plugins {
-    id("countthis.android.library")
-    id("countthis.android.library.jacoco")
-    id("countthis.android.hilt")
+    alias(libs.plugins.countthis.android.library)
+    alias(libs.plugins.countthis.android.hilt)
+    alias(libs.plugins.countthis.android.library.jacoco)
 }
 
 android {
@@ -10,5 +10,5 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
-//    testImplementation(project(":core:testing"))
+//    testImplementation(projects.core.testing)
 }

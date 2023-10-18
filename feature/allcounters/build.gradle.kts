@@ -1,7 +1,7 @@
 plugins {
-    id("countthis.android.feature")
-    id("countthis.android.library.compose")
-    id("countthis.android.library.jacoco")
+    alias(libs.plugins.countthis.android.feature)
+    alias(libs.plugins.countthis.android.library.compose)
+    alias(libs.plugins.countthis.android.library.jacoco)
 }
 
 android {
@@ -21,10 +21,4 @@ dependencies {
     implementation(libs.playservices.places)
     implementation(libs.playservices.maps)
     implementation(libs.playservices.maps.utils)
-//    implementation(libs.androidx.core.ktx)
-//    implementation(libs.androidx.appcompat)
-//    implementation(libs.material)
-//    testImplementation(libs.junit4)
-//    androidTestImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.test.espresso.core)
 }

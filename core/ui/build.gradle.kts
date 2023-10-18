@@ -1,8 +1,8 @@
 plugins {
-    id("countthis.android.library")
-    id("countthis.android.library.compose")
-    id("countthis.android.library.jacoco")
-    id("countthis.android.hilt")
+    alias(libs.plugins.countthis.android.library)
+    alias(libs.plugins.countthis.android.library.compose)
+    alias(libs.plugins.countthis.android.hilt)
+    alias(libs.plugins.countthis.android.library.jacoco)
 }
 
 android {
@@ -20,14 +20,14 @@ dependencies {
 
     debugApi(libs.androidx.compose.ui.tooling)
 
-    implementation(project(":core:analytics"))
-    implementation(project(":core:common"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:domain"))
-    implementation(project(":core:model"))
+    implementation(projects.core.analytics)
+    implementation(projects.core.common)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.domain)
+    implementation(projects.core.model)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.datetime)
 
-//    androidTestImplementation(project(":core:testing"))
+//    androidTestImplementation(projects.core.testing)
 }

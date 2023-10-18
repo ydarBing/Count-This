@@ -15,7 +15,7 @@ fun NavController.navigateToAllCounters(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.allCountersScreen(
     onShowSnackbar: suspend (String, String?) -> Boolean,
-    addEditCounter: (counterId: Long) -> Unit,
+    addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     openUser: () -> Unit,
     onSettingsClicked: () -> Unit,

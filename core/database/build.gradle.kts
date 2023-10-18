@@ -1,8 +1,8 @@
 plugins {
-    id("countthis.android.library")
-    id("countthis.android.library.jacoco")
-    id("countthis.android.hilt")
-    id("countthis.android.room")
+    alias(libs.plugins.countthis.android.library)
+    alias(libs.plugins.countthis.android.hilt)
+    alias(libs.plugins.countthis.android.library.jacoco)
+    alias(libs.plugins.countthis.android.room)
 }
 
 android {
@@ -11,7 +11,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    implementation(projects.core.model)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)

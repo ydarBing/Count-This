@@ -14,9 +14,10 @@ data class CounterEntity(
     @ColumnInfo(name = "count") val count: Int = 0,
     @ColumnInfo(name = "goal") val goal: Int = 0,
     @ColumnInfo(name = "creation_date") val creationDate: Instant,
-    @ColumnInfo(name = "list_index") val listIndex: Int? = null,
+    @ColumnInfo(name = "list_index") val listIndex: Int = -1,
     @ColumnInfo(name = "track_location") val trackLocation: Boolean? = null
 ){
+
     constructor(counter: Counter) : this(
         id = counter.id,
         name = counter.name,
@@ -36,6 +37,6 @@ fun CounterEntity.asExternalModel() = Counter(
     count = count,
     goal = goal,
     creationDate = creationDate,
-    listIndex = listIndex ?: -1,
+    listIndex = listIndex,
     trackLocation = trackLocation ?: false,
 )

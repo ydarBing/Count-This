@@ -1,7 +1,7 @@
 plugins {
-    id("countthis.android.library")
-    id("countthis.android.library.compose")
-    id("countthis.android.hilt")
+    alias(libs.plugins.countthis.android.library)
+    alias(libs.plugins.countthis.android.library.compose)
+    alias(libs.plugins.countthis.android.hilt)
 }
 
 android {
