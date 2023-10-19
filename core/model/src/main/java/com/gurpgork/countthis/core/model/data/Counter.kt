@@ -13,7 +13,11 @@ data class Counter (
     val creationDate: Instant,
     val listIndex: Int,
     val trackLocation: Boolean,
-)
+
+//    val numerator: Float,
+) {
+}
+
 const val INVALID_LIST_INDEX = -1
 const val INVALID_COUNTER_ID = -1L
 const val CREATE_COUNTER_ID = 0L

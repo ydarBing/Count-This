@@ -64,7 +64,7 @@ internal fun CounterDetails(
         viewState = viewState,
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
-        onDeleteCounter = { id -> viewModel.deleteCounter(id) },
+        onDeleteCounter = { id, listIndex -> viewModel.deleteCounter(id, listIndex) },
         onComposing = onComposing,
     )
 }
@@ -77,7 +77,7 @@ internal fun CounterDetails(
     viewState: CounterDetailsViewState,
     navigateUp: () -> Unit,
     openEditCounter: (counterId: Long, listIndex: Int) -> Unit,
-    onDeleteCounter: (counterId: Long) -> Unit,
+    onDeleteCounter: (counterId: Long, listIndex: Int) -> Unit,
     onComposing: (CtAppBarState) -> Unit,
 ) {
     var wantsToDelete by remember { mutableStateOf(false) }
@@ -127,7 +127,7 @@ internal fun CounterDetails(
             DeleteCounterAlertDialog(
                 counterName = it.counter.name,
                 onConfirm = {
-                    onDeleteCounter(it.counter.id)
+                    onDeleteCounter(it.counter.id, it.counter.listIndex)
                     navigateUp()
                 },
                 onDismiss = { wantsToDelete = false })

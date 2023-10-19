@@ -56,6 +56,8 @@ class DefaultCounterRepository @Inject constructor(
     }
 
     override suspend fun deleteWithId(id: Long) = counterDao.deleteWithId(id)
+    override suspend fun deleteAndUpdateListIndices(id: Long, listIndex: Int) =
+        counterDao.deleteAndUpdateListIndices(id, listIndex)
 
     override suspend fun getCounterById(id: Long) = counterDao.getCounterById(id)?.asExternalModel()
 

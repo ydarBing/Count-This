@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 interface CounterRepository {
     suspend fun resetCounter(counterId: Long)
     suspend fun deleteWithId(id: Long)
+    suspend fun deleteAndUpdateListIndices(id: Long, listIndex: Int)
     suspend fun getCounterById(id: Long): Counter?
     fun observeCounter(id: Long): Flow<Counter>
     fun observeCounterList(numCounterToObserver: Int): Flow<List<Counter>>

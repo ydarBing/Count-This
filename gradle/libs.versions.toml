@@ -1,5 +1,5 @@
 [versions]
-agp = "8.2.0-beta06"
+agp = "8.2.0-rc01"
 accompanist = "0.30.1"
 activityCompose = "1.8.0-rc01"#"1.7.2"
 androidDesugarJdkLibs = "2.0.3"

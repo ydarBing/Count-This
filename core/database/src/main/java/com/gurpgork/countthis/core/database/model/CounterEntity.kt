@@ -15,8 +15,13 @@ data class CounterEntity(
     @ColumnInfo(name = "goal") val goal: Int = 0,
     @ColumnInfo(name = "creation_date") val creationDate: Instant,
     @ColumnInfo(name = "list_index") val listIndex: Int = -1,
-    @ColumnInfo(name = "track_location") val trackLocation: Boolean? = null
-){
+    @ColumnInfo(name = "track_location") val trackLocation: Boolean? = null,
+
+    // maybe call it price instead of numerator, so we could do price per interval
+//    @ColumnInfo(name = "numerator") val numerator: Float = 0.0f,
+//    @ColumnInfo(name = "start_of_month") val startOfMonth: Float = 0.0f,
+//    @ColumnInfo(name = "reset_interval") val interval: Float = 0.0f,
+    ){
 
     constructor(counter: Counter) : this(
         id = counter.id,
@@ -27,6 +32,8 @@ data class CounterEntity(
         count = counter.count,
         listIndex = counter.listIndex,
         trackLocation = counter.trackLocation,
+
+//        numerator = counter.numerator,
     )
 }
 
@@ -39,4 +46,6 @@ fun CounterEntity.asExternalModel() = Counter(
     creationDate = creationDate,
     listIndex = listIndex,
     trackLocation = trackLocation ?: false,
+
+//    numerator = numerator,
 )

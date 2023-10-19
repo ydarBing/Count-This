@@ -217,10 +217,10 @@ class CounterListViewModel @Inject constructor(
         }
     }
 
-    private fun deleteCounter(id: Long) {
+    private fun deleteCounter(id: Long, listIndex: Int) {
         viewModelScope.launch {
             deleteCounter(
-                DeleteCounter.Params(id)
+                DeleteCounter.Params(id, listIndex)
             ).collect()
         }
     }
@@ -233,9 +233,9 @@ class CounterListViewModel @Inject constructor(
         Log.d("REORDER", "$from $to")
         viewModelScope.launch {
 //            state.value.countersWithInfo = state.value.countersWithInfo.toMutableList().apply {
-////                add(to.index, removeAt(from.index))
 //                add(to, removeAt(from))
 //            }
+            //TODO better way to do this, either make changed to different list then update/save to database when user confirms reorder
             counterRepository.updateListIndex(toCounterId, from)
             counterRepository.updateListIndex(fromCounterId, to)
         }
@@ -243,7 +243,7 @@ class CounterListViewModel @Inject constructor(
 
 
     fun handleContextMenuOptionSelected(
-        counterId: Long, option: ListItemContextMenuOption, addTimeInfo: AddTimeInformation?
+        counterId: Long, listIndex: Int, option: ListItemContextMenuOption, addTimeInfo: AddTimeInformation?
     ) {
         when (option) {
             ListItemContextMenuOption.ADD_TIME -> {
@@ -259,7 +259,7 @@ class CounterListViewModel @Inject constructor(
             }
 
             ListItemContextMenuOption.DELETE -> {
-                deleteCounter(counterId)
+                deleteCounter(counterId, listIndex)
             }
 
             ListItemContextMenuOption.NONE -> assert(false)

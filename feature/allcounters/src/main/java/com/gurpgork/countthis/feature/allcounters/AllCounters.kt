@@ -169,9 +169,9 @@ internal fun AllCounters(
         openCounter = openCounter,
         addEditCounter = addEditCounter,
         onMessageShown = { viewModel.clearMessage(it) },
-        onContextMenuOptionSelected = { id, option, addTimeInfo ->
+        onContextMenuOptionSelected = { id, listIndex, option, addTimeInfo ->
             viewModel.handleContextMenuOptionSelected(
-                id, option, addTimeInfo
+                id, listIndex, option, addTimeInfo
             )
         },
         onIncrementCounter = { id, location -> viewModel.incrementCounter(id, location) },
@@ -198,7 +198,7 @@ internal fun AllCountersScreen(
     viewState: AllCountersViewState,
     addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
-    onContextMenuOptionSelected: (counterId: Long, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
+    onContextMenuOptionSelected: (counterId: Long, listIndex: Int, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
     onIncrementCounter: (Long, CtLocation?) -> Unit,
     onDecrementCounter: (Long, CtLocation?) -> Unit,
     onSortSelected: (SortOption) -> Unit,
@@ -230,7 +230,10 @@ internal fun AllCountersScreen(
         },
         onMove = { from, to ->
             // still dragging but swapping indices
-            Log.d("MOVE", "From as Long: ${from.key as Long} keys: ${from.key} -> ${to.key} indices: $from -> $to")
+            Log.d(
+                "MOVE",
+                "From as Long: ${from.key as Long} keys: ${from.key} -> ${to.key} indices: $from -> $to"
+            )
             onListReorder(from.key as Long, from.index, to.key as Long, to.index)
         })
 
@@ -255,14 +258,15 @@ internal fun AllCountersScreen(
     LaunchedEffect(key1 = inMoveState) {
         onComposing(
             CtAppBarState(title = "Count This", navigationIcon = {
-                if (inMoveState) {
-                    IconButton(onClick = { inMoveState = false }) {
-                        Icon(
-                            imageVector = CtIcons.Close,
-                            contentDescription = "Close/Cancel Reordering List"
-                        )
-                    }
-                }
+                //TODO functionality not in to revert reordering, so currently not showing confusing icons
+//                if (inMoveState) {
+//                    IconButton(onClick = { inMoveState = false }) {
+//                        Icon(
+//                            imageVector = CtIcons.Close,
+//                            contentDescription = "Close/Cancel Reordering List"
+//                        )
+//                    }
+//                }
             }, actions = {
                 if (inMoveState) {
                     IconButton(onClick = { inMoveState = false }) {
@@ -425,7 +429,10 @@ internal fun AllCountersScreen(
             onLocationChanged = onLocationPickerMoved,
             onConfirm = { addTimeInfo ->
                 onContextMenuOptionSelected(
-                    counterContextMenuId, menuOptionSelected, addTimeInfo
+                    counterContextMenuId,
+                    counterContextMenuListIndex,
+                    menuOptionSelected,
+                    addTimeInfo
                 )
                 menuOptionSelected = ListItemContextMenuOption.NONE
             },
@@ -434,7 +441,7 @@ internal fun AllCountersScreen(
         ListItemContextMenuOption.RESET -> ResetCounterAlertDialog(counterName = counterContextMenuName,
             onConfirm = {
                 onContextMenuOptionSelected(
-                    counterContextMenuId, menuOptionSelected, null
+                    counterContextMenuId, counterContextMenuListIndex, menuOptionSelected, null
                 )
                 menuOptionSelected = ListItemContextMenuOption.NONE
             },
@@ -443,7 +450,7 @@ internal fun AllCountersScreen(
         ListItemContextMenuOption.DELETE -> DeleteCounterAlertDialog(counterName = counterContextMenuName,
             onConfirm = {
                 onContextMenuOptionSelected(
-                    counterContextMenuId, menuOptionSelected, null
+                    counterContextMenuId, counterContextMenuListIndex, menuOptionSelected, null
                 )
                 menuOptionSelected = ListItemContextMenuOption.NONE
             },
@@ -578,7 +585,7 @@ fun SortOptions(
 
 
         // USER_SORTED cannot be reversed in order
-        if(currentSort != SortOption.USER_SORTED){
+        if (currentSort != SortOption.USER_SORTED) {
             VerticalDivider()
             IconButton(
                 onClick = { onSortOrderClicked() },
@@ -611,11 +618,12 @@ fun CounterRow(
     // TODO  create sealed class for these variables...?
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
 ) {
-    if (useButtonIncrements) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(IntrinsicSize.Min)
-        ) {
+//    if (useButtonIncrements) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.height(IntrinsicSize.Min)
+    ) {
+        if (useButtonIncrements) {
             CounterRowCard(
                 modifier = Modifier.weight(1f),
                 contextMenuOptions = contextMenuOptions,
@@ -624,37 +632,71 @@ fun CounterRow(
                 onContextMenuOptionSelected = onContextMenuOptionSelected,
                 inMoveState = inMoveState,
             )
-            if (!inMoveState) {
-                IncrementButtons(
-                    modifier = modifier.fillMaxHeight(),
-                    onIncrementCounter = onIncrementCounter,
-                    onDecrementCounter = onDecrementCounter,
-                    locationPermissionsState = locationPermissionsState,
-                )
-            } else {
-                Icon(
-                    imageVector = CtIcons.DragHandle,
-                    contentDescription = "Drag Icon",//"Reorder Icon",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+        } else {
+            SwipeToDismissCounterRow(
+                counter = counter,
+                locationPermissionsState = locationPermissionsState,
+                onDecrementCounter = onDecrementCounter,
+                onIncrementCounter = onIncrementCounter,
+                modifier = Modifier.weight(1f),
+                onCounterClick = onCounterClick,
+                contextMenuOptions = contextMenuOptions,
+                onContextMenuOptionSelected = onContextMenuOptionSelected,
+                inMoveState = inMoveState,
+            )
         }
+        if (inMoveState) {
+            Icon(
+                imageVector = CtIcons.DragHandle,
+                contentDescription = "Drag Icon",//"Reorder Icon",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        } else if (useButtonIncrements) {
+            IncrementButtons(
+                modifier = modifier.fillMaxHeight(),
+                onIncrementCounter = onIncrementCounter,
+                onDecrementCounter = onDecrementCounter,
+                locationPermissionsState = locationPermissionsState,
+            )
 
-    } else {
-        SwipeToDismissCounterRow(
-            counter = counter,
-            locationPermissionsState = locationPermissionsState,
-            onDecrementCounter = onDecrementCounter,
-            onIncrementCounter = onIncrementCounter,
-            modifier = modifier,
-            onCounterClick = onCounterClick,
-            contextMenuOptions = contextMenuOptions,
-            onContextMenuOptionSelected = onContextMenuOptionSelected,
-            inMoveState = inMoveState,
-        )
+        }
+//            CounterRowCard(
+//                modifier = Modifier.weight(1f),
+//                contextMenuOptions = contextMenuOptions,
+//                onCounterClick = onCounterClick,
+//                counter = counter,
+//                onContextMenuOptionSelected = onContextMenuOptionSelected,
+//                inMoveState = inMoveState,
+//            )
+//            if (!inMoveState) {
+//                IncrementButtons(
+//                    modifier = modifier.fillMaxHeight(),
+//                    onIncrementCounter = onIncrementCounter,
+//                    onDecrementCounter = onDecrementCounter,
+//                    locationPermissionsState = locationPermissionsState,
+//                )
+//            } else {
+//                Icon(
+//                    imageVector = CtIcons.DragHandle,
+//                    contentDescription = "Drag Icon",//"Reorder Icon",
+//                    tint = MaterialTheme.colorScheme.onBackground
+//                )
+//            }
     }
 
-
+//    } else {
+//        SwipeToDismissCounterRow(
+//            counter = counter,
+//            locationPermissionsState = locationPermissionsState,
+//            onDecrementCounter = onDecrementCounter,
+//            onIncrementCounter = onIncrementCounter,
+//            modifier = modifier,
+//            onCounterClick = onCounterClick,
+//            contextMenuOptions = contextMenuOptions,
+//            onContextMenuOptionSelected = onContextMenuOptionSelected,
+//            inMoveState = inMoveState,
+//        )
+//    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -733,7 +775,7 @@ private fun SwipeToDismissCounterRow(
         })
 
     SwipeToDismiss(
-//        modifier = modifier,
+        modifier = modifier,
         state = dismissState,
         directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
         //dismissThresholds = { FractionalThreshold(.2f) },
@@ -778,6 +820,7 @@ private fun SwipeToDismissCounterRow(
         },
         dismissContent = {
             CounterRowCard(
+                modifier = modifier,
                 onCounterClick = onCounterClick,
                 counter = counter,
                 dismissState = dismissState,

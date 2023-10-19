@@ -43,10 +43,10 @@ internal class CounterDetailsViewModel @Inject constructor(
         }
     }
 
-    fun deleteCounter(id: Long) {
+    fun deleteCounter(id: Long, listIndex: Int) {
         viewModelScope.launch {
             deleteCounter(
-                DeleteCounter.Params(id)
+                DeleteCounter.Params(id, listIndex)
             ).collect()
         }
     }

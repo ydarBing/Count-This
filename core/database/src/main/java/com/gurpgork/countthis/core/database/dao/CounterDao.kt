@@ -95,6 +95,15 @@ interface CounterDao {
     @Query("DELETE FROM counters WHERE id = :counterId")
     suspend fun deleteWithId(counterId: Long)
 
+    @Query("UPDATE counters SET list_index = list_index - 1 where list_index > :listIndex")
+    suspend fun updateListIndices(listIndex: Int): Int
+
+    @Transaction
+    suspend fun deleteAndUpdateListIndices(counterId: Long, listIndex: Int){
+        deleteWithId(counterId)
+        updateListIndices(listIndex)
+    }
+
     @Query("DELETE FROM counters")
     suspend fun deleteAll()
 
