@@ -12,8 +12,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
@@ -36,6 +36,10 @@ import com.gurpgork.countthis.core.designsystem.component.dialog.DeleteCounterAl
 import com.gurpgork.countthis.core.designsystem.component.pagerTabIndicatorOffset
 import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import kotlinx.coroutines.launch
+
+enum class DeleteType {
+    NONE, COUNTER, INCREMENT, HISTORY
+}
 
 @Composable
 internal fun CounterDetailsRoute(
@@ -64,8 +68,15 @@ internal fun CounterDetails(
         viewState = viewState,
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
-        onDeleteCounter = { id, listIndex -> viewModel.deleteCounter(id, listIndex) },
+        onDelete = { deleteType, id, listIndex ->
+            viewModel.deleteCounter(
+                deleteType, id, listIndex
+            )
+        },
         onComposing = onComposing,
+        hasSelectedItems = viewModel.hasSelectedItems(),
+        onRowLongClick = viewModel::onLongClick,
+        onRowClick = viewModel::onClick,
     )
 }
 
@@ -77,60 +88,69 @@ internal fun CounterDetails(
     viewState: CounterDetailsViewState,
     navigateUp: () -> Unit,
     openEditCounter: (counterId: Long, listIndex: Int) -> Unit,
-    onDeleteCounter: (counterId: Long, listIndex: Int) -> Unit,
+    onDelete: (deleteType: DeleteType, counterId: Long, listIndex: Int) -> Unit,
     onComposing: (CtAppBarState) -> Unit,
+    hasSelectedItems: Boolean,
+    onRowLongClick: (CounterDetailTabs, Long) -> Unit,
+    onRowClick: (CounterDetailTabs, Long) -> Unit,
 ) {
-    var wantsToDelete by remember { mutableStateOf(false) }
+    var whatToDelete by remember { mutableStateOf(DeleteType.NONE) }
 
-    //TODO only make history and details if there are elements in each respective list
     val pages = listOf("STATS", "DETAILS", "HISTORY")
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
+
+    //TODO when viewState.isHistorySelectionOpen or viewState.isIncrementSelectionOpen update appbar
     LaunchedEffect(key1 = viewState.counterInfo) {
         val title = viewState.counterInfo?.counter?.name ?: ""
         onComposing(
-            CtAppBarState(
-                title = title,
-                navigationIcon = {
-                    IconButton(onClick = navigateUp) {
-                        Icon(
-                            CtIcons.ArrowBack,
-                            contentDescription = stringResource(R.string.cd_navigate_up)
-                        )
+            CtAppBarState(title = title, navigationIcon = {
+                IconButton(onClick = navigateUp) {
+                    Icon(
+                        CtIcons.ArrowBack,
+                        contentDescription = stringResource(R.string.cd_navigate_up)
+                    )
+                }
+            }, actions = {
+                IconButton(onClick = {
+                    viewState.counterInfo?.let {
+                        openEditCounter(it.counter.id, it.counter.listIndex)
                     }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        viewState.counterInfo?.let {
-                            openEditCounter(it.counter.id, it.counter.listIndex)
+                }) {
+                    Icon(
+                        imageVector = CtIcons.Edit, contentDescription = "edit"
+                    )
+                }
+                IconButton(onClick = {
+                    viewState.counterInfo?.let {
+                        whatToDelete = when (pagerState.currentPage) {
+                            0 -> DeleteType.COUNTER
+                            1 -> DeleteType.INCREMENT
+                            2 -> DeleteType.HISTORY
+                            else -> DeleteType.NONE
                         }
-                    }) {
-                        Icon(
-                            imageVector = CtIcons.Edit, contentDescription = "edit"
-                        )
+                        if (!hasSelectedItems) whatToDelete = DeleteType.COUNTER
                     }
-                    IconButton(onClick = {
-                        viewState.counterInfo?.let {
-                            wantsToDelete = true
-                        }
-                    }) {
-                        Icon(
-                            imageVector = CtIcons.Delete, contentDescription = "delete"
-                        )
-                    }
-                })
+                }) {
+                    Icon(
+                        imageVector = CtIcons.Delete, contentDescription = "delete"
+                    )
+                }
+            })
         )
     }
 
-    if (wantsToDelete) {
+    if (whatToDelete != DeleteType.NONE) {
         viewState.counterInfo?.let {
-            DeleteCounterAlertDialog(
-                counterName = it.counter.name,
-                onConfirm = {
-                    onDeleteCounter(it.counter.id, it.counter.listIndex)
-                    navigateUp()
-                },
-                onDismiss = { wantsToDelete = false })
+            val toDeleteOption =
+                if (!hasSelectedItems || pagerState.currentPage == 0) it.counter.name
+                else if (pagerState.currentPage == 1) "increment(s)"
+                else "history"
+
+            DeleteCounterAlertDialog(counterName = toDeleteOption, onConfirm = {
+                onDelete(whatToDelete, it.counter.id, it.counter.listIndex)
+                if (whatToDelete == DeleteType.COUNTER) navigateUp()
+            }, onDismiss = { whatToDelete = DeleteType.NONE })
         }
     }
     Column {
@@ -148,7 +168,9 @@ internal fun CounterDetails(
             modifier = Modifier
                 .fillMaxHeight()
                 .bodyWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            onRowLongClick = onRowLongClick,
+            onRowClick = onRowClick,
         )
     }
 }
@@ -159,6 +181,8 @@ private fun CounterDetailsPager(
     viewState: CounterDetailsViewState,
     pagerState: PagerState,
     modifier: Modifier = Modifier,
+    onRowLongClick: (CounterDetailTabs, Long) -> Unit,
+    onRowClick: (CounterDetailTabs, Long) -> Unit,
 ) {
     var userScrollEnabled by remember { mutableStateOf(true) }
 
@@ -170,20 +194,25 @@ private fun CounterDetailsPager(
     ) { pageIndex ->
         when (pageIndex) {
             0 -> viewState.counterInfo?.let {
-                StatsTab(
-                    it.counter,
-                    it.increments,
-                    it.hasLocations,
-                    onMapMoved = { movingMap ->
-                        // only update userScrollEnabled when a new val comes in
-                        if (movingMap == userScrollEnabled)
-                            userScrollEnabled = !movingMap
-                    }
-                )
+                StatsTab(it.counter, it.increments, it.hasLocations, onMapMoved = { movingMap ->
+                    // only update userScrollEnabled when a new val comes in
+                    if (movingMap == userScrollEnabled) userScrollEnabled = !movingMap
+                })
             }
 
-            1 -> viewState.counterInfo?.let { DetailsTab(it.increments) }
-            2 -> viewState.counterInfo?.let { HistoryTab(it.history) }
+            1 -> viewState.counterInfo?.let { counter ->
+                DetailsTab(counter.increments,
+                    viewState.selectedIncrementIds,
+                    onRowLongClick = { onRowLongClick(CounterDetailTabs.DETAILS, it) },
+                    onRowClick = { onRowClick(CounterDetailTabs.DETAILS, it) })
+            }
+
+            2 -> viewState.counterInfo?.let { counter ->
+                HistoryTab(counter.history,
+                    viewState.selectedHistoryIds,
+                    onRowLongClick = { onRowLongClick(CounterDetailTabs.HISTORY, it) },
+                    onRowClick = { onRowClick(CounterDetailTabs.HISTORY, it) })
+            }
         }
     }
 }
@@ -199,7 +228,7 @@ private fun Tabs(
 ) {
     val scope = rememberCoroutineScope()
 
-    TabRow(
+    PrimaryTabRow(
         modifier = modifier,
         selectedTabIndex = pagerState.currentPage,
         indicator = { tabPositions ->
@@ -211,16 +240,18 @@ private fun Tabs(
         contentColor = contentColor,
     ) {
         tabs.forEachIndexed { index, title ->
-            Tab(
-                text = { Text(text = title) },
+            Tab(text = { Text(text = title) },
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {
                         pagerState.animateScrollToPage(index)
                     }
-                }
-            )
+                })
         }
     }
 }
 
+
+fun AppBar(){
+
+}

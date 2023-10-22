@@ -2,7 +2,9 @@ package com.gurpgork.countthis.core.data.di
 
 import com.gurpgork.countthis.core.data.repository.CounterRepository
 import com.gurpgork.countthis.core.data.repository.DefaultCounterRepository
+import com.gurpgork.countthis.core.data.repository.DefaultHistoryRepository
 import com.gurpgork.countthis.core.data.repository.DefaultIncrementRepository
+import com.gurpgork.countthis.core.data.repository.HistoryRepository
 import com.gurpgork.countthis.core.data.repository.IncrementRepository
 import com.gurpgork.countthis.core.data.repository.LocationRepository
 import com.gurpgork.countthis.core.data.repository.OfflineFirstLocationRepository
@@ -24,6 +26,10 @@ interface DataModule {
     fun bindsIncrementRepository(
         incrementRepository: DefaultIncrementRepository,
     ): IncrementRepository
+    @Binds
+    fun bindsHistoryRepository(
+        historyRepository: DefaultHistoryRepository,
+    ): HistoryRepository
 
     @Binds
     fun bindsLocationRepository(

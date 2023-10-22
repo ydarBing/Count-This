@@ -100,7 +100,7 @@ class CounterListViewModel @Inject constructor(
     val state: StateFlow<AllCountersViewState> = combine(
         observeSortedCounterListUseCase(),
         loadingState.observable,
-        counterSelection.observeSelectedCounterIds(),
+        counterSelection.observeSelectedIds(),
         counterSelection.observeIsSelectionOpen(),
         sort,
         sortAsc,

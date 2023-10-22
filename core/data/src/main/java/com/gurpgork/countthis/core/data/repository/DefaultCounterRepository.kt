@@ -46,7 +46,7 @@ class DefaultCounterRepository @Inject constructor(
                     counterId = counterId,
                     count = counter.count,
                     startDate = lastReset?.endDate ?: counter.creationDate,
-                    endDate = Clock.System.now(),//OffsetDateTime.now()
+                    endDate = Clock.System.now(),
                 )
             )
         }

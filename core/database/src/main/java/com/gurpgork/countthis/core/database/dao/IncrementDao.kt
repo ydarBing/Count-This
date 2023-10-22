@@ -52,6 +52,8 @@ interface IncrementDao {//: EntityDao<IncrementEntity>(){
     @Delete
     suspend fun deleteIncrement(increment: IncrementEntity)
 
+    @Query("DELETE FROM increments where id in (:incrementIds)")
+    suspend fun deleteIncrement(incrementIds: Set<Long>): Int
     @Query("DELETE FROM increments WHERE counter_id = :counterId")
     suspend fun deleteAllFromCounterId(counterId: Long)
 

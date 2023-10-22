@@ -23,7 +23,6 @@ data class AllCountersViewState(
     val mostRecentLocation: CtLocation? = null,
     val locationPickerAddressQuery: String = "",
     val useButtonIncrements: Boolean = false,
-// TODO should all dialog fields be here
     ) {
     companion object {
         val Empty = AllCountersViewState()

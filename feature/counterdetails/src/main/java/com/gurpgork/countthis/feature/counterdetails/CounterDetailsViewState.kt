@@ -9,5 +9,9 @@ internal data class CounterDetailsViewState (
 //    val counter: Counter,
 //    val increments: List<Increment> = null,
 //    val history: List<History> = null,
+    val selectedIncrementIds: Set<Long> = emptySet(),
+    val selectedHistoryIds: Set<Long> = emptySet(),
+    val isIncrementSelectionOpen: Boolean = false,
+    val isHistorySelectionOpen: Boolean = false,
     val message: UiMessage? = null,
 )

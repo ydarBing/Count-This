@@ -1,6 +1,11 @@
 package com.gurpgork.countthis.core.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import com.gurpgork.countthis.core.database.model.HistoryEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -36,6 +41,9 @@ interface HistoryDao {//: EntityDao<HistoryEntity>(){
 
     @Delete
     suspend fun deleteHistory(history: HistoryEntity)
+
+    @Query("DELETE FROM history WHERE id IN (:historyIds)")
+    suspend fun deleteHistory(historyIds: Set<Long>): Int
 
     @Query("DELETE FROM history")
     suspend fun deleteAll()

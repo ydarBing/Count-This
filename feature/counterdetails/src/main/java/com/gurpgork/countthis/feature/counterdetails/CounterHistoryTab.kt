@@ -20,10 +20,14 @@ import com.gurpgork.countthis.core.model.data.History
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
 
 @Composable
-fun HistoryTab(history: List<History>) {
+fun HistoryTab(
+    history: List<History>,
+    selectedIds: Set<Long>,
+    onRowLongClick: (Long) -> Unit,
+    onRowClick: (Long) -> Unit,
+) {
     val listState = rememberLazyListState()
 
-//    if (history.isNotEmpty()) {
     LazyColumn(
         state = listState,
         modifier = Modifier

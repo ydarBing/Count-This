@@ -19,7 +19,6 @@ class DefaultIncrementRepository @Inject constructor(
     override suspend fun addIncrement(
         counterId: Long,
         location: CtLocation?,
-//        timestamp: OffsetDateTime,
         instantTime: Instant,
         isDecrement: Boolean,
     ) {
@@ -44,6 +43,7 @@ class DefaultIncrementRepository @Inject constructor(
         incrementDao.observeIncrementsFromCounterId(id = counterId)
             .map { it.map(IncrementEntity::asExternalModel) }
 
-//    suspend fun save(increment: IncrementEntity) = incrementDao.insertOrUpdate(increment)
-//    suspend fun save(increments: List<IncrementEntity>) = incrementDao.insertOrUpdate(increments)
+
+    override suspend fun deleteIncrements(incrementIds: Set<Long>) =
+        incrementDao.deleteIncrement(incrementIds)
 }

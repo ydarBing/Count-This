@@ -1,5 +1,8 @@
 package com.gurpgork.countthis.feature.counterdetails
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,26 +24,50 @@ import com.gurpgork.countthis.core.model.data.Increment
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DetailsTab(increments: List<Increment>) {
+fun DetailsTab(
+    increments: List<Increment>,
+    selectedIds: Set<Long>,
+    onRowLongClick: (Long) -> Unit,
+    onRowClick: (Long) -> Unit,
+) {
+//    val selectedItems = remember { mutableStateListOf<Increment>() }
 // TODO group increments by date
 //  val groups = increments.groupBy { (it.date.toLocalDate() ) }
 //CollapsableLazyColumn(sections = listOf(
 //    CollapsableSection()
 //)
 //)
-//    if(!increments.isEmpty())
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = LocalScaffoldPadding.current,
 //        reverseLayout = 
-    ){
-        items(increments.reversed()){ item ->
+    ) {
+        items(increments.reversed()) { item ->
             IncrementRow(
                 increment = item,
-                modifier = Modifier.fillParentMaxWidth()
-                // TODO ability to delete or change location of increment from here
-//                    .clickable { onIncrementClick(item.id) }
+                modifier = Modifier
+                    .fillParentMaxWidth()
+                    .combinedClickable(
+                        onLongClick = { onRowLongClick(item.id) },
+                        onClick = { onRowClick(item.id) },
+                    )
+//                    .clickable {
+//                        if (selectedItems.contains(item)) {
+//                            selectedItems.remove(item)
+//                        } else {
+//                            selectedItems.add(item)
+//                        }
+//                    }
+                    .background(
+                        if (selectedIds.contains(item.id)) {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.primaryContainer
+                        }
+                    )
             )
             HorizontalDivider()
         }
@@ -54,18 +81,22 @@ fun IncrementRow(increment: Increment, modifier: Modifier) {
             .heightIn(min = 48.dp)
             .wrapContentHeight(Alignment.CenterVertically)
             .padding(horizontal = Layout.bodyMargin, vertical = Layout.gutter),
-    ){
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             // TODO could put date with multiple increments here
             //  then add another text indented with each time of that date
             val date = LocalCountThisDateFormatter.current
                 .formatMediumDateTime(increment.incrementDate)
-            Text(text = date,
-                style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = date,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
 
-        Text(text = increment.increment.toString(),
-            style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = increment.increment.toString(),
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 

@@ -618,7 +618,6 @@ fun CounterRow(
     // TODO  create sealed class for these variables...?
     onContextMenuOptionSelected: (ListItemContextMenuOption) -> Unit
 ) {
-//    if (useButtonIncrements) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.height(IntrinsicSize.Min)
@@ -660,43 +659,7 @@ fun CounterRow(
             )
 
         }
-//            CounterRowCard(
-//                modifier = Modifier.weight(1f),
-//                contextMenuOptions = contextMenuOptions,
-//                onCounterClick = onCounterClick,
-//                counter = counter,
-//                onContextMenuOptionSelected = onContextMenuOptionSelected,
-//                inMoveState = inMoveState,
-//            )
-//            if (!inMoveState) {
-//                IncrementButtons(
-//                    modifier = modifier.fillMaxHeight(),
-//                    onIncrementCounter = onIncrementCounter,
-//                    onDecrementCounter = onDecrementCounter,
-//                    locationPermissionsState = locationPermissionsState,
-//                )
-//            } else {
-//                Icon(
-//                    imageVector = CtIcons.DragHandle,
-//                    contentDescription = "Drag Icon",//"Reorder Icon",
-//                    tint = MaterialTheme.colorScheme.onBackground
-//                )
-//            }
     }
-
-//    } else {
-//        SwipeToDismissCounterRow(
-//            counter = counter,
-//            locationPermissionsState = locationPermissionsState,
-//            onDecrementCounter = onDecrementCounter,
-//            onIncrementCounter = onIncrementCounter,
-//            modifier = modifier,
-//            onCounterClick = onCounterClick,
-//            contextMenuOptions = contextMenuOptions,
-//            onContextMenuOptionSelected = onContextMenuOptionSelected,
-//            inMoveState = inMoveState,
-//        )
-//    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -860,6 +823,7 @@ private fun CounterRowCard(
                 itemHeight = with(density) { it.height.toDp() }
             }
             .conditional(!inMoveState) {
+                //TODO can this be switched to combinedClickable
                 pointerInput(Unit) {
                     detectTapGestures(onLongPress = { offset ->
                         showContextMenuInRow = true
