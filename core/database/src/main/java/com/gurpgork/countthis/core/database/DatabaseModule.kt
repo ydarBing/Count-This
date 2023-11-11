@@ -5,6 +5,8 @@ import android.os.Debug
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.gurpgork.countthis.core.database.model.TRIGGER_UPDATE_COUNT_ON_DELETE_INCREMENT
+import com.gurpgork.countthis.core.database.model.TRIGGER_UPDATE_COUNT_ON_INSERT_INCREMENT
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,27 +22,6 @@ object DatabaseModule {
     fun providesCtDatabase(
         @ApplicationContext context: Context
     ): CtDatabase {
-
-        val TRIGGER_UPDATE_COUNT_ON_INSERT_INCREMENT =
-            """
-            CREATE TRIGGER IF NOT EXISTS increment_trigger_counter
-            AFTER INSERT ON increments  
-            BEGIN 
-               UPDATE counters
-               SET
-                count = count + NEW.increment WHERE counters.id = NEW.counter_id; 
-            END
-        """
-        val TRIGGER_UPDATE_COUNT_ON_DELETE_INCREMENT =
-            """
-            CREATE TRIGGER IF NOT EXISTS increment_trigger_counter
-            BEFORE DELETE ON increments  
-            BEGIN 
-               UPDATE counters
-               SET
-                count = count - OLD.increment WHERE counters.id = OLD.counter_id; 
-            END
-        """
 
         val builder = Room.databaseBuilder(
             context,

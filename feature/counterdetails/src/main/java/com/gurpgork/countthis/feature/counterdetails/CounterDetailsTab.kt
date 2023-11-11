@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.ui.LocalScaffoldPadding
 import com.gurpgork.countthis.core.designsystem.component.Layout
 import com.gurpgork.countthis.core.model.data.Increment
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
@@ -32,18 +31,14 @@ fun DetailsTab(
     onRowLongClick: (Long) -> Unit,
     onRowClick: (Long) -> Unit,
 ) {
-//    val selectedItems = remember { mutableStateListOf<Increment>() }
 // TODO group increments by date
 //  val groups = increments.groupBy { (it.date.toLocalDate() ) }
 //CollapsableLazyColumn(sections = listOf(
 //    CollapsableSection()
 //)
 //)
-
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = LocalScaffoldPadding.current,
-//        reverseLayout = 
     ) {
         items(increments.reversed()) { item ->
             IncrementRow(
@@ -54,13 +49,6 @@ fun DetailsTab(
                         onLongClick = { onRowLongClick(item.id) },
                         onClick = { onRowClick(item.id) },
                     )
-//                    .clickable {
-//                        if (selectedItems.contains(item)) {
-//                            selectedItems.remove(item)
-//                        } else {
-//                            selectedItems.add(item)
-//                        }
-//                    }
                     .background(
                         if (selectedIds.contains(item.id)) {
                             MaterialTheme.colorScheme.secondaryContainer

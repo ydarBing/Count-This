@@ -3,6 +3,7 @@ package com.gurpgork.countthis.feature.counterdetails
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
@@ -38,7 +39,15 @@ import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import kotlinx.coroutines.launch
 
 enum class DeleteType {
-    NONE, COUNTER, INCREMENT, HISTORY
+    COUNTER, INCREMENT, HISTORY, NONE
+}
+
+inline fun <reified T : Enum<T>> Int.toEnum(): T? {
+    return enumValues<T>().firstOrNull { it.ordinal == this }
+}
+
+enum class LongPressAction {
+    NONE, DELETE_COUNTER, DELETE_INCREMENT, DELETE_HISTORY, EDIT_LOCATION, EDIT_COUNTER,
 }
 
 @Composable
@@ -68,13 +77,8 @@ internal fun CounterDetails(
         viewState = viewState,
         navigateUp = navigateUp,
         openEditCounter = openEditCounter,
-        onDelete = { deleteType, id, listIndex ->
-            viewModel.deleteCounter(
-                deleteType, id, listIndex
-            )
-        },
+        onDelete = viewModel::deleteCounter,
         onComposing = onComposing,
-        hasSelectedItems = viewModel.hasSelectedItems(),
         onRowLongClick = viewModel::onLongClick,
         onRowClick = viewModel::onClick,
     )
@@ -90,7 +94,6 @@ internal fun CounterDetails(
     openEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     onDelete: (deleteType: DeleteType, counterId: Long, listIndex: Int) -> Unit,
     onComposing: (CtAppBarState) -> Unit,
-    hasSelectedItems: Boolean,
     onRowLongClick: (CounterDetailTabs, Long) -> Unit,
     onRowClick: (CounterDetailTabs, Long) -> Unit,
 ) {
@@ -99,37 +102,54 @@ internal fun CounterDetails(
     val pages = listOf("STATS", "DETAILS", "HISTORY")
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
-
-    //TODO when viewState.isHistorySelectionOpen or viewState.isIncrementSelectionOpen update appbar
-    LaunchedEffect(key1 = viewState.counterInfo) {
+    //TODO I hate how this looks, refactor this whole deal
+    // need pager state page key to only show selections on correct tab
+    LaunchedEffect(key1 = viewState, key2 = pagerState.currentPage) {
         val title = viewState.counterInfo?.counter?.name ?: ""
+        val currentPage = pagerState.currentPage.toEnum<DeleteType>() ?: DeleteType.NONE
+        val hasVisibleSelections =
+            (viewState.isHistorySelectionOpen && currentPage == DeleteType.HISTORY) xor (viewState.isIncrementSelectionOpen && (currentPage == DeleteType.INCREMENT))
+
         onComposing(
             CtAppBarState(title = title, navigationIcon = {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        CtIcons.ArrowBack,
-                        contentDescription = stringResource(R.string.cd_navigate_up)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = navigateUp) {
+                        Icon(
+                            if (!hasVisibleSelections) CtIcons.ArrowBack else CtIcons.Close,
+                            contentDescription = stringResource(R.string.cd_navigate_up)
+                        )
+                    }
+                    if (viewState.isIncrementSelectionOpen && (currentPage == DeleteType.INCREMENT)) {
+                        Text(
+                            text = viewState.selectedIncrementIds.size.toString(),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    } else if (viewState.isHistorySelectionOpen && (currentPage == DeleteType.HISTORY)) {
+                        Text(
+                            text = viewState.selectedHistoryIds.size.toString(),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
                 }
             }, actions = {
-                IconButton(onClick = {
-                    viewState.counterInfo?.let {
-                        openEditCounter(it.counter.id, it.counter.listIndex)
+                // only allow editing if one item is selected
+                //TODO still need to be able to edit specific history + increments
+                if (!hasVisibleSelections) {
+                    IconButton(onClick = {
+                        viewState.counterInfo?.let {
+                            openEditCounter(it.counter.id, it.counter.listIndex)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = CtIcons.Edit, contentDescription = "edit"
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = CtIcons.Edit, contentDescription = "edit"
-                    )
                 }
                 IconButton(onClick = {
                     viewState.counterInfo?.let {
-                        whatToDelete = when (pagerState.currentPage) {
-                            0 -> DeleteType.COUNTER
-                            1 -> DeleteType.INCREMENT
-                            2 -> DeleteType.HISTORY
-                            else -> DeleteType.NONE
-                        }
-                        if (!hasSelectedItems) whatToDelete = DeleteType.COUNTER
+                        whatToDelete = currentPage
+                        if (!viewState.hasItemsSelected)
+                            whatToDelete = DeleteType.COUNTER
                     }
                 }) {
                     Icon(
@@ -143,14 +163,18 @@ internal fun CounterDetails(
     if (whatToDelete != DeleteType.NONE) {
         viewState.counterInfo?.let {
             val toDeleteOption =
-                if (!hasSelectedItems || pagerState.currentPage == 0) it.counter.name
+                if (!viewState.hasItemsSelected || pagerState.currentPage == 0) it.counter.name
                 else if (pagerState.currentPage == 1) "increment(s)"
                 else "history"
 
             DeleteCounterAlertDialog(counterName = toDeleteOption, onConfirm = {
                 onDelete(whatToDelete, it.counter.id, it.counter.listIndex)
-                if (whatToDelete == DeleteType.COUNTER) navigateUp()
-            }, onDismiss = { whatToDelete = DeleteType.NONE })
+                if (whatToDelete == DeleteType.COUNTER) {
+                    navigateUp()
+                }
+                whatToDelete = DeleteType.NONE
+            },
+                onDismiss = { whatToDelete = DeleteType.NONE })
         }
     }
     Column {
@@ -249,9 +273,4 @@ private fun Tabs(
                 })
         }
     }
-}
-
-
-fun AppBar(){
-
 }

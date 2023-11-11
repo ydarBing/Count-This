@@ -44,6 +44,10 @@ class DefaultIncrementRepository @Inject constructor(
             .map { it.map(IncrementEntity::asExternalModel) }
 
 
-    override suspend fun deleteIncrements(incrementIds: Set<Long>) =
-        incrementDao.deleteIncrement(incrementIds)
+    override suspend fun deleteIncrements(incrementIds: Set<Long>) : Int{
+        val numDeleted = incrementDao.deleteIncrement(incrementIds)
+//        counterDao.updateCount(counterId, )
+        return numDeleted
+    }
+
 }

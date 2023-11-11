@@ -93,17 +93,6 @@ internal fun Home(
                 contentColor = MaterialTheme.colorScheme.onBackground,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 snackbarHost = { SnackbarHost(snackbarHostState) },
-//                floatingActionButton =
-//                bottomBar = {
-//                    if(appState.shouldShowBottomBar){
-//                        CtBottomBar(
-//                            destinations = appState.topLevelDestinations,
-//                            onNavigateToDestination = appState::navigateToTopLevelDestination,
-//                            currentDestination = appState.currentDestination,
-//                            modifier = Modifier.testTag("CtBottomBar"),
-//                        )
-//                    }
-//                },
             ) { padding ->
                 Row(
                     Modifier
@@ -116,15 +105,6 @@ internal fun Home(
                             )
                         )
                 ) {
-//                    if(appState.shouldShowNavRail){
-//                        CtNavRail(
-//                            destinations = appState.topLevelDestinations,
-//                            onNavigateToDestination = appState::navigateToTopLevelDestination,
-//                            currentDestination = appState.currentDestination,
-//                            modifier = Modifier.testTag("CtNavRail").safeDrawingPadding(),
-//                        )
-//                    }
-
                     Column(Modifier.fillMaxSize()) {
                         CtTopAppBar(
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

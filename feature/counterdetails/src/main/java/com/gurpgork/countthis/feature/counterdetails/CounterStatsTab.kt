@@ -154,12 +154,14 @@ fun GoalProgressBar(count: Int, goal: Int) {
         ) {
             val goalsAchieved = (count / goal)
             LinearProgressIndicator(
+                progress = {
+                    (count - (goalsAchieved * goal)) / goal.toFloat()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(15.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.secondaryContainer,
-                progress = (count - (goalsAchieved * goal)) / goal.toFloat()
             )
 
             Row(

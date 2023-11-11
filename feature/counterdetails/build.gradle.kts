@@ -10,7 +10,6 @@ android {
 
 dependencies {
 
-    implementation(libs.accompanist.insetsui)
     implementation(libs.compose.maps)
     implementation(libs.compose.maps.utils)
     implementation(libs.compose.maps.widgets)

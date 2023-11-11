@@ -28,14 +28,13 @@ internal class CounterDetailsViewModel @Inject constructor(
 //TODO should add sorted increments grouped by date for easy displaying on details page
 ) : ViewModel() {
     private val addEditArgs: CounterDetailsArgs = CounterDetailsArgs(savedStateHandle)
-    var currentCounterId: Long = addEditArgs.counterId
+    private var currentCounterId: Long = addEditArgs.counterId
 
     private val uiMessageManager = UiMessageManager()
 
     private val incrementSelection = CounterStateSelector()
     private val historySelection = CounterStateSelector()
 
-    //TODO do I need to have 3 states, one for each tab? as to avoid recompositions when selecting list items?
     private val _state = MutableStateFlow(CounterDetailsViewState())
     val state = _state.asStateFlow()
 
@@ -57,7 +56,8 @@ internal class CounterDetailsViewModel @Inject constructor(
                     historyIds,
                     isIncrementSelectionOpen,
                     isHistorySelectionOpen,
-                    messages
+                    incrementIds.isNotEmpty() || historyIds.isNotEmpty(),
+                    messages,
                 )
             }.collect { _state.value = it }
         }
@@ -111,6 +111,7 @@ internal class CounterDetailsViewModel @Inject constructor(
                     deleteIncrement(
                         DeleteIncrement.Params(incrementSelection.getSelectedIds())
                     ).collect()
+                    incrementSelection.clearSelection()
                 }
             }
 
@@ -119,15 +120,11 @@ internal class CounterDetailsViewModel @Inject constructor(
                     deleteHistory(
                         DeleteHistory.Params(historySelection.getSelectedIds())
                     ).collect()
+                    historySelection.clearSelection()
                 }
             }
         }
 
-    }
-
-    fun hasSelectedItems(): Boolean {
-        return incrementSelection.getSelectedIds().isNotEmpty() ||
-                historySelection.getSelectedIds().isNotEmpty()
     }
 }
 

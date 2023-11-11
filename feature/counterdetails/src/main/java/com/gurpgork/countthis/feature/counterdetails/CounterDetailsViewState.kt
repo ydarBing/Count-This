@@ -13,5 +13,6 @@ internal data class CounterDetailsViewState (
     val selectedHistoryIds: Set<Long> = emptySet(),
     val isIncrementSelectionOpen: Boolean = false,
     val isHistorySelectionOpen: Boolean = false,
+    val hasItemsSelected: Boolean = false,
     val message: UiMessage? = null,
 )

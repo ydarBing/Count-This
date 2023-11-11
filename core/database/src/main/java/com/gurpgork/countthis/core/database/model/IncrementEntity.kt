@@ -9,18 +9,36 @@ import com.gurpgork.countthis.core.model.data.Increment
 import kotlinx.datetime.Instant
 import java.time.ZoneId
 
+
+const val TRIGGER_UPDATE_COUNT_ON_INSERT_INCREMENT = """
+            CREATE TRIGGER IF NOT EXISTS increment_trigger_counter
+            AFTER INSERT ON increments  
+            BEGIN 
+               UPDATE counters
+               SET
+                count = count + NEW.increment WHERE counters.id = NEW.counter_id; 
+            END
+        """
+const val TRIGGER_UPDATE_COUNT_ON_DELETE_INCREMENT = """
+            CREATE TRIGGER IF NOT EXISTS increment_trigger_counter
+            BEFORE DELETE ON increments  
+            BEGIN 
+               UPDATE counters
+               SET
+                count = count - OLD.increment WHERE counters.id = OLD.counter_id; 
+            END
+        """
+
 @Entity(
     tableName = "increments",
     indices = [Index(value = ["counter_id", "increment_date"])],
-    foreignKeys = [
-        ForeignKey(
-            entity = CounterEntity::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("counter_id"),
-            onUpdate = ForeignKey.CASCADE,
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
+    foreignKeys = [ForeignKey(
+        entity = CounterEntity::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("counter_id"),
+        onUpdate = ForeignKey.CASCADE,
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class IncrementEntity(
 
@@ -33,8 +51,7 @@ data class IncrementEntity(
     // default value is converted from seconds to milliseconds
     @ColumnInfo(name = "increment_date")//, defaultValue = "(1000 * strftime('%s','now'))")
     val incrementDate: Instant,
-    @ColumnInfo(name = "time_zone_id")
-    val zoneId: ZoneId? = null,
+    @ColumnInfo(name = "time_zone_id") val zoneId: ZoneId? = null,
     @ColumnInfo(name = "increment") val increment: Int? = null,
     @ColumnInfo(name = "longitude") val longitude: Double? = null,
     @ColumnInfo(name = "latitude") val latitude: Double? = null,

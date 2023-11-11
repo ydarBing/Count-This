@@ -126,8 +126,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     api(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.compose.foundation.layout)
+//    implementation(libs.androidx.compose.foundation)
+//    implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.windowSizeClass)
@@ -140,18 +140,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.testManifest)
-
-
-    implementation(libs.accompanist.insets)
-    implementation(libs.accompanist.insetsui)
-    implementation(libs.accompanist.navigation.animation)
-    implementation(libs.accompanist.navigation.material)
-    implementation(libs.accompanist.pager)
-    implementation(libs.accompanist.pager.indicators)
-    implementation(libs.accompanist.permissions)
-    implementation(libs.accompanist.flowlayout)
-    implementation(libs.accompanist.systemuicontroller)
-
 
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.rules)
