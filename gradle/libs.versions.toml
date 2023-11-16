@@ -1,14 +1,14 @@
 [versions]
-agp = "8.2.0-rc02"
-accompanist = "0.32.0"
-activityCompose = "1.8.0"
+agp = "8.2.0-rc03"
+accompanist = "0.33.2-alpha"
+activityCompose = "1.8.1"
 androidDesugarJdkLibs = "2.0.4"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.6.0"
 androidxComposeBom = "2023.10.01"
 androidxComposeCompiler = "1.5.3"
-androidxComposeMaterial = "1.6.0-alpha08" 
-androidxComposeMaterial3 = "1.2.0-alpha10"
+androidxComposeMaterial = "1.6.0-beta01"
+androidxComposeMaterial3 = "1.2.0-alpha11"
 androidxNavigation = "2.7.5"
 androidConstraintLayout = "2.1.4"
 androidxCore = "1.12.0"
@@ -16,8 +16,8 @@ androidxCoreSplashscreen = "1.0.1"
 androidxEspresso = "3.5.1"
 androidxHiltNavigationCompose = "1.1.0"
 androidxLocalBroadcastManager = "1.1.0"
-androidxLifecycle = "2.6.2"
-androidxPagingCompose = "3.2.1"
+androidxLifecycle = "2.7.0-rc01"
+androidxPagingCompose = "3.3.0-alpha02"
 androidxPreferences = "1.2.1"
 androidxSavedstate = "1.2.1"
 androidxStartup = "1.1.1"
@@ -25,7 +25,7 @@ androidxTest = "1.5.0"
 androidxTestExt = "1.1.5"
 androidxTracing = "1.1.0"
 androidxWork = "2.9.0-rc01"
-composeMaps = "2.11.4"
+composeMaps = "4.2.0"
 coroutines = "1.7.3"
 datastore = "1.0.0"
 firebaseBom = "32.5.0"
@@ -35,7 +35,7 @@ gmsPlugin = "4.4.0"
 gradleEnterprisePlugin = "3.15"
 hilt = "2.48.1"
 hiltExt = "1.1.0"
-jacoco = "0.8.7"
+jacoco = "0.8.11"
 junit4 = "4.13.2"
 kotlin = "1.9.10"
 kotlinxDatetime = "0.4.1"
@@ -45,7 +45,7 @@ ktlint = "1.0.1"
 paging = "3.2.1"
 playservicesLocation = "21.0.1"
 playservicesMaps = "18.2.0"
-playservicesMapsUtils = "3.4.0"
+playservicesMapsUtils = "3.7.0"
 playservicesPlaces = "3.2.0"
 protobuf = "3.24.4"
 protobufPlugin = "0.9.4"
@@ -67,10 +67,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidxBrowser" }
 androidx-compose-animation-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
-#androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
-#androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material" }#, version.ref = "androidxComposeMaterial" }
+androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "androidxComposeMaterial" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidxComposeMaterial3" }
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "androidxComposeMaterial3" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
