@@ -20,7 +20,7 @@ const val TRIGGER_UPDATE_COUNT_ON_INSERT_INCREMENT = """
             END
         """
 const val TRIGGER_UPDATE_COUNT_ON_DELETE_INCREMENT = """
-            CREATE TRIGGER IF NOT EXISTS increment_trigger_counter
+            CREATE TRIGGER IF NOT EXISTS decrement_trigger_counter
             BEFORE DELETE ON increments  
             BEGIN 
                UPDATE counters
@@ -44,7 +44,6 @@ data class IncrementEntity(
 
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long = 0,
     @ColumnInfo(name = "counter_id") val counterId: Long,
-//    @ColumnInfo(name = "date") val date: OffsetDateTime,//? = null,
     // TODO if millisecond precision is needed, take out default value and add Instant.now() to params
     // CURRENT_TIMESTAMP is the current date and time in UTC.
     // to get the default value, need to use @query with insert statement
@@ -61,17 +60,14 @@ data class IncrementEntity(
 
     override fun compareTo(other: IncrementEntity): Int {
         return incrementDate.compareTo(other.incrementDate)
-//        return date.compareTo(other.date)
     }
 }
 
 fun IncrementEntity.asExternalModel() = Increment(
     id = id,
     counterId = counterId,
-//    date = date,
     incrementDate = incrementDate,
     zoneId = zoneId,
-//    zoneOffset = zoneOffset,
     increment = increment,
     longitude = longitude,
     latitude = latitude,

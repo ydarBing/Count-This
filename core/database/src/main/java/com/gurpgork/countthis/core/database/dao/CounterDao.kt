@@ -133,6 +133,6 @@ LEFT JOIN
 	) AS todays_increments ON c.id = todays_increments.counter_id 
         """
     }
-    // TODO when minsdk is increased to 31+ we can use FILTER
+    //TODO when minsdk is increased to 31+ we can use FILTER
     // SUM(i.increment) FILTER( WHERE DATE(i.increment_date/1000,'unixepoch','localtime') = DATE('now','localtime')) as sit
 }

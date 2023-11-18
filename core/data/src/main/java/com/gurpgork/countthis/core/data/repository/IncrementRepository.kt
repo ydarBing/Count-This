@@ -11,7 +11,6 @@ interface IncrementRepository {
     suspend fun addIncrement(
         counterId: Long,
         location: CtLocation?,
-//        timestamp: OffsetDateTime,
         instantTime: Instant,
         isDecrement: Boolean = false,
     )

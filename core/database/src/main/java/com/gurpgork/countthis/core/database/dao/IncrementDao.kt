@@ -59,4 +59,5 @@ interface IncrementDao {//: EntityDao<IncrementEntity>(){
 
     @Query("DELETE FROM increments")
     suspend fun deleteAll()
+
 }

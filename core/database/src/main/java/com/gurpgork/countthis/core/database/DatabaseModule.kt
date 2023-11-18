@@ -12,6 +12,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 @Module
@@ -43,6 +44,11 @@ object DatabaseModule {
                     db.execSQL(TRIGGER_UPDATE_COUNT_ON_DELETE_INCREMENT)
                 }
             })
+
+
+        builder.setQueryCallback({ sqlQuery, bindArgs ->
+            println("SQL Query: $sqlQuery SQL Args: $bindArgs")
+        }, Executors.newSingleThreadExecutor())
 
         if (Debug.isDebuggerConnected()) {
             builder.allowMainThreadQueries()

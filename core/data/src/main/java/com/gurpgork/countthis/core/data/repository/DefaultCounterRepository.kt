@@ -36,6 +36,7 @@ class DefaultCounterRepository @Inject constructor(
     // Observed Flow will notify the observer when the data has changed.
 //    val allCounters: Flow<List<CounterEntity>> = counterDao.countersObservable()
 
+    //TODO how do we want to reset start date, time of creation? time of reset? probably latter
     override suspend fun resetCounter(counterId: Long) {
         val counter = counterDao.getCounterById(counterId)
         val lastReset = historyDao.getMostRecentReset(counterId)

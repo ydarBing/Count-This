@@ -17,9 +17,4 @@ data class Increment (
     val latitude: Double? = null,
     val altitude: Double? = null,
     val accuracy: Float? = null,
-
-    //TODO is this needed
-    // or does adding this field mean I should create a new data class? called UserIncrement
-    // since it keeps track of UI based selections..?
-//    val isSelected: Boolean,
 )

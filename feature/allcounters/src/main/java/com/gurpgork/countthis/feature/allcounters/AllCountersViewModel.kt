@@ -173,7 +173,7 @@ class CounterListViewModel @Inject constructor(
         }
     }
 
-    fun addIncrement(
+    private fun addIncrement(
         id: Long,
         location: CtLocation?,
         instant: Instant,
@@ -273,7 +273,7 @@ class CounterListViewModel @Inject constructor(
         }
     }
 
-    fun handleAddTime(
+    private fun handleAddTime(
         counterId: Long, addTimeInfo: AddTimeInformation, pickerLocation: Location?
     ) {
         //TODO seems like too much hassle getting zones and zone offsets for this
@@ -287,7 +287,7 @@ class CounterListViewModel @Inject constructor(
         )
     }
 
-    fun getAddressFromLocation(context: Context): String {
+    private fun getAddressFromLocation(context: Context): String {
         val geocoder = Geocoder(context, Locale.getDefault())
         var addresses: List<Address>?
         var address: Address?
