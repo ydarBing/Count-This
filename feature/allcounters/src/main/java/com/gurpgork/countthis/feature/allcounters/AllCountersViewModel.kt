@@ -82,7 +82,7 @@ class CounterListViewModel @Inject constructor(
     private val addressQuery = MutableStateFlow("")
     val pickerLocation = MutableStateFlow(getDefaultLocation())
 
-    private lateinit var userCurrentLocation: CtLocation
+    private var userCurrentLocation = Location("")
 
     private val availableSorts = listOf(
         SortOption.ALPHABETICAL,
@@ -168,9 +168,7 @@ class CounterListViewModel @Inject constructor(
                 priority,
                 CancellationTokenSource().token,
             ).addOnSuccessListener { fetchedLocation ->
-                    fetchedLocation.toCtLocation()?.let {
-                        userCurrentLocation = it
-                    }
+                    userCurrentLocation = fetchedLocation
                 }.addOnFailureListener { e ->
                     e.message?.let {
                         viewModelScope.launch {
@@ -222,7 +220,7 @@ class CounterListViewModel @Inject constructor(
             incrementCounter(
                 IncrementCounter.Params(
                     id,
-                    userCurrentLocation,
+                    userCurrentLocation.toCtLocation(),
                 )
             ).collect()
         }
@@ -233,7 +231,7 @@ class CounterListViewModel @Inject constructor(
             decrementCounter(
                 DecrementCounter.Params(
                     id,
-                    userCurrentLocation,
+                    userCurrentLocation.toCtLocation(),
                 )
             ).collect()
         }

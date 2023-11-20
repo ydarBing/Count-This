@@ -12,7 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 @Module
@@ -31,11 +30,6 @@ object DatabaseModule {
         )
             .fallbackToDestructiveMigration()
             .addCallback(object : RoomDatabase.Callback() {
-                // Called when the database is created for the first time.
-                // This is called after all the tables are created.
-//                override fun onCreate(db: SupportSQLiteDatabase) {
-//                    super.onCreate(db)
-//                }
                 // called every time the database is opened in the app
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     super.onOpen(db)
@@ -44,11 +38,9 @@ object DatabaseModule {
                     db.execSQL(TRIGGER_UPDATE_COUNT_ON_DELETE_INCREMENT)
                 }
             })
-
-
-        builder.setQueryCallback({ sqlQuery, bindArgs ->
-            println("SQL Query: $sqlQuery SQL Args: $bindArgs")
-        }, Executors.newSingleThreadExecutor())
+//        builder.setQueryCallback({ sqlQuery, bindArgs ->
+//            println("SQL Query: $sqlQuery SQL Args: $bindArgs")
+//        }, Executors.newSingleThreadExecutor())
 
         if (Debug.isDebuggerConnected()) {
             builder.allowMainThreadQueries()

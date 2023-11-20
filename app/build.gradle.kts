@@ -8,10 +8,14 @@ plugins {
     alias(libs.plugins.countthis.android.hilt)
     id("jacoco")
     alias(libs.plugins.countthis.android.application.firebase)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 //val useReleaseKeystore = rootProject.file("release/app-release.jks").exists()
 
+secrets {
+    defaultPropertiesFileName = "local.defaults.properties"
+}
 android {
     namespace = "com.gurpgork.countthis"
 
@@ -19,7 +23,7 @@ android {
         applicationId = "com.gurpgork.countthis"
         versionCode = 1
         versionName = "0.1.0" // X.Y.Z; X = Major, Y = minor, Z = Patch level
-        manifestPlaceholders["MAPS_API_KEY"] =  ""
+//        manifestPlaceholders["MAPS_API_KEY"] =  ""
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

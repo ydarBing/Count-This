@@ -1,10 +1,10 @@
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.countthis.android.library)
     alias(libs.plugins.countthis.android.library.jacoco)
     alias(libs.plugins.countthis.android.hilt)
     id("kotlinx-serialization")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    // getting error when trying to put secrets not in app gradle
+//    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -18,9 +18,10 @@ android {
         }
     }
 }
-secrets {
-    defaultPropertiesFileName = "local.defaults.properties"
-}
+// getting error when trying to put secrets not in app gradle
+//secrets {
+//    defaultPropertiesFileName = "local.defaults.properties"
+//}
 
 dependencies {
     implementation(projects.core.common)
@@ -30,8 +31,4 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.service)
-
-//    implementation(libs.okhttp.logging)
-//    implementation(libs.retrofit.core)
-//    implementation(libs.retrofit.kotlin.serialization)
 }

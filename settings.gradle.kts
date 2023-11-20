@@ -14,21 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-//plugins {
-////    id("com.gradle.enterprise") version "3.13"
-//
-//    alias(libs.plugins.gradle.enterprise)
-//}
-
-
-//gradleEnterprise {
-//    buildScan {
-//        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-//        termsOfServiceAgree = "yes"
-//        publishAlways()
-//    }
-//}
-
 rootProject.name = "countthis"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
@@ -43,10 +28,10 @@ include(":core:designsystem")
 include(":core:domain")
 include(":core:model")
 include(":core:ui")
+include(":core:network")
 
 include(":feature:settings")
 include(":feature:counterdetails")
 include(":feature:addedit")
 include(":feature:allcounters")
 include(":feature:accountui")
-include(":core:network")
