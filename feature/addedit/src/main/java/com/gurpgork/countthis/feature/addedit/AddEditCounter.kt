@@ -1,6 +1,7 @@
 package com.gurpgork.countthis.feature.addedit
 
 import android.Manifest
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -268,6 +269,9 @@ fun AppNumberField(
 
 
 
+@RequiresPermission(
+    anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
+)
 @Composable
 @OptIn(ExperimentalPermissionsApi::class)
 private fun SwitchWithLocationPermission(

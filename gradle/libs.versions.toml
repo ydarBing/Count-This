@@ -4,7 +4,7 @@ accompanist = "0.33.2-alpha"
 activityCompose = "1.8.1"
 androidDesugarJdkLibs = "2.0.4"
 androidxAppCompat = "1.6.1"
-androidxBrowser = "1.6.0"
+androidxBrowser = "1.7.0"
 androidxComposeBom = "2023.10.01"
 androidxComposeCompiler = "1.5.3"
 androidxComposeMaterial = "1.6.0-beta01"
@@ -28,10 +28,14 @@ androidxWork = "2.9.0-rc01"
 composeMaps = "4.2.0"
 coroutines = "1.7.3"
 datastore = "1.0.0"
-firebaseBom = "32.5.0"
+firebaseBom = "32.6.0"
 firebaseCrashlyticsPlugin = "2.9.9"
 firebasePerfPlugin = "1.4.2"
 gmsPlugin = "4.4.0"
+googleMapsLocation = "21.0.1"
+googleMaps = "18.2.0"
+googleMapsUtils = "3.7.0"
+googleMapsPlaces = "3.3.0"
 gradleEnterprisePlugin = "3.15"
 hilt = "2.48.1"
 hiltExt = "1.1.0"
@@ -42,11 +46,8 @@ kotlinxDatetime = "0.4.1"
 kotlinxSerializationJson = "1.6.0"
 ksp = "1.9.10-1.0.13"
 ktlint = "1.0.1"
+lint = "31.1.4"
 paging = "3.2.1"
-playservicesLocation = "21.0.1"
-playservicesMaps = "18.2.0"
-playservicesMapsUtils = "3.7.0"
-playservicesPlaces = "3.2.0"
 protobuf = "3.24.4"
 protobufPlugin = "0.9.4"
 room = "2.6.0"
@@ -57,6 +58,7 @@ minSdk = "29"
 targetSdk = "34"
 junit = "1.1.5"
 material = "1.10.0"
+lifecycleService = "2.6.2"
 
 
 [libraries]
@@ -80,7 +82,6 @@ androidx-compose-ui-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-uitextfonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 androidx-compose-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding" }
-
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidConstraintLayout" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
@@ -110,18 +111,6 @@ androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", versio
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
 
 
-compose-maps = { group = "com.google.maps.android", name = "maps-compose", version.ref = "composeMaps" }
-compose-maps-utils = { group = "com.google.maps.android", name = "maps-compose-utils", version.ref = "composeMaps" }
-compose-maps-widgets = { group = "com.google.maps.android", name = "maps-compose-widgets", version.ref = "composeMaps" }
-
-
-
-
-
-
-
-
-
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-cloud-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
@@ -129,6 +118,15 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-performance = { group = "com.google.firebase", name = "firebase-perf-ktx" }
 firebase-performance-gradle = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
+
+googlemaps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "composeMaps" }
+googlemaps-compose-utils = { group = "com.google.maps.android", name = "maps-compose-utils", version.ref = "composeMaps" }
+googlemaps-compose-widgets = { group = "com.google.maps.android", name = "maps-compose-widgets", version.ref = "composeMaps" }
+googlemaps-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "googleMapsLocation" }
+googlemaps-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "googleMaps" }
+googlemaps-maps-utils = { group = "com.google.maps.android", name = "android-maps-utils", version.ref = "googleMapsUtils" }
+googlemaps-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googleMapsPlaces" }
+
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
@@ -143,12 +141,9 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-
-
-playservices-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playservicesLocation" }
-playservices-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playservicesMaps" }
-playservices-maps-utils = { group = "com.google.maps.android", name = "android-maps-utils", version.ref = "playservicesMapsUtils" }
-playservices-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "playservicesPlaces" }
+lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "lint" }
+lint-checks = { group = "com.android.tools.lint", name = "lint-checks", version.ref = "lint" }
+lint-tests = { group = "com.android.tools.lint", name = "lint-tests", version.ref = "lint" }
 
 protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }
@@ -169,6 +164,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 firebase-crashlytics-gradlePlugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
+lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

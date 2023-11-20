@@ -1,10 +1,10 @@
 package com.gurpgork.countthis.feature.allcounters
 
+import android.location.Location
 import androidx.compose.runtime.Immutable
 import com.gurpgork.countthis.core.data.model.CounterWithIncrementInfo
 import com.gurpgork.countthis.core.designsystem.component.ListItemContextMenuOption
 import com.gurpgork.countthis.core.designsystem.component.UiMessage
-import com.gurpgork.countthis.core.model.data.CtLocation
 import com.gurpgork.countthis.core.model.data.SortOption
 
 @Immutable
@@ -20,7 +20,7 @@ data class AllCountersViewState(
     val isLoading: Boolean = false,
     val message: UiMessage? = null,
     val trackUserLocation: Int = 0,
-    val mostRecentLocation: CtLocation? = null,
+    val initialPickerLocation: Location = Location(""),
     val locationPickerAddressQuery: String = "",
     val useButtonIncrements: Boolean = false,
     ) {

@@ -8,8 +8,6 @@ plugins {
     alias(libs.plugins.countthis.android.hilt)
     id("jacoco")
     alias(libs.plugins.countthis.android.application.firebase)
-
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 //val useReleaseKeystore = rootProject.file("release/app-release.jks").exists()
@@ -21,6 +19,7 @@ android {
         applicationId = "com.gurpgork.countthis"
         versionCode = 1
         versionName = "0.1.0" // X.Y.Z; X = Major, Y = minor, Z = Patch level
+        manifestPlaceholders["MAPS_API_KEY"] =  ""
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -30,8 +29,6 @@ android {
 
     buildTypes {
         debug {
-//            signingConfig = signingConfigs["debug"]
-//            versionNameSuffix = "-dev"
             applicationIdSuffix = CtBuildType.DEBUG.applicationIdSuffix
         }
 
@@ -107,10 +104,6 @@ dependencies {
     // PAGING 3.0
     implementation(libs.androidx.paging.compose)
 
-    implementation(libs.playservices.location)
-    implementation(libs.playservices.places)
-    implementation(libs.playservices.maps)
-    implementation(libs.playservices.maps.utils)
 
     // TODO move to sync if adding to core
     implementation(libs.androidx.tracing.ktx)
@@ -132,9 +125,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.util)
     implementation(libs.androidx.compose.ui.viewbinding)
     implementation(libs.androidx.compose.runtime)
-    implementation(libs.compose.maps)
-    implementation(libs.compose.maps.utils)
-    implementation(libs.compose.maps.widgets)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.testManifest)
@@ -146,26 +136,8 @@ dependencies {
     testImplementation(libs.androidx.compose.ui.test)
 }
 
-secrets {
-    defaultPropertiesFileName = "local.defaults.properties"
-}
 
 if (file("google-services.json").exists()) {
     apply(plugin = libs.plugins.gms.get().pluginId)
     apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
-}
-
-//fun <T : Any> propOrDef(propertyName: String, defaultValue: T): T {
-//    @Suppress("UNCHECKED_CAST")
-//    val propertyValue = project.properties[propertyName] as T?
-//    return propertyValue ?: defaultValue
-//}
-
-// androidx.test is forcing JUnit, 4.12. This forces it to use 4.13
-configurations.configureEach {
-    resolutionStrategy {
-        force(libs.junit4)
-        // Temporary workaround for https://issuetracker.google.com/174733673
-        force("org.objenesis:objenesis:2.6")
-    }
 }

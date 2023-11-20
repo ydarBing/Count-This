@@ -9,7 +9,6 @@ import com.gurpgork.countthis.core.ui.MediumDateTime
 import com.gurpgork.countthis.core.ui.ShortDate
 import com.gurpgork.countthis.core.ui.ShortTime
 import com.gurpgork.countthis.core.ui.withLocale
-import com.gurpgork.countthis.location.ForegroundOnlyLocationService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -79,21 +78,4 @@ object AppModule {
     ): DateTimeFormatter {
         return DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(context)
     }
-
-    @Provides
-    @Singleton
-    fun provideForegroundOnlyLocationService(
-    ): ForegroundOnlyLocationService = ForegroundOnlyLocationService()
-
-//    @Provides
-//    @Singleton
-//    fun provideFirebaseCrashlytics(): FirebaseCrashlytics = FirebaseCrashlytics.getInstance()
-//
-//    @Provides
-//    @Singleton
-//    fun provideFirebaseAnalytics(
-//        @ApplicationContext context: Context
-//    ): FirebaseAnalytics = FirebaseAnalytics.getInstance(context)
-
-
 }

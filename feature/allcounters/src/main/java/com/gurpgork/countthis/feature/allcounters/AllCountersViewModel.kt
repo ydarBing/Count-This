@@ -1,5 +1,6 @@
 package com.gurpgork.countthis.feature.allcounters
 
+import android.Manifest
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
@@ -7,11 +8,15 @@ import android.location.Location
 import android.os.Build
 import android.os.CountDownTimer
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingConfig
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.gurpgork.countthis.core.data.repository.CounterRepository
 import com.gurpgork.countthis.core.data.repository.UserDataRepository
 import com.gurpgork.countthis.core.designsystem.component.ListItemContextMenuOption
@@ -57,9 +62,9 @@ class CounterListViewModel @Inject constructor(
     private val incrementCounter: IncrementCounter,
     private val decrementCounter: DecrementCounter,
     private val counterRepository: CounterRepository, //TODO make this a use case? since only used for updating list indices
-//    private val observePagedCounterList: ObservePagedCounterList,
     private val observeSortedCounterListUseCase: ObserveSortedCounterListUseCase,
     private val userDataRepository: UserDataRepository,
+    private val locationClient: FusedLocationProviderClient,
     observeLocations: ObserveLocations,
 ) : ViewModel() {
     private val uiMessageManager = UiMessageManager()
@@ -77,6 +82,8 @@ class CounterListViewModel @Inject constructor(
     private val addressQuery = MutableStateFlow("")
     val pickerLocation = MutableStateFlow(getDefaultLocation())
 
+    private lateinit var userCurrentLocation: CtLocation
+
     private val availableSorts = listOf(
         SortOption.ALPHABETICAL,
         SortOption.DATE_ADDED,
@@ -92,13 +99,7 @@ class CounterListViewModel @Inject constructor(
         ListItemContextMenuOption.DELETE,
     )
 
-//    val pagedList: Flow<PagingData<CounterWithIncrementInfo>> =
-//        observePagedCounterList.flow.cachedIn(viewModelScope)
-
-
-    //TODO either get location one time per on this screen or move tracking locations out of this
-    val state: StateFlow<AllCountersViewState> = combine(
-        observeSortedCounterListUseCase(),
+    val state: StateFlow<AllCountersViewState> = combine(observeSortedCounterListUseCase(),
         loadingState.observable,
         counterSelection.observeSelectedIds(),
         counterSelection.observeIsSelectionOpen(),
@@ -106,9 +107,9 @@ class CounterListViewModel @Inject constructor(
         sortAsc,
         uiMessageManager.message,
         trackingLocations,
-        observeLocations.flow,
+        pickerLocation,
         addressQuery,
-        userDataRepository.userData.map { it.useButtonIncrements }) { allCounters, loading, selectedCounterIds, isSelectionOpen, sort, sortAsc, message, userWantsLocationTracked, mostRecentLocation, addressQuery, useButtonIncrements ->
+        userDataRepository.userData.map { it.useButtonIncrements }) { allCounters, loading, selectedCounterIds, isSelectionOpen, sort, sortAsc, message, userWantsLocationTracked, pickerLocation, addressQuery, useButtonIncrements ->
         AllCountersViewState(
             countersWithInfo = allCounters,
             isLoading = loading,
@@ -120,9 +121,9 @@ class CounterListViewModel @Inject constructor(
             sortAsc = sortAsc,
             message = message,
             trackUserLocation = userWantsLocationTracked,
-            mostRecentLocation = mostRecentLocation,
+            initialPickerLocation = pickerLocation,
             locationPickerAddressQuery = addressQuery,
-            useButtonIncrements = useButtonIncrements
+            useButtonIncrements = useButtonIncrements,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -152,6 +153,34 @@ class CounterListViewModel @Inject constructor(
         }
     }
 
+    @RequiresPermission(
+        anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
+    )
+    fun updateUserLocation(usePreciseLocation: Boolean) {
+        viewModelScope.launch {
+            val priority = if (usePreciseLocation) {
+                Priority.PRIORITY_HIGH_ACCURACY
+            } else {
+                Priority.PRIORITY_BALANCED_POWER_ACCURACY
+            }
+
+            locationClient.getCurrentLocation(
+                priority,
+                CancellationTokenSource().token,
+            ).addOnSuccessListener { fetchedLocation ->
+                    fetchedLocation.toCtLocation()?.let {
+                        userCurrentLocation = it
+                    }
+                }.addOnFailureListener { e ->
+                    e.message?.let {
+                        viewModelScope.launch {
+                            uiMessageManager.emitMessage(UiMessage(it))
+                        }
+                    }
+                }
+        }
+    }
+
     private fun updateDatasource() {
         observeSortedCounterListUseCase.invoke()
     }
@@ -167,6 +196,7 @@ class CounterListViewModel @Inject constructor(
             userDataRepository.setSortAsc(sortAsc)
         }
     }
+
     fun toggleSortAsc() {
         viewModelScope.launch {
             userDataRepository.toggleSortAsc()
@@ -187,23 +217,23 @@ class CounterListViewModel @Inject constructor(
         }
     }
 
-    fun incrementCounter(id: Long, location: CtLocation?) {
+    fun incrementCounter(id: Long) {
         viewModelScope.launch {
             incrementCounter(
                 IncrementCounter.Params(
                     id,
-                    location,
+                    userCurrentLocation,
                 )
             ).collect()
         }
     }
 
-    fun decrementCounter(id: Long, location: CtLocation?) {
+    fun decrementCounter(id: Long) {
         viewModelScope.launch {
             decrementCounter(
                 DecrementCounter.Params(
                     id,
-                    location,
+                    userCurrentLocation,
                 )
             ).collect()
         }
@@ -229,7 +259,7 @@ class CounterListViewModel @Inject constructor(
 
     }
 
-    fun reorderList(fromCounterId: Long, from: Int, toCounterId:Long, to: Int) {
+    fun reorderList(fromCounterId: Long, from: Int, toCounterId: Long, to: Int) {
         Log.d("REORDER", "$from $to")
         viewModelScope.launch {
 //            state.value.countersWithInfo = state.value.countersWithInfo.toMutableList().apply {
@@ -243,7 +273,10 @@ class CounterListViewModel @Inject constructor(
 
 
     fun handleContextMenuOptionSelected(
-        counterId: Long, listIndex: Int, option: ListItemContextMenuOption, addTimeInfo: AddTimeInformation?
+        counterId: Long,
+        listIndex: Int,
+        option: ListItemContextMenuOption,
+        addTimeInfo: AddTimeInformation?
     ) {
         when (option) {
             ListItemContextMenuOption.ADD_TIME -> {
@@ -366,10 +399,9 @@ class CounterListViewModel @Inject constructor(
         }
     }
 
+
     fun getDefaultLocation(): Location {
         val defaultLocation = Location("")
-//        val defaultLocation = CtLocation()
-
         defaultLocation.latitude = 43.40477213923839
         defaultLocation.longitude = -113.52072556208147
 
@@ -417,6 +449,7 @@ fun Location?.toCtLocation(): CtLocation? {
     } else {
         return null
     }
+
 }
 
 /**

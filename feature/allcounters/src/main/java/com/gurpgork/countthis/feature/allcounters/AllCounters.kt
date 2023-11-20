@@ -1,5 +1,7 @@
 package com.gurpgork.countthis.feature.allcounters
 
+import android.annotation.SuppressLint
+import android.location.Location
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -118,7 +120,6 @@ import com.gurpgork.countthis.core.designsystem.component.reorderablelazylist.re
 import com.gurpgork.countthis.core.designsystem.component.reorderablelazylist.reorderable
 import com.gurpgork.countthis.core.designsystem.icon.CtIcons
 import com.gurpgork.countthis.core.model.data.CREATE_COUNTER_ID
-import com.gurpgork.countthis.core.model.data.CtLocation
 import com.gurpgork.countthis.core.model.data.INVALID_LIST_INDEX
 import com.gurpgork.countthis.core.model.data.SortOption
 import com.gurpgork.countthis.core.ui.LocalCountThisDateFormatter
@@ -136,36 +137,44 @@ internal fun AllCountersRoute(
         viewModel = hiltViewModel(),
         addEditCounter = addEditCounter,
         openCounter = openCounter,
-        openUser = openUser,
         onComposing = onComposing,
         onSettingsClicked = onSettingsClicked,
     )
 
 }
 
+//TODO remove "Missing Permission" suppression when MultiplePermissionsState can be used as a valid check
+@SuppressLint("MissingPermission")
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 internal fun AllCounters(
     viewModel: CounterListViewModel,
     addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
-    openUser: () -> Unit,
     onSettingsClicked: () -> Unit,
     onComposing: (CtAppBarState) -> Unit,
 ) {
     val context = LocalContext.current
-
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
-    val initialLatLng = if (viewState.mostRecentLocation != null) LatLng(
-        viewState.mostRecentLocation!!.latitude, viewState.mostRecentLocation!!.longitude
+    val locationPermissionsState = rememberMultiplePermissionsState(
+        listOf(
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+        )
     )
-    else LatLng(
-        viewModel.getDefaultLocation().latitude, viewModel.getDefaultLocation().longitude
-    )
+
+    LaunchedEffect(key1 = viewState.trackUserLocation) {
+        if (locationPermissionsState.allPermissionsGranted ||
+            locationPermissionsState.permissions[0].status.isGranted
+        ) {
+            viewModel.updateUserLocation(locationPermissionsState.permissions[1].status.isGranted)
+        }
+    }
 
     AllCountersScreen(
         viewState = viewState,
-        openUser = openUser,
+        locationPermissionsState = locationPermissionsState,
         openCounter = openCounter,
         addEditCounter = addEditCounter,
         onMessageShown = { viewModel.clearMessage(it) },
@@ -174,12 +183,10 @@ internal fun AllCounters(
                 id, listIndex, option, addTimeInfo
             )
         },
-        onIncrementCounter = { id, location -> viewModel.incrementCounter(id, location) },
-        onDecrementCounter = { id, location -> viewModel.decrementCounter(id, location) },
+        onIncrementCounter = viewModel::incrementCounter,
+        onDecrementCounter = { id -> viewModel.decrementCounter(id) },
         onSortSelected = { viewModel.setSort(it) },
-        onSortOrderClicked = { viewModel.toggleSortAsc() },
-        pickerInitialLatLng = initialLatLng,
-        pickerLocationAddress = viewState.locationPickerAddressQuery,
+        onSortOrderClicked = viewModel::toggleSortAsc,
         locationQueryChanged = { newAddr -> viewModel.onTextChanged(context, newAddr) },
         onLocationPickerMoved = { latLng -> viewModel.updatePickerLocation(context, latLng) },
         onListReorder = viewModel::reorderList,
@@ -196,17 +203,15 @@ internal fun AllCounters(
 @Composable
 internal fun AllCountersScreen(
     viewState: AllCountersViewState,
+    locationPermissionsState: MultiplePermissionsState,
     addEditCounter: (counterId: Long, listIndex: Int) -> Unit,
     openCounter: (counterId: Long) -> Unit,
     onContextMenuOptionSelected: (counterId: Long, listIndex: Int, ListItemContextMenuOption, addTimeInfo: AddTimeInformation?) -> Unit,
-    onIncrementCounter: (Long, CtLocation?) -> Unit,
-    onDecrementCounter: (Long, CtLocation?) -> Unit,
+    onIncrementCounter: (Long) -> Unit,
+    onDecrementCounter: (Long) -> Unit,
     onSortSelected: (SortOption) -> Unit,
     onSortOrderClicked: () -> Unit,
-    openUser: () -> Unit,
-    pickerInitialLatLng: LatLng,
     onMessageShown: (id: Long) -> Unit,
-    pickerLocationAddress: String,
     locationQueryChanged: (String) -> Unit,
     onLocationPickerMoved: (LatLng) -> Unit,
     onListReorder: (Long, Int, Long, Int) -> Unit,
@@ -223,19 +228,17 @@ internal fun AllCountersScreen(
     var showSorts by remember { mutableStateOf(false) }
     var inMoveState by remember { mutableStateOf(false) }
 
-    val state = rememberReorderableLazyListState(
-        onDragEnd = { from, to ->
-            Log.d("DRAG_END", "$from -> $to")
-            // should now update database as we have finished dragging item
-        },
-        onMove = { from, to ->
-            // still dragging but swapping indices
-            Log.d(
-                "MOVE",
-                "From as Long: ${from.key as Long} keys: ${from.key} -> ${to.key} indices: $from -> $to"
-            )
-            onListReorder(from.key as Long, from.index, to.key as Long, to.index)
-        })
+    val state = rememberReorderableLazyListState(onDragEnd = { from, to ->
+        Log.d("DRAG_END", "$from -> $to")
+        // should now update database as we have finished dragging item
+    }, onMove = { from, to ->
+        // still dragging but swapping indices
+        Log.d(
+            "MOVE",
+            "From as Long: ${from.key as Long} keys: ${from.key} -> ${to.key} indices: $from -> $to"
+        )
+        onListReorder(from.key as Long, from.index, to.key as Long, to.index)
+    })
 
     val dismissSnackbarState = rememberDismissState(
         confirmValueChange = { value ->
@@ -292,12 +295,6 @@ internal fun AllCountersScreen(
         )
     }
 
-    val locationPermissionsState = rememberMultiplePermissionsState(
-        listOf(
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-        )
-    )
 
 
     Scaffold(floatingActionButton = {
@@ -367,8 +364,7 @@ internal fun AllCountersScreen(
                     contentType = { "counterListItem" },
                 ) { counter ->
                     ReorderableItem(
-                        reorderableState = state,
-                        key = counter.counter.id
+                        reorderableState = state, key = counter.counter.id
                     ) { isDragging ->
                         val elevation = animateDpAsState(
                             if (isDragging) 16.dp else 0.dp, label = "ReorderElevation"
@@ -382,12 +378,12 @@ internal fun AllCountersScreen(
                             onCounterClick = { openCounter(counter.counter.id) },
                             onIncrementCounter = {
                                 onIncrementCounter(
-                                    counter.counter.id, viewState.mostRecentLocation
+                                    counter.counter.id
                                 )
                             },
                             onDecrementCounter = {
                                 onDecrementCounter(
-                                    counter.counter.id, viewState.mostRecentLocation
+                                    counter.counter.id
                                 )
                             },
                             counter = counter,
@@ -422,9 +418,8 @@ internal fun AllCountersScreen(
 
         ListItemContextMenuOption.ADD_TIME -> OpenAddTimeDialog(counterName = counterContextMenuName,
             trackingLocation = counterContextMenuTrackingLocation,
-            pickerInitialLatLng = pickerInitialLatLng,
-//                pickerCurrentLocation = pickerLocation,
-            pickerLocationAddress = pickerLocationAddress,
+            pickerInitialLocation = viewState.initialPickerLocation,
+            pickerLocationAddress = viewState.locationPickerAddressQuery,
             locationQueryChanged = locationQueryChanged,
             onLocationChanged = onLocationPickerMoved,
             onConfirm = { addTimeInfo ->
@@ -646,8 +641,7 @@ fun CounterRow(
         }
         if (inMoveState) {
             Icon(
-                imageVector = CtIcons.DragHandle,
-                contentDescription = "Drag Icon",//"Reorder Icon",
+                imageVector = CtIcons.DragHandle, contentDescription = "Drag Icon",//"Reorder Icon",
                 tint = MaterialTheme.colorScheme.onBackground
             )
         } else if (useButtonIncrements) {
@@ -737,8 +731,7 @@ private fun SwipeToDismissCounterRow(
             false
         })
 
-    SwipeToDismiss(
-        modifier = modifier,
+    SwipeToDismiss(modifier = modifier,
         state = dismissState,
         directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
         //dismissThresholds = { FractionalThreshold(.2f) },
@@ -885,8 +878,7 @@ private fun LongPressContextMenu(
 private fun OpenAddTimeDialog(
     counterName: String?,
     trackingLocation: Boolean,
-    pickerInitialLatLng: LatLng,
-//    pickerCurrentLocation: LatLng,
+    pickerInitialLocation: Location,
     locationQueryChanged: (String) -> Unit,
     pickerLocationAddress: String,
     onLocationChanged: (LatLng) -> Unit,
@@ -894,12 +886,11 @@ private fun OpenAddTimeDialog(
     onDismiss: () -> Unit
 ) {
     var openLocationDialog by remember { mutableStateOf(false) }
-//    var locationQuery by remember { mutableStateOf("") }
     var isMapEditable by remember { mutableStateOf(true) }
 
     AddTimeDialog(
         onDismissRequest = onDismiss,
-        onConfirmNewIncrement = onConfirm,//{ newTimeInformation -> onConfirm(newTimeInformation) },
+        onConfirmNewIncrement = onConfirm,
         trackingLocation = trackingLocation,
         onLocationButtonClick = {
             openLocationDialog = true
@@ -911,8 +902,7 @@ private fun OpenAddTimeDialog(
     if (openLocationDialog) {
         AddLocationDialog(
             onDismissRequest = { openLocationDialog = false },
-            pickerInitialLatLng = pickerInitialLatLng,
-//            pickerCurrentLocation = pickerCurrentLocation,
+            initialPickerLocation = pickerInitialLocation,
             onLocationQueryChanged = {
                 if (!isMapEditable) locationQueryChanged(it)
             },
@@ -1010,8 +1000,7 @@ private fun CounterRow(counter: CounterWithIncrementInfo) {
 
 @Composable
 fun AddLocationDialog(
-    pickerInitialLatLng: LatLng,
-//    pickerCurrentLocation: LatLng,
+    initialPickerLocation: Location,
     onLocationQueryChanged: (query: String) -> Unit,
     onCameraMoved: (LatLng) -> Unit,
     onDismissRequest: () -> Unit,
@@ -1032,7 +1021,7 @@ fun AddLocationDialog(
 //                locationQuery = locationQuery,
 //                onLocationQueryChanged = onLocationQueryChanged
 //            )
-            Body(pickerInitialLatLng, /*pickerCurrentLocation,*/ isMapEditable, onCameraMoved)
+            Body(initialPickerLocation, isMapEditable, onCameraMoved)
             LocationConfirmationButton(
                 // TODO actual save location as opposed to always saving it when camera moves
                 onConfirmClicked = onDismissRequest
@@ -1055,13 +1044,14 @@ private fun LocationConfirmationButton(
 
 @Composable
 private fun Body(
-    pickerInitialLatLng: LatLng,//Location,
-//    pickerCurrentLocation: LatLng,
+    initialPickerLocation: Location,
     isEnabled: Boolean,
     cameraPositionUpdated: (LatLng) -> Unit,
 ) {
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(pickerInitialLatLng, 6f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(initialPickerLocation.latitude, initialPickerLocation.longitude), 6f
+        )
     }
 //    cameraPositionState.move(CameraUpdateFactory.newLatLng(pickerCurrentLocation))
 

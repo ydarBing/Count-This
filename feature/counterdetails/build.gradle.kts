@@ -10,12 +10,12 @@ android {
 
 dependencies {
 
-    implementation(libs.compose.maps)
-    implementation(libs.compose.maps.utils)
-    implementation(libs.compose.maps.widgets)
     implementation(libs.kotlinx.datetime)
-    implementation(libs.playservices.location)
-    implementation(libs.playservices.places)
-    implementation(libs.playservices.maps)
-    implementation(libs.playservices.maps.utils)
+    implementation(libs.googlemaps.compose)
+    implementation(libs.googlemaps.compose.utils)
+    implementation(libs.googlemaps.compose.widgets)
+    implementation(libs.googlemaps.location)
+    implementation(libs.googlemaps.places)
+    implementation(libs.googlemaps.maps)
+    implementation(libs.googlemaps.maps.utils)
 }
