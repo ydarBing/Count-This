@@ -20,12 +20,11 @@ import com.gurpgork.countthis.configureFlavors
 import com.gurpgork.countthis.configureGradleManagedDevices
 import com.gurpgork.countthis.configureKotlinAndroid
 import com.gurpgork.countthis.configurePrintApksTask
+import com.gurpgork.countthis.disableUnnecessaryAndroidTests
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.kotlin
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
@@ -34,6 +33,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("com.android.library")
                 apply("org.jetbrains.kotlin.android")
+//                apply("countthis.android.lint")
             }
 
             extensions.configure<LibraryExtension> {
@@ -44,18 +44,13 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
             extensions.configure<LibraryAndroidComponentsExtension> {
                 configurePrintApksTask(this)
-            }
-            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-            configurations.configureEach {
-                resolutionStrategy {
-                    force(libs.findLibrary("junit4").get())
-                    // Temporary workaround for https://issuetracker.google.com/174733673
-                    force("org.objenesis:objenesis:2.6")
-                }
+                disableUnnecessaryAndroidTests(target)
             }
             dependencies {
-                add("androidTestImplementation", kotlin("test"))
                 add("testImplementation", kotlin("test"))
+//                add("testImplementation", project(":core:testing"))
+                add("androidTestImplementation", kotlin("test"))
+//                add("androidTestImplementation", project(":core:testing"))
             }
         }
     }

@@ -14,27 +14,18 @@
  *   limitations under the License.
  */
 
-import com.gurpgork.countthis.libs
+import com.gurpgork.countthis.configureKotlinJvm
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
 
-class AndroidHiltConventionPlugin : Plugin<Project> {
+class JvmLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("com.google.devtools.ksp")
-                apply("dagger.hilt.android.plugin")
+                apply("org.jetbrains.kotlin.jvm")
+//                apply("countthis.android.lint")
             }
-
-            dependencies {
-                "implementation"(libs.findLibrary("hilt.android").get())
-                "ksp"(libs.findLibrary("hilt.compiler").get())
-                "kspAndroidTest"(libs.findLibrary("hilt.compiler").get())
-                "kspTest"(libs.findLibrary("hilt.compiler").get())
-            }
-
+            configureKotlinJvm()
         }
     }
-
 }

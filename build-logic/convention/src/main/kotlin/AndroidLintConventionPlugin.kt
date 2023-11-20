@@ -14,27 +14,33 @@
  *   limitations under the License.
  */
 
-import com.gurpgork.countthis.libs
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.Lint
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.configure
 
-class AndroidHiltConventionPlugin : Plugin<Project> {
+class AndroidLintConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            with(pluginManager) {
-                apply("com.google.devtools.ksp")
-                apply("dagger.hilt.android.plugin")
-            }
+            when {
+                pluginManager.hasPlugin("com.android.application") ->
+                    configure<ApplicationExtension> { lint(Lint::configure) }
 
-            dependencies {
-                "implementation"(libs.findLibrary("hilt.android").get())
-                "ksp"(libs.findLibrary("hilt.compiler").get())
-                "kspAndroidTest"(libs.findLibrary("hilt.compiler").get())
-                "kspTest"(libs.findLibrary("hilt.compiler").get())
-            }
+                pluginManager.hasPlugin("com.android.library") ->
+                    configure<LibraryExtension> { lint(Lint::configure) }
 
+                else -> {
+                    pluginManager.apply("com.android.lint")
+                    configure<Lint>(Lint::configure)
+                }
+            }
         }
     }
+}
 
+private fun Lint.configure() {
+    xmlReport = true
+    checkDependencies = true
 }

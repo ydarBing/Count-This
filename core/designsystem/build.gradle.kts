@@ -7,12 +7,13 @@ plugins {
 android {
     namespace = "com.gurpgork.countthis.core.designsystem"
 
-    lint {
-        checkDependencies = true
-    }
+//    lint {
+//        checkDependencies = true
+//    }
 }
 
 dependencies {
+//    lintPublish(projects.lint)
 
     api(libs.androidx.activity.compose)
     api(libs.androidx.compose.material)

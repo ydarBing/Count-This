@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.countthis.android.library)
-    alias(libs.plugins.countthis.android.hilt)
     alias(libs.plugins.countthis.android.library.jacoco)
+    alias(libs.plugins.countthis.android.hilt)
 }
 
 android {

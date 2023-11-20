@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.countthis.android.library)
-    alias(libs.plugins.countthis.android.hilt)
     alias(libs.plugins.countthis.android.library.jacoco)
+    alias(libs.plugins.countthis.android.hilt)
     id("kotlinx-serialization")
 }
 
@@ -21,7 +21,7 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.datastore)
     implementation(projects.core.model)
-//    implementation(projects.core.network)
+    implementation(projects.core.network)
 //    implementation(projects.core.notifications)
 
     implementation(libs.androidx.core.ktx)
@@ -30,6 +30,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.paging.common)
 
-//    testImplementation(projects.core.datastore-test)
+//    testImplementation(projects.core.datastoreTest)
 //    testImplementation(projects.core.testing)
 }
