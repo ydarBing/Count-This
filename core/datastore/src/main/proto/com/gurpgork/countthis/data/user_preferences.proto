@@ -19,4 +19,5 @@ message UserPreferences {
   bool should_hide_onboarding = 5;
   SortOptionsConfigProto all_counters_sort = 6;
   bool all_counters_sort_asc = 7;
+  bool should_disable_crash_analytics = 8;
 }

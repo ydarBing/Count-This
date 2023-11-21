@@ -59,4 +59,8 @@ class OfflineFirstUserDataRepository @Inject constructor(
         ctPreferencesDataSource.toggleSortAsc()
         analyticsHelper.logSortAscStateToggled(userData.last().sortAsc)
     }
+    override suspend fun setCrashAnalyticsPreference(enableAnalytics: Boolean){
+        ctPreferencesDataSource.setCrashAnalyticsPreference(!enableAnalytics)
+        analyticsHelper.logCrashAnalyticsStateChanged(!enableAnalytics)
+    }
 }

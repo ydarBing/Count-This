@@ -55,5 +55,9 @@ interface UserDataRepository {
      * Sets how the main screen counters should be ordered, ascending or descending
      */
     suspend fun toggleSortAsc()
+    /**
+     * Sets if firebase analytics should be sent
+     */
+    suspend fun setCrashAnalyticsPreference(enableAnalytics: Boolean)
 
 }

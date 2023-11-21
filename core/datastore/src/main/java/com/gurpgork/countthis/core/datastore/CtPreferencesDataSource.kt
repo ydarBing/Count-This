@@ -39,6 +39,7 @@ class CtPreferencesDataSource @Inject constructor(
                     SortOptionsConfigProto.USER_SORTED -> SortOption.USER_SORTED
                 },
                 sortAsc = it.allCountersSortAsc,
+                shouldDisableCrashAnalytics = it.shouldDisableCrashAnalytics,
             )
         }
 
@@ -119,6 +120,14 @@ class CtPreferencesDataSource @Inject constructor(
         userPreferences.updateData {
             it.copy {
                 this.allCountersSortAsc = !it.allCountersSortAsc
+            }
+        }
+    }
+
+    suspend fun setCrashAnalyticsPreference(disableAnalytics: Boolean) {
+        userPreferences.updateData {
+            it.copy {
+                this.shouldDisableCrashAnalytics = disableAnalytics
             }
         }
     }

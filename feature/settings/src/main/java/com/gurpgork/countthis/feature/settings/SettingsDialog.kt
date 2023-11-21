@@ -18,7 +18,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gurpgork.countthis.core.designsystem.theme.CtTheme
 import com.gurpgork.countthis.core.designsystem.theme.supportsDynamicTheming
 import com.gurpgork.countthis.core.model.data.DarkThemeConfig
+import com.gurpgork.countthis.core.ui.TrackScreenViewEvent
 
 
 @Composable
@@ -65,6 +66,7 @@ internal fun SettingsDialog(
         onChangeButtonIncrementPreference = viewModel::updateButtonIncrementPreference,
         onChangeDynamicColorPreference = viewModel::updateDynamicColorPreference,
         onChangeDarkThemeConfig = viewModel::updateDarkThemeConfig,
+        onChangeCrashAnalyticsPreference = viewModel::updateCrashAnalyticsPreference,
     )
 }
 
@@ -76,6 +78,7 @@ internal fun SettingsDialog(
     onChangeButtonIncrementPreference: (useButtonIncrement: Boolean) -> Unit,
     onChangeDynamicColorPreference: (useDynamicColor: Boolean) -> Unit,
     onChangeDarkThemeConfig: (darkThemeConfig: DarkThemeConfig) -> Unit,
+    onChangeCrashAnalyticsPreference: (enableCrashAnalytics: Boolean) -> Unit,
 ) {
     val configuration = LocalConfiguration.current
 
@@ -115,12 +118,15 @@ internal fun SettingsDialog(
                             onChangeDynamicColorPreference = onChangeDynamicColorPreference,
                             onChangeDarkThemeConfig = onChangeDarkThemeConfig,
                         )
+                        HorizontalDivider(Modifier.padding(top = 8.dp))
+                        LinksPanel(
+                            settingsViewState.settings.useCrashAnalytics,
+                            onChangeCrashAnalyticsPreference,
+                        )
                     }
                 }
-                HorizontalDivider(Modifier.padding(top = 8.dp))
-                LinksPanel()
             }
-//            TrackScreenViewEvent(screenName = "Settings")
+            TrackScreenViewEvent(screenName = "Settings")
         },
         confirmButton = {
             Text(
@@ -135,7 +141,6 @@ internal fun SettingsDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SettingsPanel(
     settings: UserEditableSettings,
@@ -228,7 +233,10 @@ fun SettingsDialogThemeChooserRow(
 }
 
 @Composable
-private fun LinksPanel() {
+private fun LinksPanel(
+    crashAnalyticsEnabled: Boolean,
+    onChangeCrashAnalyticsPreference: (enableCrashAnalytics: Boolean) -> Unit
+) {
     Row(
         modifier = Modifier.padding(top = 16.dp),
     ) {
@@ -236,6 +244,16 @@ private fun LinksPanel() {
             Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Row {
+                Checkbox(
+                    checked = crashAnalyticsEnabled,
+                    onCheckedChange = onChangeCrashAnalyticsPreference
+                )
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = "Send Analytics (crashes/usage)"
+                )
+            }
             Row {
                 TextLink(
                     text = stringResource(R.string.privacy_policy),
@@ -294,7 +312,6 @@ fun getAppVersion(
 private fun TextLink(text: String, url: String) {
     val launchResourceIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     val context = LocalContext.current
-
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
@@ -317,12 +334,14 @@ private fun PreviewSettingsDialog() {
                     useButtonIncrement = false,
                     darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
                     useDynamicColor = false,
+                    useCrashAnalytics = true,
                 ),
             ),
             onDismiss = {},
             onChangeButtonIncrementPreference = {},
             onChangeDynamicColorPreference = {},
             onChangeDarkThemeConfig = {},
+            onChangeCrashAnalyticsPreference = {},
         )
     }
 }
@@ -337,6 +356,7 @@ private fun PreviewSettingsDialogLoading() {
             onChangeButtonIncrementPreference = {},
             onChangeDynamicColorPreference = {},
             onChangeDarkThemeConfig = {},
+            onChangeCrashAnalyticsPreference = {},
         )
     }
 }

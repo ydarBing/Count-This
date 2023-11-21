@@ -27,6 +27,16 @@ fun AnalyticsHelper.logSetUseButtonIncrementsChanged(useButtonIncrements: Boolea
         ),
     )
 
+fun AnalyticsHelper.logCrashAnalyticsStateChanged(enableAnalytics: Boolean) =
+    logEvent(
+        AnalyticsEvent(
+            type = "analytics_option_changed",
+            extras = listOf(
+                Param(key = "analytics_option", value = enableAnalytics.toString()),
+            ),
+        ),
+    )
+
 fun AnalyticsHelper.logDarkThemeConfigChanged(darkThemeConfigName: String) =
     logEvent(
         AnalyticsEvent(
@@ -46,6 +56,7 @@ fun AnalyticsHelper.logSortStateChanged(sortName: String) =
             ),
         ),
     )
+
 fun AnalyticsHelper.logSortAscStateSet(sortAsc: Boolean) =
     logEvent(
         AnalyticsEvent(
@@ -55,6 +66,7 @@ fun AnalyticsHelper.logSortAscStateSet(sortAsc: Boolean) =
             ),
         ),
     )
+
 fun AnalyticsHelper.logSortAscStateToggled(sortAsc: Boolean) =
     logEvent(
         AnalyticsEvent(

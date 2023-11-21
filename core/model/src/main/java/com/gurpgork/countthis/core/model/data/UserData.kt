@@ -9,4 +9,5 @@ data class UserData (
     val shouldHideOnboarding: Boolean,
     val currentSort: SortOption,
     val sortAsc: Boolean,
+    val shouldDisableCrashAnalytics: Boolean,
 )

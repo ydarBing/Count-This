@@ -7,3 +7,7 @@ plugins {
 android {
     namespace = "com.gurpgork.countthis.feature.settings"
 }
+
+dependencies {
+    implementation(libs.firebase.crashlytics)
+}
